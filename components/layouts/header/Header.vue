@@ -1,18 +1,23 @@
 <template>
-  <header class="bg-blue-50">
+  <header class="bg-blue-50 relative overflow-hidden border-b-1 border-dashed border-zinc-600/15">
     <div class="flex items-center space-x-4 mx-auto max-w-[1552px] py-4">
-      <button class="text-gray-600 hover:text-gray-800 p-3">
-        <IconNav/>
-      </button>
-      <nuxt-link to="/">
+      <Sidebar/>
+      <nuxt-link to="/" class="z-20">
         <img src="~/assets/images/logo.svg" alt="3delectronics">
       </nuxt-link>
-      <button
-          class="flex items-center space-x-2 rounded-full border border-zinc-600 bg-transparent px-4 py-3 mx-2 rounded-full hover:bg-gray-50">
-        <IconCatalog/>
-        <span class="font-sans font-semibold">Каталог</span>
-      </button>
-      <div class="flex-1 mx-4 max-w-3xl">
+      <div class="relative">
+        <!-- Фон под кнопкой -->
+        <div
+            class="absolute z-10 inset-0 -left-15 -top-30 w-[260px] h-[260px] rounded-full bg-[#BFDBFE] blur-[50px] pointer-events-none"></div>
+
+        <!-- Кнопка Каталог -->
+        <button
+            class="relative z-20 flex items-center space-x-2 rounded-full border border-zinc-600 bg-transparent px-4 py-3 mx-2 hover:bg-gray-50">
+          <IconCatalog/>
+          <span class="font-sans font-semibold">Каталог</span>
+        </button>
+      </div>
+      <div class="flex-1 mx-4 max-w-3xl z-20">
         <div class="relative">
           <input type="text" placeholder="Я ищу..."
                  class="w-full bg-white rounded-full px-5 py-3">
@@ -23,26 +28,32 @@
         </div>
       </div>
       <div class="flex items-center ml-auto">
-        <button class="text-gray-600 hover:text-gray-800 p-3">
-          <IconCart/>
-        </button>
-        <button class="text-gray-600 hover:text-gray-800 p-3">
-          <IconPhone/>
-        </button>
-        <button class="text-gray-600 hover:text-gray-800 p-3">
-          <IconPersone/>
-        </button>
+        <div class="relative">
+          <div
+              class="absolute z-10 inset-0 -left-15 -top-0 w-[296px] h-[296px] rounded-full bg-[#BFDBFE] blur-[50px] pointer-events-none"/>
+          <div class="relative z-20">
+            <button class="text-gray-600 hover:text-gray-800 p-3">
+              <IconCart/>
+            </button>
+            <button class="text-gray-600 hover:text-gray-800 p-3">
+              <IconPhone/>
+            </button>
+            <button class="text-gray-600 hover:text-gray-800 p-3">
+              <IconPersone/>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import IconNav from "~/components/icons/IconNav.vue";
 import IconCatalog from "~/components/icons/IconCatalog.vue";
 import IconCart from "~/components/icons/IconCart.vue";
 import IconPhone from "~/components/icons/IconPhone.vue";
-import IconPersone from "~/components/icons/IconPersone.vue";
+import IconPersone from "~/components/icons/IconPerson.vue";
+import Sidebar from "~/components/layouts/sidebar/Sidebar.vue";
 </script>
 
 <style scoped>
