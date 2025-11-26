@@ -11,7 +11,7 @@
   </div>
 
   <!-- Modal -->
-  <div v-if="isOpen" class="fixed inset-0 top-0 z-50 flex items-start justify-center h-full bg-white">
+  <div v-if="isOpen" class="fixed w-[384px] inset-0 left-0 top-0 z-50 flex items-start justify-center h-full bg-white">
     <div class="bg-white w-full">
       <!-- Header -->
       <button class="p-3" @click="isOpen = false">
@@ -49,6 +49,11 @@
       </div>
     </div>
   </div>
+  <div
+      v-if="isOpen"
+      class="fixed inset-0 backdrop-blur-xs bg-opacity-10 z-10"
+      @click="isOpen = false"
+  />
 </template>
 
 <script setup lang="ts">

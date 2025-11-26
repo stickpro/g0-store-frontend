@@ -20,5 +20,5 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
-  modules: ['@nuxt/eslint', '@nuxt/image', "@nuxt/fonts", "@pinia/nuxt"]
+  modules: ['@nuxt/eslint', '@nuxt/image', "@nuxt/fonts", "@pinia/nuxt", "nuxt-swiper"]
 })

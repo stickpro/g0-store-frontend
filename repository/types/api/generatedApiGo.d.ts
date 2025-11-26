@@ -27,6 +27,10 @@ export interface AttributeGroupResponse {
   updated_at?: string;
 }
 
+export interface AttributeGroupsResponse {
+  groups?: GithubComStickproGoStoreInternalDtoAttributeGroupDTO[];
+}
+
 export interface AuthRequest {
   email: string;
   /**
@@ -84,6 +88,44 @@ export interface CityResponse {
   timezone?: string;
 }
 
+export interface CollectionResponse {
+  created_at?: string;
+  description?: string;
+  id?: string;
+  name?: string;
+  slug?: string;
+  updated_at?: string;
+}
+
+export interface CreateAttributeGroupRequest {
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  description?: string;
+  name: string;
+}
+
+export interface CreateAttributeRequest {
+  attribute_group_id?: string;
+  is_filterable: boolean;
+  is_visible: boolean;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  name: string;
+  /** @min 0 */
+  sort_order?: number;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  type: string;
+  /** @minLength 1 */
+  value: string;
+}
+
 export interface CreateCategoryRequest {
   /** @minLength 1 */
   description?: string;
@@ -108,6 +150,14 @@ export interface CreateCategoryRequest {
    * @minLength 1
    * @maxLength 255
    */
+  slug: string;
+}
+
+export interface CreateCollectionRequest {
+  /** @maxLength 500 */
+  description?: string;
+  name: string;
+  product_ids?: string[];
   slug: string;
 }
 
@@ -140,14 +190,15 @@ export interface CreateManufacturerRequest {
 export interface CreateProductRequest {
   description?: string;
   ean?: string;
-  height: number;
+  height?: number;
   image?: string;
   is_enable: boolean;
   isbn?: string;
   jan?: string;
-  length: number;
+  length?: number;
   location?: string;
   manufacturer_id?: string;
+  media_ids?: string[];
   meta_description?: string;
   meta_h1?: string;
   meta_keyword?: string;
@@ -164,8 +215,8 @@ export interface CreateProductRequest {
   stock_status?: string;
   subtract?: boolean;
   upc?: string;
-  weight: number;
-  width: number;
+  weight?: number;
+  width?: number;
 }
 
 export interface FullPagingData {
@@ -185,6 +236,12 @@ export interface JSONResponseAttributeGroupResponse {
   message?: string;
 }
 
+export interface JSONResponseAttributeGroupsResponse {
+  code?: number;
+  data?: AttributeGroupsResponse;
+  message?: string;
+}
+
 export interface JSONResponseAuthResponse {
   code?: number;
   data?: AuthResponse;
@@ -200,6 +257,12 @@ export interface JSONResponseCategoryResponse {
 export interface JSONResponseCityResponse {
   code?: number;
   data?: CityResponse;
+  message?: string;
+}
+
+export interface JSONResponseCollectionResponse {
+  code?: number;
+  data?: CollectionResponse;
   message?: string;
 }
 
@@ -227,6 +290,18 @@ export interface JSONResponseProductResponse {
   message?: string;
 }
 
+export interface JSONResponseProductReviewResponse {
+  code?: number;
+  data?: ProductReviewResponse;
+  message?: string;
+}
+
+export interface JSONResponseProductWithMediumResponse {
+  code?: number;
+  data?: ProductWithMediumResponse;
+  message?: string;
+}
+
 export interface JSONResponseRegisterUserResponse {
   code?: number;
   data?: RegisterUserResponse;
@@ -236,6 +311,12 @@ export interface JSONResponseRegisterUserResponse {
 export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory {
   code?: number;
   data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
+  code?: number;
+  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection;
   message?: string;
 }
 
@@ -251,9 +332,39 @@ export interface JSONResponseUserInfoResponse {
   message?: string;
 }
 
+export interface JSONResponseArrayAttributeGroupResponse {
+  code?: number;
+  data?: AttributeGroupResponse[];
+  message?: string;
+}
+
+export interface JSONResponseArrayGithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
+  code?: number;
+  data?: GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse[];
+  message?: string;
+}
+
 export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsCity {
   code?: number;
   data?: GithubComStickproGoStoreInternalModelsCity[];
+  message?: string;
+}
+
+export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsProduct {
+  code?: number;
+  data?: GithubComStickproGoStoreInternalModelsProduct[];
+  message?: string;
+}
+
+export interface JSONResponseGithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
+  code?: number;
+  data?: GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse;
+  message?: string;
+}
+
+export interface JSONResponseString {
+  code?: number;
+  data?: string;
   message?: string;
 }
 
@@ -315,6 +426,22 @@ export interface ProductResponse {
   width?: number;
 }
 
+export interface ProductReviewResponse {
+  body?: string;
+  created_at?: string;
+  id?: string;
+  rating?: number;
+  status?: string;
+  title?: string;
+  updated_at?: string;
+  user_id?: string;
+}
+
+export interface ProductWithMediumResponse {
+  medium?: MediumResponse[];
+  product?: ProductResponse;
+}
+
 export interface RegisterRequest {
   email: string;
   /**
@@ -339,9 +466,20 @@ export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModel
   pagination?: FullPagingData;
 }
 
+export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
+  items?: GithubComStickproGoStoreInternalModelsCollection[];
+  pagination?: FullPagingData;
+}
+
 export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
   items?: GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow[];
   pagination?: FullPagingData;
+}
+
+export enum StockStatus {
+  InStock = "IN_STOCK",
+  PreOrder = "PRE_ORDER",
+  OutOfStock = "OUT_OF_STOCK",
 }
 
 export interface UpdateCategoryRequest {
@@ -369,6 +507,14 @@ export interface UpdateCategoryRequest {
    * @maxLength 255
    */
   slug?: string;
+}
+
+export interface UpdateCollectionRequest {
+  /** @maxLength 500 */
+  description?: string;
+  name: string;
+  product_ids?: string[];
+  slug: string;
 }
 
 export interface UpdateManufacturerRequest {
@@ -408,6 +554,7 @@ export interface UpdateProductRequest {
   length?: number;
   location?: string;
   manufacturer_id?: string;
+  media_ids?: string[];
   meta_description?: string;
   meta_h1?: string;
   meta_keyword?: string;
@@ -444,19 +591,54 @@ export interface UserInfoResponse {
   updated_at?: string;
 }
 
-export enum GithubComStickproGoStoreInternalConstantStockStatus {
-  InStock = "IN_STOCK",
-  PreOrder = "PRE_ORDER",
-  OutOfStock = "OUT_OF_STOCK",
-}
-
-export interface GithubComStickproGoStoreInternalDeliveryHttpRequestAttributeRequestCreateAttributeGroupRequest {
+export interface GithubComStickproGoStoreInternalDeliveryHttpRequestAttributeRequestUpdateAttributeGroupRequest {
   /**
    * @minLength 1
    * @maxLength 100
    */
   description?: string;
   name: string;
+}
+
+export interface GithubComStickproGoStoreInternalDeliveryHttpRequestProductRequestSyncProductAttributeRequest {
+  attribute_ids: string[];
+}
+
+export interface GithubComStickproGoStoreInternalDeliveryHttpRequestProductReviewRequestCreateProductReviewRequest {
+  body?: string;
+  product_id?: string;
+  rating?: number;
+  title?: string;
+}
+
+export interface GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
+  attribute_group_id?: UuidNullUUID;
+  created_at?: string;
+  id?: string;
+  is_filterable?: boolean;
+  is_visible?: boolean;
+  name?: string;
+  sort_order?: number;
+  type?: string;
+  updated_at?: string;
+  value?: string;
+}
+
+export interface GithubComStickproGoStoreInternalDtoAttributeDTO {
+  id?: string;
+  is_filterable?: boolean;
+  is_visible?: boolean;
+  name?: string;
+  sort_order?: number;
+  type?: string;
+  value?: string;
+}
+
+export interface GithubComStickproGoStoreInternalDtoAttributeGroupDTO {
+  attributes?: GithubComStickproGoStoreInternalDtoAttributeDTO[];
+  group_description?: string;
+  group_id?: string;
+  group_name?: string;
 }
 
 export interface GithubComStickproGoStoreInternalModelsCategory {
@@ -503,6 +685,50 @@ export interface GithubComStickproGoStoreInternalModelsCity {
   timezone?: string;
 }
 
+export interface GithubComStickproGoStoreInternalModelsCollection {
+  created_at?: PgtypeTimestamptz;
+  description?: PgtypeText;
+  id?: string;
+  name?: string;
+  slug?: string;
+  updated_at?: PgtypeTimestamptz;
+}
+
+export interface GithubComStickproGoStoreInternalModelsProduct {
+  created_at?: PgtypeTimestamp;
+  description?: PgtypeText;
+  ean?: PgtypeText;
+  height?: number;
+  id?: string;
+  image?: PgtypeText;
+  is_enable?: boolean;
+  isbn?: PgtypeText;
+  jan?: PgtypeText;
+  length?: number;
+  location?: PgtypeText;
+  manufacturer_id?: UuidNullUUID;
+  meta_description?: PgtypeText;
+  meta_h1?: PgtypeText;
+  meta_keyword?: PgtypeText;
+  meta_title?: PgtypeText;
+  minimum?: number;
+  model?: string;
+  mpn?: PgtypeText;
+  name?: string;
+  price?: number;
+  quantity?: number;
+  sku?: PgtypeText;
+  slug?: string;
+  sort_order?: number;
+  stock_status?: StockStatus;
+  subtract?: boolean;
+  upc?: PgtypeText;
+  updated_at?: PgtypeTimestamp;
+  viewed?: number;
+  weight?: number;
+  width?: number;
+}
+
 export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
   created_at?: PgtypeTimestamp;
   description?: PgtypeText;
@@ -529,7 +755,7 @@ export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProd
   sku?: PgtypeText;
   slug?: string;
   sort_order?: number;
-  stock_status?: GithubComStickproGoStoreInternalConstantStockStatus;
+  stock_status?: StockStatus;
   subtract?: boolean;
   upc?: PgtypeText;
   updated_at?: PgtypeTimestamp;
@@ -552,6 +778,12 @@ export interface PgtypeText {
 export interface PgtypeTimestamp {
   infinityModifier?: PgtypeInfinityModifier;
   /** Time zone will be ignored when encoding to PostgreSQL. */
+  time?: string;
+  valid?: boolean;
+}
+
+export interface PgtypeTimestamptz {
+  infinityModifier?: PgtypeInfinityModifier;
   time?: string;
   valid?: boolean;
 }
