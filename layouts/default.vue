@@ -22,13 +22,15 @@
           <slot/>
         </div>
       </div>
-
     </main>
+
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
 import Header from '~/components/layouts/header/Header.vue'
+import Footer from '~/components/layouts/footer/Footer.vue'
 import SidebarCategory from "~/components/category/SidebarCategory.vue";
 import Login from "~/components/user/Login.vue";
 import WorkingHours from "~/components/layouts/sidebar/WorkingHours.vue";

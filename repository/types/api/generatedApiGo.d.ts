@@ -44,6 +44,22 @@ export interface AuthResponse {
   token?: string;
 }
 
+export interface Category {
+  created_at?: PgtypeTimestamp;
+  description?: PgtypeText;
+  id?: string;
+  image_path?: PgtypeText;
+  is_enable?: boolean;
+  meta_description?: PgtypeText;
+  meta_h1?: PgtypeText;
+  meta_keyword?: PgtypeText;
+  meta_title?: PgtypeText;
+  name?: string;
+  parent_id?: UuidNullUUID;
+  slug?: string;
+  updated_at?: PgtypeTimestamp;
+}
+
 export interface CategoryResponse {
   created_at?: string;
   description?: string;
@@ -58,6 +74,34 @@ export interface CategoryResponse {
   parent_id?: string;
   slug?: string;
   updated_at?: string;
+}
+
+export interface City {
+  address?: string;
+  area?: PgtypeText;
+  area_type?: PgtypeText;
+  capital_marker?: number;
+  city?: string;
+  city_type?: string;
+  country?: string;
+  federal_district?: string;
+  fias_id?: string;
+  fias_level?: number;
+  foundation_year?: number;
+  geo_lat?: number;
+  geo_lon?: number;
+  id?: string;
+  kladr_id?: string;
+  okato?: string;
+  oktmo?: string;
+  population?: number;
+  postal_code?: string;
+  region?: string;
+  region_type?: string;
+  settlement?: PgtypeText;
+  settlement_type?: PgtypeText;
+  tax_office?: string;
+  timezone?: string;
 }
 
 export interface CityResponse {
@@ -88,11 +132,30 @@ export interface CityResponse {
   timezone?: string;
 }
 
+export interface Collection {
+  created_at?: PgtypeTimestamptz;
+  description?: PgtypeText;
+  id?: string;
+  name?: string;
+  slug?: string;
+  updated_at?: PgtypeTimestamptz;
+}
+
 export interface CollectionResponse {
   created_at?: string;
   description?: string;
   id?: string;
   name?: string;
+  slug?: string;
+  updated_at?: string;
+}
+
+export interface CollectionWithProductResponse {
+  created_at?: string;
+  description?: string;
+  id?: string;
+  name?: string;
+  products?: ShortProduct[];
   slug?: string;
   updated_at?: string;
 }
@@ -266,6 +329,12 @@ export interface JSONResponseCollectionResponse {
   message?: string;
 }
 
+export interface JSONResponseCollectionWithProductResponse {
+  code?: number;
+  data?: CollectionWithProductResponse;
+  message?: string;
+}
+
 export interface JSONResponseGeoResponse {
   code?: number;
   data?: GeoResponse;
@@ -308,15 +377,15 @@ export interface JSONResponseRegisterUserResponse {
   message?: string;
 }
 
-export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory {
+export interface JSONResponseResponseWithFullPaginationCategory {
   code?: number;
-  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory;
+  data?: ResponseWithFullPaginationCategory;
   message?: string;
 }
 
-export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
+export interface JSONResponseResponseWithFullPaginationCollection {
   code?: number;
-  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection;
+  data?: ResponseWithFullPaginationCollection;
   message?: string;
 }
 
@@ -338,21 +407,21 @@ export interface JSONResponseArrayAttributeGroupResponse {
   message?: string;
 }
 
+export interface JSONResponseArrayCity {
+  code?: number;
+  data?: City[];
+  message?: string;
+}
+
+export interface JSONResponseArrayProduct {
+  code?: number;
+  data?: Product[];
+  message?: string;
+}
+
 export interface JSONResponseArrayGithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
   code?: number;
   data?: GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse[];
-  message?: string;
-}
-
-export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsCity {
-  code?: number;
-  data?: GithubComStickproGoStoreInternalModelsCity[];
-  message?: string;
-}
-
-export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsProduct {
-  code?: number;
-  data?: GithubComStickproGoStoreInternalModelsProduct[];
   message?: string;
 }
 
@@ -392,6 +461,41 @@ export interface MediumResponse {
   name?: string;
   path?: string;
   size?: number;
+}
+
+export interface Product {
+  created_at?: PgtypeTimestamp;
+  description?: PgtypeText;
+  ean?: PgtypeText;
+  height?: number;
+  id?: string;
+  image?: PgtypeText;
+  is_enable?: boolean;
+  isbn?: PgtypeText;
+  jan?: PgtypeText;
+  length?: number;
+  location?: PgtypeText;
+  manufacturer_id?: UuidNullUUID;
+  meta_description?: PgtypeText;
+  meta_h1?: PgtypeText;
+  meta_keyword?: PgtypeText;
+  meta_title?: PgtypeText;
+  minimum?: number;
+  model?: string;
+  mpn?: PgtypeText;
+  name?: string;
+  price?: number;
+  quantity?: number;
+  sku?: PgtypeText;
+  slug?: string;
+  sort_order?: number;
+  stock_status?: StockStatus;
+  subtract?: boolean;
+  upc?: PgtypeText;
+  updated_at?: PgtypeTimestamp;
+  viewed?: number;
+  weight?: number;
+  width?: number;
 }
 
 export interface ProductResponse {
@@ -461,19 +565,29 @@ export interface RegisterUserResponse {
   token?: string;
 }
 
-export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory {
-  items?: GithubComStickproGoStoreInternalModelsCategory[];
+export interface ResponseWithFullPaginationCategory {
+  items?: Category[];
   pagination?: FullPagingData;
 }
 
-export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
-  items?: GithubComStickproGoStoreInternalModelsCollection[];
+export interface ResponseWithFullPaginationCollection {
+  items?: Collection[];
   pagination?: FullPagingData;
 }
 
 export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
   items?: GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow[];
   pagination?: FullPagingData;
+}
+
+export interface ShortProduct {
+  id?: string;
+  image?: PgtypeText;
+  is_enable?: boolean;
+  model?: string;
+  name?: string;
+  price?: number;
+  slug?: string;
 }
 
 export enum StockStatus {
@@ -639,94 +753,6 @@ export interface GithubComStickproGoStoreInternalDtoAttributeGroupDTO {
   group_description?: string;
   group_id?: string;
   group_name?: string;
-}
-
-export interface GithubComStickproGoStoreInternalModelsCategory {
-  created_at?: PgtypeTimestamp;
-  description?: PgtypeText;
-  id?: string;
-  image_path?: PgtypeText;
-  is_enable?: boolean;
-  meta_description?: PgtypeText;
-  meta_h1?: PgtypeText;
-  meta_keyword?: PgtypeText;
-  meta_title?: PgtypeText;
-  name?: string;
-  parent_id?: UuidNullUUID;
-  slug?: string;
-  updated_at?: PgtypeTimestamp;
-}
-
-export interface GithubComStickproGoStoreInternalModelsCity {
-  address?: string;
-  area?: PgtypeText;
-  area_type?: PgtypeText;
-  capital_marker?: number;
-  city?: string;
-  city_type?: string;
-  country?: string;
-  federal_district?: string;
-  fias_id?: string;
-  fias_level?: number;
-  foundation_year?: number;
-  geo_lat?: number;
-  geo_lon?: number;
-  id?: string;
-  kladr_id?: string;
-  okato?: string;
-  oktmo?: string;
-  population?: number;
-  postal_code?: string;
-  region?: string;
-  region_type?: string;
-  settlement?: PgtypeText;
-  settlement_type?: PgtypeText;
-  tax_office?: string;
-  timezone?: string;
-}
-
-export interface GithubComStickproGoStoreInternalModelsCollection {
-  created_at?: PgtypeTimestamptz;
-  description?: PgtypeText;
-  id?: string;
-  name?: string;
-  slug?: string;
-  updated_at?: PgtypeTimestamptz;
-}
-
-export interface GithubComStickproGoStoreInternalModelsProduct {
-  created_at?: PgtypeTimestamp;
-  description?: PgtypeText;
-  ean?: PgtypeText;
-  height?: number;
-  id?: string;
-  image?: PgtypeText;
-  is_enable?: boolean;
-  isbn?: PgtypeText;
-  jan?: PgtypeText;
-  length?: number;
-  location?: PgtypeText;
-  manufacturer_id?: UuidNullUUID;
-  meta_description?: PgtypeText;
-  meta_h1?: PgtypeText;
-  meta_keyword?: PgtypeText;
-  meta_title?: PgtypeText;
-  minimum?: number;
-  model?: string;
-  mpn?: PgtypeText;
-  name?: string;
-  price?: number;
-  quantity?: number;
-  sku?: PgtypeText;
-  slug?: string;
-  sort_order?: number;
-  stock_status?: StockStatus;
-  subtract?: boolean;
-  upc?: PgtypeText;
-  updated_at?: PgtypeTimestamp;
-  viewed?: number;
-  weight?: number;
-  width?: number;
 }
 
 export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {

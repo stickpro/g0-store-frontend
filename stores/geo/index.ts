@@ -1,10 +1,10 @@
 import {defineStore} from 'pinia';
-import type {CityResponse} from "~/repository/types/api/generatedApiGo";
+import type {City} from "~/repository/types/api/generatedApiGo";
 
 type State = {
     geo: {
         city: string,
-        popularCity: CityResponse[]
+        popularCity: City[]
     }
 }
 
@@ -32,9 +32,9 @@ export const useGeoStore = defineStore('Geo', {
                 } else {
                     // Иначе делаем API-запрос
                     const data = await $api.geo.getCityByIP();
-                    this.geo.city = data.city;
+                    this.geo.city = data.city || "г. Санкт-Петербург";
                     // Сохраняем в localStorage
-                    localStorage.setItem('geoCity', data.city);
+                    localStorage.setItem('geoCity', data.city || "г. Санкт-Петербург");
                 }
             } catch (error) {
                 console.error('Ошибка загрузки геоданных:', error);

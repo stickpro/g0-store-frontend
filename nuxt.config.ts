@@ -8,10 +8,22 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiUrl: process.env.API_BASE_URL || 'https://api.example.com',
+      storageUrl: process.env.STORAGE_URL || 'https://api.example.com',
     },
   },
   fonts: {
-    families: [{ name: "Inter", provider: "google" }, { name: "Roboto", provider: "google" }],
+    families: [
+      {
+        name: "Inter",
+        provider: "google",
+        weights: [400, 500, 600, 700, 800, 900]
+      },
+      {
+        name: "Roboto",
+        provider: "google",
+        weights: [400, 500, 700]
+      }
+    ],
     processCSSVariables: true
   },
 

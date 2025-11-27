@@ -35,16 +35,20 @@
       <!-- Cities List -->
       <div class="px-4 pb-6">
         <!-- Federal Cities -->
-        <div class="mb-6 p-3">
+        <div v-if="geo.popularCity.length > 0" class="mb-6 p-3">
           <template v-for="city in geo.popularCity" :key="city.id">
             <button class="flex w-full py-1 px-2 rounded-lg flex-col items-start hover:bg-gray-50"
-                    @click="selectCity(city.address)">
-              <span :class="[ city.city === city ? 'text-orange-500' : '']">{{
+                    @click="selectCity(city.address || '')">
+              <span :class="[ geo.city === city.address ? 'text-orange-500' : '']">{{
                   city.city ? city.city : city.address
                 }}</span>
               <p v-if="city.city" class="text-xs">{{ city.region }} {{ city.region_type }}</p>
             </button>
           </template>
+        </div>
+        <div v-else class="mb-6 p-3 text-center text-gray-500">
+          <p v-if="searchQuery.length >= 3">Городов не найдено</p>
+          <p v-else>Загрузка...</p>
         </div>
       </div>
     </div>
@@ -70,7 +74,7 @@ const searchQuery = ref('');
 
 const {loadPopularCities, geo, setCity, findCity, loadGeo } = useGeoStore()
 
-const selectCity = (city) => {
+function selectCity(city: string) {
   setCity(city)
   isOpen.value = false
 }

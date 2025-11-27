@@ -1,32 +1,28 @@
 import HttpFactory from "../factory";
-import type {CityResponse, GeoResponse} from "~/repository/types/api/generatedApiGo";
+import type {
+    City,
+    GeoResponse,
+    JSONResponseGeoResponse,
+    JSONResponseArrayCity
+} from "~/repository/types/api/generatedApiGo";
 
 
-class GeoModule extends HttpFactory<any> {
+class GeoModule extends HttpFactory {
     private RESOURCE = '/geo'
 
     async getCityByIP(): Promise<GeoResponse> {
-        try {
-            return  await this.get(`${this.RESOURCE}/city`)
-        } catch (error) {
-            throw new Error("Failed to fetch geo ip");
-        }
+        const response = await this.get<JSONResponseGeoResponse>(`${this.RESOURCE}/city`);
+        return response.data || { city: '' };
     }
 
-    async getPopularCity(): Promise<CityResponse[]> {
-        try {
-            return await this.get(`${this.RESOURCE}/city/popular`)
-        } catch (error) {
-            throw new Error("Failed to fetch popular city");
-        }
+    async getPopularCity(): Promise<City[]> {
+        const response = await this.get<JSONResponseArrayCity>(`${this.RESOURCE}/city/popular`);
+        return response.data || [];
     }
 
-    async findCity(cityName: string): Promise<any[]> {
-        try {
-            return await this.get(`${this.RESOURCE}/city/find`, { 'city': cityName });
-        } catch (error) {
-            throw new Error("Failed to fetch popular city");
-        }
+    async findCity(cityName: string): Promise<City[]> {
+        const response = await this.get<JSONResponseArrayCity>(`${this.RESOURCE}/city/find`, { city: cityName });
+        return response.data || [];
     }
 }
 

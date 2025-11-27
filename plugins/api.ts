@@ -1,9 +1,11 @@
 import { defineNuxtPlugin } from "#app";
 import GeoModule from "~/repository/modules/geo";
-import type { FetchOptions } from "#app";
+import CollectionModule from "~/repository/modules/collection";
+import type { FetchOptions } from "ofetch";
 
 interface IApiInstance {
     geo: GeoModule;
+    collection: CollectionModule;
 }
 
 declare module "#app" {
@@ -17,13 +19,20 @@ export default defineNuxtPlugin(() => {
 
     const fetchOptions: FetchOptions<'json'> = {
         baseURL: config.public.apiUrl,
-        headers: {
-            Authorization: `Bearer ${useState('authToken').value || ''}`,
+        onRequest({ options }: { options: any }) {
+            const token = useState('authToken').value;
+            if (token) {
+                options.headers = {
+                    ...options.headers,
+                    Authorization: `Bearer ${token}`,
+                };
+            }
         },
     };
 
     const modules: IApiInstance = {
         geo: new GeoModule(fetchOptions),
+        collection: new CollectionModule(fetchOptions),
     };
 
     return {
