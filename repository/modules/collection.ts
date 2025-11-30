@@ -1,9 +1,7 @@
 import HttpFactory from "../factory";
 import type {
     Collection,
-    CollectionResponse,
     CollectionWithProductResponse,
-    JSONResponseCollectionResponse,
     JSONResponseCollectionWithProductResponse,
     JSONResponseResponseWithFullPaginationCollection
 } from "~/repository/types/api/generatedApiGo";
@@ -27,20 +25,13 @@ class CollectionModule extends HttpFactory {
         };
     }
 
-    async getById(id: string): Promise<CollectionResponse> {
-        const response = await this.get<JSONResponseCollectionResponse>(`${this.RESOURCE}/${id}`);
-        return response.data || {} as CollectionResponse;
+    async getById(id: string): Promise<CollectionWithProductResponse> {
+        const response = await this.get<JSONResponseCollectionWithProductResponse>(`${this.RESOURCE}/${id}`);
+        return response.data || {} as CollectionWithProductResponse;
     }
 
-    async getBySlug(slug: string): Promise<CollectionResponse> {
-        const response = await this.get<JSONResponseCollectionResponse>(`${this.RESOURCE}/slug/${slug}`);
-        return response.data || {} as CollectionResponse;
-    }
-
-    async getPopular(): Promise<CollectionWithProductResponse> {
-        const response = await this.get<JSONResponseCollectionWithProductResponse>(
-            `${this.RESOURCE}/popular`
-        );
+    async getBySlug(slug: string): Promise<CollectionWithProductResponse> {
+        const response = await this.get<JSONResponseCollectionWithProductResponse>(`${this.RESOURCE}/${slug}`);
         return response.data || {} as CollectionWithProductResponse;
     }
 }

@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
-import type { Collection, CollectionResponse } from "~/repository/types/api/generatedApiGo";
+import type { Collection, CollectionWithProductResponse } from "~/repository/types/api/generatedApiGo";
 
 type State = {
     collections: Collection[];
-    currentCollection: CollectionResponse | null;
+    collectionsWithProducts: Record<string, CollectionWithProductResponse>;
+    loadingStates: Record<string, boolean>;
     pagination: {
         page: number;
         page_size: number;
@@ -17,7 +18,8 @@ export const useCollectionStore = defineStore('Collection', {
     state: (): State => {
         return {
             collections: [],
-            currentCollection: null,
+            collectionsWithProducts: {},
+            loadingStates: {},
             pagination: null,
             loading: false,
         }
@@ -48,35 +50,55 @@ export const useCollectionStore = defineStore('Collection', {
         async loadCollectionById(id: string) {
             if (!import.meta.client) return;
 
+            // Если коллекция уже загружена, не загружаем заново
+            if (this.collectionsWithProducts[id]) {
+                return this.collectionsWithProducts[id];
+            }
+
             const { $api } = useNuxtApp();
-            this.loading = true;
+            this.loadingStates[id] = true;
 
             try {
-                this.currentCollection = await $api.collection.getById(id);
+                const collection = await $api.collection.getById(id);
+                this.collectionsWithProducts[id] = collection;
+                return collection;
             } catch (error) {
                 console.error('Error loading collection by id:', error);
             } finally {
-                this.loading = false;
+                this.loadingStates[id] = false;
             }
         },
 
         async loadCollectionBySlug(slug: string) {
             if (!import.meta.client) return;
 
+            // Если коллекция уже загружена, не загружаем заново
+            if (this.collectionsWithProducts[slug]) {
+                return this.collectionsWithProducts[slug];
+            }
+
             const { $api } = useNuxtApp();
-            this.loading = true;
+            this.loadingStates[slug] = true;
 
             try {
-                this.currentCollection = await $api.collection.getBySlug(slug);
+                const collection = await $api.collection.getBySlug(slug);
+                this.collectionsWithProducts[slug] = collection;
+                return collection;
             } catch (error) {
                 console.error('Error loading collection by slug:', error);
             } finally {
-                this.loading = false;
+                this.loadingStates[slug] = false;
             }
         },
 
-        clearCurrentCollection() {
-            this.currentCollection = null;
+        clearCollection(key: string) {
+            delete this.collectionsWithProducts[key];
+            delete this.loadingStates[key];
+        },
+
+        clearAllCollections() {
+            this.collectionsWithProducts = {};
+            this.loadingStates = {};
         }
     },
 
@@ -84,5 +106,13 @@ export const useCollectionStore = defineStore('Collection', {
         getCollectionBySlug: (state) => (slug: string) => {
             return state.collections.find(c => c.slug === slug);
         },
+
+        getCollectionWithProducts: (state) => (key: string) => {
+            return state.collectionsWithProducts[key] || null;
+        },
+
+        isCollectionLoading: (state) => (key: string) => {
+            return state.loadingStates[key] || false;
+        }
     }
 });

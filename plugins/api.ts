@@ -1,11 +1,13 @@
 import { defineNuxtPlugin } from "#app";
 import GeoModule from "~/repository/modules/geo";
 import CollectionModule from "~/repository/modules/collection";
+import ProductModule from "~/repository/modules/product";
 import type { FetchOptions } from "ofetch";
 
 interface IApiInstance {
     geo: GeoModule;
     collection: CollectionModule;
+    product: ProductModule;
 }
 
 declare module "#app" {
@@ -33,6 +35,7 @@ export default defineNuxtPlugin(() => {
     const modules: IApiInstance = {
         geo: new GeoModule(fetchOptions),
         collection: new CollectionModule(fetchOptions),
+        product: new ProductModule(fetchOptions),
     };
 
     return {

@@ -44,6 +44,15 @@ export interface AuthResponse {
   token?: string;
 }
 
+export interface BreadcrumbDTO {
+  depth?: number;
+  id?: string;
+  meta_h1?: string;
+  meta_title?: string;
+  name?: string;
+  slug?: string;
+}
+
 export interface Category {
   created_at?: PgtypeTimestamp;
   description?: PgtypeText;
@@ -251,6 +260,7 @@ export interface CreateManufacturerRequest {
 }
 
 export interface CreateProductRequest {
+  category_id?: string;
   description?: string;
   ean?: string;
   height?: number;
@@ -407,6 +417,12 @@ export interface JSONResponseArrayAttributeGroupResponse {
   message?: string;
 }
 
+export interface JSONResponseArrayBreadcrumbDTO {
+  code?: number;
+  data?: BreadcrumbDTO[];
+  message?: string;
+}
+
 export interface JSONResponseArrayCity {
   code?: number;
   data?: City[];
@@ -464,6 +480,7 @@ export interface MediumResponse {
 }
 
 export interface Product {
+  category_id?: UuidNullUUID;
   created_at?: PgtypeTimestamp;
   description?: PgtypeText;
   ean?: PgtypeText;
@@ -499,6 +516,7 @@ export interface Product {
 }
 
 export interface ProductResponse {
+  category_id?: UuidNullUUID;
   description?: string;
   ean?: string;
   height?: number;
@@ -658,6 +676,7 @@ export interface UpdateManufacturerRequest {
 }
 
 export interface UpdateProductRequest {
+  category_id?: string;
   description?: string;
   ean?: string;
   height?: number;
@@ -756,6 +775,7 @@ export interface GithubComStickproGoStoreInternalDtoAttributeGroupDTO {
 }
 
 export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
+  category_id?: UuidNullUUID;
   created_at?: PgtypeTimestamp;
   description?: PgtypeText;
   ean?: PgtypeText;

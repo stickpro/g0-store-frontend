@@ -3,8 +3,8 @@
     <!-- Product Image -->
     <div class="relative w-full h-[190px] bg-white flex items-center justify-center mb-4">
       <img
-        v-if="product.image"
-        :src="product.image"
+        v-if="productImage"
+        :src="productImage"
         :alt="product.name"
         class="w-full h-full object-contain"
       >
@@ -25,7 +25,6 @@
       <!-- Price and Cart Button -->
       <div class="flex items-center justify-between mt-auto">
         <span class="text-sm font-bold text-zinc-950">{{ formatPrice(product.price) }} {{ CURRENCY_CODE }}</span>
-        <span v-if="product.old_price" class="text-2xl font-normal text-shadow-zinc-400">{{ formatPrice(product.old_price) }} {{ CURRENCY_CODE }}</span>
 
         <!-- Add to Cart Button -->
         <button
@@ -42,20 +41,11 @@
 </template>
 
 <script setup lang="ts">
+import type { ShortProduct } from '@repository/types/api/generatedApiGo';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
 
-interface Product {
-  id?: string;
-  name?: string;
-  article?: string;
-  price?: number;
-  old_price?: number;
-  image?: string;
-  stock_status?: 'in_stock' | 'out_of_stock' | 'on_order';
-}
-
 interface Props {
-  product: Product;
+  product: ShortProduct;
   showStock?: boolean;
 }
 
@@ -64,8 +54,15 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  addToCart: [product: Product]
+  addToCart: [product: ShortProduct]
 }>();
+
+const productImage = computed(() => {
+  if (typeof props.product.image === 'string') {
+    return props.product.image;
+  }
+  return props.product.image?.string || '';
+});
 
 function formatPrice(price?: number): string {
   if (!price) return '0';

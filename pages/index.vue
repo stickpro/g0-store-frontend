@@ -1,51 +1,43 @@
 <script setup lang="ts">
 import Slider from "~/components/home/Slider.vue";
-import PopularProducts from "~/components/home/PopularProducts.vue";
+import ProductList from "~/components/product/ProductList.vue";
 import type {ShortProduct} from "~/repository/types/api/generatedApiGo";
+import { useCollectionStore } from "~/stores/collection";
 
-const {$api} = useNuxtApp();
+const collectionStore = useCollectionStore();
 const config = useRuntimeConfig();
 
-const popularProducts = ref<any[]>([]);
-const loading = ref(true);
+const POPULAR_SLUG = 'popular';
 
-// Загрузка популярных товаров
-async function loadPopularProducts() {
-  loading.value = true;
-  try {
-    const collection = await $api.collection.getPopular();
+const popularProducts = computed(() => {
+  const collection = collectionStore.getCollectionWithProducts(POPULAR_SLUG);
+  const products = collection?.products || [];
+  return products.map((product: ShortProduct) => {
+    const imagePath = product.image?.string || '';
+    return {
+      ...product,
+      image: imagePath ? { string: `${config.public.storageUrl}/${imagePath}`, valid: true } : product.image
+    };
+  });
+});
 
-    // Преобразуем товары коллекции в формат для компонента
-    popularProducts.value = (collection.products || []).map((product: ShortProduct) => ({
-      id: product.id,
-      name: product.name,
-      article: product.model,
-      price: product.price || 0,
-      image: product.image ? `${config.public.storageUrl}/${product.image}` : undefined,
-      stock_status: product.is_enable ? 'in_stock' : 'out_of_stock'
-    }));
-  } catch (error) {
-    console.error('Ошибка загрузки популярных товаров:', error);
-  } finally {
-    loading.value = false;
-  }
-}
+const loading = computed(() => collectionStore.isCollectionLoading(POPULAR_SLUG));
 
-function handleAddToCart(product: any) {
+function handleAddToCart(product: ShortProduct) {
   console.log('Add to cart:', product);
   // Здесь будет логика добавления в корзину
 }
 
 // Загружаем товары при монтировании
 onMounted(() => {
-  loadPopularProducts();
+  collectionStore.loadCollectionBySlug(POPULAR_SLUG);
 });
 </script>
 
 <template>
   <div>
     <Slider/>
-    <PopularProducts
+    <ProductList
         title="Популярные"
         :products="popularProducts"
         :loading="loading"

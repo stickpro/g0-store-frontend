@@ -1,18 +1,8 @@
 <template>
-  <section class="popular-products py-8">
+  <section class="product-list py-8">
     <!-- Section Title -->
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-[22px] font-normal text-zinc-950">{{ title }}</h2>
-      <nuxt-link
-        v-if="showViewAll"
-        to="/products"
-        class="text-orange-500 hover:text-orange-600 font-medium flex items-center gap-2 transition-colors"
-      >
-        Смотреть все
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </nuxt-link>
     </div>
 
     <!-- Products Grid -->
@@ -53,40 +43,28 @@
 </template>
 
 <script setup lang="ts">
+import type { ShortProduct } from '@repository/types/api/generatedApiGo';
 import ProductCard from '~/components/product/ProductCard.vue';
 
-interface Product {
-  id?: string;
-  name?: string;
-  article?: string;
-  price?: number;
-  old_price?: number;
-  image?: string;
-  stock_status?: 'in_stock' | 'out_of_stock' | 'on_order';
-}
-
 interface Props {
-  title?: string;
-  products?: Product[];
+  title: string;
+  products?: ShortProduct[];
   loading?: boolean;
-  showViewAll?: boolean;
   showLoadMore?: boolean;
   showStock?: boolean;
   limit?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'Популярные',
   products: () => [],
   loading: false,
-  showViewAll: true,
   showLoadMore: false,
   showStock: false,
   limit: 0
 });
 
 const emit = defineEmits<{
-  addToCart: [product: Product];
+  addToCart: [product: ShortProduct];
   loadMore: [];
 }>();
 
@@ -102,7 +80,7 @@ const hasMore = computed(() => {
   return props.products.length > props.limit;
 });
 
-function handleAddToCart(product: Product) {
+function handleAddToCart(product: ShortProduct) {
   emit('addToCart', product);
 }
 
