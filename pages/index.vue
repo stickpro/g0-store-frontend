@@ -11,14 +11,7 @@ const POPULAR_SLUG = 'popular';
 
 const popularProducts = computed(() => {
   const collection = collectionStore.getCollectionWithProducts(POPULAR_SLUG);
-  const products = collection?.products || [];
-  return products.map((product: ShortProduct) => {
-    const imagePath = product.image?.string || '';
-    return {
-      ...product,
-      image: imagePath ? { string: `${config.public.storageUrl}/${imagePath}`, valid: true } : product.image
-    };
-  });
+  return collection?.products || [];
 });
 
 const loading = computed(() => collectionStore.isCollectionLoading(POPULAR_SLUG));

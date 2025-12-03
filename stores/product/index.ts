@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
-import type { ProductResponse } from "~/repository/types/api/generatedApiGo";
+import type { ProductWithMediumResponse } from "~/repository/types/api/generatedApiGo";
 
 const CACHE_SIZE = 10;
 
 type CacheEntry = {
-    data: ProductResponse;
+    data: ProductWithMediumResponse;
     timestamp: number;
 }
 
@@ -54,7 +54,7 @@ export const useProductStore = defineStore('Product', {
         /**
          * Загрузить товар по slug
          * @param slug - уникальный идентификатор товара в URL
-         * @returns ProductResponse или undefined
+         * @returns ProductWithMediumResponse или undefined
          */
         async loadProductBySlug(slug: string) {
             if (!import.meta.client) return;

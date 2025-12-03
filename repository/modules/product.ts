@@ -3,28 +3,18 @@ import type {
     ProductResponse,
     JSONResponseProductResponse,
     BreadcrumbDTO,
-    JSONResponseArrayBreadcrumbDTO,
+    JSONResponseArrayBreadcrumbDTO, ProductWithMediumResponse, JSONResponseProductWithMediumResponse,
 } from "~/repository/types/api/generatedApiGo";
 
 
 class ProductModule extends HttpFactory {
     private RESOURCE = '/product'
 
-    /**
-     * Получить информацию о товаре по slug
-     * @param slug - уникальный идентификатор товара в URL
-     * @returns ProductResponse - полная информация о товаре
-     */
-    async getBySlug(slug: string): Promise<ProductResponse> {
-        const response = await this.get<JSONResponseProductResponse>(`${this.RESOURCE}/${slug}`);
-        return response.data || {} as ProductResponse;
+    async getBySlug(slug: string): Promise<ProductWithMediumResponse> {
+        const response = await this.get<JSONResponseProductWithMediumResponse>(`${this.RESOURCE}/${slug}`);
+        return response.data || {} as ProductWithMediumResponse;
     }
 
-    /**
-     * Получить хлебные крошки для товара по slug
-     * @param slug - уникальный идентификатор товара в URL
-     * @returns BreadcrumbDTO[] - массив хлебных крошек
-     */
     async getBreadcrumbsBySlug(slug: string): Promise<BreadcrumbDTO[]> {
         const response = await this.get<JSONResponseArrayBreadcrumbDTO>(
             `${this.RESOURCE}/${slug}/breadcrumbs`

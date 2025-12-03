@@ -25,6 +25,7 @@
     </main>
 
     <Footer />
+    <GeoModal/>
   </div>
 </template>
 
@@ -35,6 +36,7 @@ import SidebarCategory from "~/components/category/SidebarCategory.vue";
 import Login from "~/components/user/Login.vue";
 import WorkingHours from "~/components/layouts/sidebar/WorkingHours.vue";
 import InfoCompany from "~/components/company/InfoCompany.vue";
+import GeoModal from "~/components/geo/GeoModal.vue";
 </script>
 
 <style scoped>

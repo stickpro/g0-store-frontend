@@ -5,7 +5,8 @@ type State = {
     geo: {
         city: string,
         popularCity: City[]
-    }
+    },
+    isModalOpen: boolean
 }
 
 export const useGeoStore = defineStore('Geo', {
@@ -14,7 +15,8 @@ export const useGeoStore = defineStore('Geo', {
             geo: {
                 city: "г. Санкт-Петербург",
                 popularCity: [],
-            }
+            },
+            isModalOpen: false
         }
     },
 
@@ -65,6 +67,14 @@ export const useGeoStore = defineStore('Geo', {
         setCity(city: string) {
             localStorage.setItem('geoCity', city);
             this.geo.city = city;
+        },
+
+        openModal() {
+            this.isModalOpen = true;
+        },
+
+        closeModal() {
+            this.isModalOpen = false;
         }
     },
 });
