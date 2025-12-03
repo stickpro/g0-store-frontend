@@ -1,5 +1,5 @@
 <template>
-  <nav v-if="displayBreadcrumbs.length > 0" class="flex items-center gap-2 text-sm">
+  <nav v-if="displayBreadcrumbs.length > 0" class="flex items-center gap-2 text-[13px]">
     <NuxtLink
         to="/"
         class="flex items-center gap-2"
@@ -12,7 +12,7 @@
         class="flex items-center gap-2"
     >
       <span
-          class="text-zinc-950 font-medium"
+          class="text-zinc-950 text-[13px]"
       >
         Каталог
       </span>
@@ -25,22 +25,18 @@
         class="flex items-center gap-2"
     >
       <span
-          class="text-zinc-950 font-medium hover:text-zinc-600"
+          class="text-zinc-950 hover:text-zinc-600 text-[13px]"
       >
         {{ crumb.title }}
       </span>
       <span
           v-if="index < displayBreadcrumbs.length - 1"
-          class="text-zinc-400"
+          class="text-zinc-400 text-[13px]"
       >
         <img src="@/assets/icons/chevron_right.svg" alt="arrow"/>
       </span>
     </NuxtLink>
   </nav>
-
-  <div v-else-if="loading" class="text-sm text-zinc-400">
-    Загрузка...
-  </div>
 </template>
 
 <script setup lang="ts">
