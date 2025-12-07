@@ -55,14 +55,9 @@
   <!-- Overlay -->
   <div
       v-if="isOpen"
-      class="fixed inset-0 backdrop-blur-xs bg-opacity-10 z-10"
+      class="fixed inset-0 backdrop-blur-sm bg-black/20 z-20"
       @click="closeSidebar"
   />
-
-  <!-- Activator -->
-  <button class="text-gray-600 hover:text-gray-800 p-3" @click="toggleSidebar">
-    <IconNav/>
-  </button>
 
 </template>
 
@@ -79,14 +74,6 @@ import Login from "~/components/user/Login.vue";
 import WorkingHours from "~/components/layouts/sidebar/WorkingHours.vue";
 import InfoCompany from "~/components/company/InfoCompany.vue";
 
-const isOpen = ref(false)
-
-const toggleSidebar = () => {
-  isOpen.value = !isOpen.value
-}
-
-const closeSidebar = () => {
-  isOpen.value = false
-}
+const { isOpen, closeSidebar } = useSidebar()
 
 </script>

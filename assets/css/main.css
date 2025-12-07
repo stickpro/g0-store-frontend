@@ -8,3 +8,75 @@
         @apply cursor-pointer;
     }
 }
+
+/* Уникальная Page Transition с 3D эффектами */
+.page-enter-active {
+    animation: pageEnter 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.page-leave-active {
+    animation: pageLeave 0.4s cubic-bezier(0.55, 0.085, 0.68, 0.53);
+}
+
+@keyframes pageEnter {
+    0% {
+        opacity: 0;
+        transform: perspective(1200px) rotateY(-15deg) scale(0.95) translateX(50px);
+        filter: blur(8px);
+    }
+    50% {
+        opacity: 0.5;
+        filter: blur(4px);
+    }
+    100% {
+        opacity: 1;
+        transform: perspective(1200px) rotateY(0deg) scale(1) translateX(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes pageLeave {
+    0% {
+        opacity: 1;
+        transform: perspective(1200px) rotateY(0deg) scale(1) translateX(0);
+        filter: blur(0);
+    }
+    50% {
+        opacity: 0.5;
+        filter: blur(3px);
+    }
+    100% {
+        opacity: 0;
+        transform: perspective(1200px) rotateY(15deg) scale(0.92) translateX(-50px);
+        filter: blur(6px);
+    }
+}
+
+/* Layout Transition */
+.layout-enter-active,
+.layout-leave-active {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout-enter-from {
+    opacity: 0;
+    transform: scale(0.98) translateY(20px);
+}
+
+.layout-leave-to {
+    opacity: 0;
+    transform: scale(1.02) translateY(-20px);
+}
+
+/* Дополнительные эффекты для плавности */
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    * {
+        backface-visibility: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}

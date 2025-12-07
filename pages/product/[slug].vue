@@ -1,12 +1,22 @@
 <template>
   <div v-if="product" class="w-full">
-    <Breadcrumbs :product-slug="slug" class="mb-6"/>
+    <Breadcrumbs :product-slug="slug"/>
+    <div class="grid grid-cols-2 justify-between border-b border-b-zinc-600/15 my-6">
+      <div class="flex">
+        <button class="p-3 text-base">Все о товаре</button>
+        <button class="p-3 text-base">Характеристики</button>
+        <button class="p-3 text-base">Отзывы</button>
+      </div>
 
+    </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
       <!-- Левая колонка - Галерея изображений -->
       <div class="flex flex-row-reverse justify-end gap-6 min-w-[660px] max-h-[660px]">
         <!-- Основное изображение -->
-        <div class="bg-white rounded-lg overflow-hidden">
+        <div
+            class="bg-white rounded-lg overflow-hidden cursor-zoom-in"
+            @click="openGallery(thumbnails.indexOf(selectedImage))"
+        >
           <img
               v-if="selectedImage || thumbnails[0] || product?.image"
               :src="config.public.storageUrl + (selectedImage || thumbnails[0] || product?.image)"
@@ -26,9 +36,10 @@
           <button
               v-for="(img, index) in thumbnails"
               :key="index"
-              @click="selectedImage = img"
+              @mouseenter="selectedImage = img"
+              @click="openGallery(index)"
               :class="[
-              'p-2 flex-shrink-0 w-20 h-20 rounded-lg border-1 overflow-hidden transition-all',
+              'p-2 flex-shrink-0 w-20 h-20 rounded-lg border-1 overflow-hidden transition-all cursor-zoom-in',
               selectedImage === img ? 'border-blue-600' : 'border-zinc-200 hover:border-zinc-300'
             ]"
           >
@@ -82,23 +93,23 @@
           </button>
         </div>
         <!-- Информационные блоки -->
-        <div class="space-y-1 p-3 mb-8 border-1 border-zinc-300 rounded-3xl">
+        <div class="space-y-1 p-3 mb-8 border-1  border-zinc-300 rounded-3xl">
           <!-- Гарантия -->
-          <div class="flex items-center px-4">
+          <div class="flex items-center gap-3 px-4">
             <svg class="w-6 h-6 text-zinc-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
-            <span class="text-sm text-zinc-700 font-medium">Гарантия</span>
+            <span class="text-base text-zinc-700 font-medium">Гарантия</span>
           </div>
 
           <!-- Оплата -->
-          <div class="flex items-center px-4">
+          <div class="flex items-center gap-3 px-4">
             <svg class="w-6 h-6 text-zinc-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
             </svg>
-            <span class="text-sm text-zinc-700 font-medium">Оплата</span>
+            <span class="text-base text-zinc-700 font-medium">Оплата</span>
           </div>
         </div>
 
@@ -109,7 +120,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
             </svg>
-            <h3 class="text-sm text-zinc-950">Доставка</h3>
+            <h3 class="text-base text-zinc-950">Доставка</h3>
           </div>
           <div class="flex justify-between">
             <!-- Табы доставки -->
@@ -119,7 +130,7 @@
                   :key="tab"
                   @click="selectedDeliveryTab = tab"
                   :class="[
-                'px-6 py-3 text-base font-normal rounded-full transition-colors text-zinc-950',
+                'px-4 py-2 text-base font-normal rounded-full transition-colors text-zinc-950',
                 selectedDeliveryTab === tab
                   ? 'bg-zinc-600/5'
                   : ''
@@ -130,7 +141,7 @@
             </div>
 
             <!-- Город -->
-            <div class="flex items-center justify-between mb-3 gap-4 text-sm text-zinc-950 pr-2">
+            <div class="flex items-center justify-between mb-3 gap-4 text-base text-zinc-950 pr-2">
               Ваш город:
               <button
                   @click="geoStore.openModal()"
@@ -158,7 +169,7 @@
               ]"
             >
               <div class="flex items-center gap-2">
-                <img :src="option.icon" :alt="option.name" class="w-8 h-8 object-contain"/>
+                <img :src="`/icons/${option.icon}`" :alt="option.name" class="w-8 h-8 object-contain"/>
                 <div class=" text-zinc-950">{{ option.name }}</div>
               </div>
               <div class="flex gap-3">
@@ -186,10 +197,19 @@
   <div v-else class="flex items-center justify-center py-20">
     <p class="text-zinc-500">Товар не найден</p>
   </div>
+
+  <!-- Галерея на весь экран -->
+  <ImageGalleryModal
+      :is-open="isGalleryOpen"
+      :images="thumbnails"
+      :initial-index="galleryInitialIndex"
+      @close="closeGallery"
+  />
 </template>
 
 <script setup lang="ts">
 import Breadcrumbs from '@/components/ui/Breadcrumbs.vue'
+import ImageGalleryModal from '@/components/ui/ImageGalleryModal.vue'
 import {useProductStore} from '@/stores/product/';
 import {useGeoStore} from '@/stores/geo';
 import {formatPrice} from '@/utils/formatters/price';
@@ -224,6 +244,19 @@ const thumbnails = computed(() => {
   return [];
 });
 
+// Модальное окно галереи
+const isGalleryOpen = ref(false);
+const galleryInitialIndex = ref(0);
+
+function openGallery(index: number) {
+  galleryInitialIndex.value = index >= 0 ? index : 0;
+  isGalleryOpen.value = true;
+}
+
+function closeGallery() {
+  isGalleryOpen.value = false;
+}
+
 // Доставка
 const deliveryTabs = ['До ПВЗ', 'Курьером'];
 const selectedDeliveryTab = ref('До ПВЗ');
@@ -235,19 +268,19 @@ const deliveryOptions = computed(() => {
       name: 'СДЭК',
       time: '7 дней',
       price: '500 RUB',
-      icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjMDBBRTRFIi8+PHBhdGggZD0iTTE2IDhMMjQgMTJWMjBMMTYgMjRMOCAyMFYxMkwxNiA4WiIgZmlsbD0id2hpdGUiLz48L3N2Zz4='
+      icon: 'cdek.svg'
     },
     {
       name: 'Почта России',
       time: '12 дней',
       price: '270 RUB',
-      icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjMDA1QkI5Ii8+PHBhdGggZD0iTTggMTJIMjRWMjBIOFYxMloiIGZpbGw9IndoaXRlIi8+PC9zdmc+'
+      icon: 'pochta.svg'
     },
     {
       name: 'Яндекс Доставка',
       time: '5 дней',
       price: '300 RUB',
-      icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjRkZEQjREIi8+PHBhdGggZD0iTTE2IDhMMjQgMjRIOEwxNiA4WiIgZmlsbD0iYmxhY2siLz48L3N2Zz4='
+      icon: 'yandex.svg'
     }
   ];
 });

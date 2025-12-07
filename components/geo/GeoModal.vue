@@ -44,7 +44,7 @@
   </div>
   <div
       v-if="geoStore.isModalOpen"
-      class="fixed inset-0 backdrop-blur-xs bg-opacity-10 z-10"
+      class="fixed inset-0 backdrop-blur-xs bg-opacity-10 z-20"
       @click="geoStore.closeModal()"
   />
 </template>
