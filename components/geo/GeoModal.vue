@@ -1,6 +1,8 @@
 <template>
   <!-- Modal -->
-  <div v-if="geoStore.isModalOpen" class="fixed w-[384px] inset-0 left-0 top-0 z-50 flex items-start justify-center h-full bg-white">
+  <div
+      v-if="geoStore.isModalOpen"
+      class="fixed w-[384px] inset-0 left-0 top-0 z-50 flex items-start justify-center h-full bg-white">
     <div class="bg-white w-full">
       <!-- Header -->
       <button class="p-3" @click="geoStore.closeModal()">
@@ -26,11 +28,13 @@
         <!-- Federal Cities -->
         <div v-if="geo.popularCity.length > 0" class="mb-6 p-3">
           <template v-for="city in geo.popularCity" :key="city.id">
-            <button class="flex w-full py-1 px-2 rounded-lg flex-col items-start hover:bg-gray-50"
-                    @click="selectCity(city.address || '')">
-              <span :class="[ geo.city === city.address ? 'text-orange-500' : '']">{{
-                  city.city ? city.city : city.address
-                }}</span>
+            <button
+                class="flex w-full py-1 px-2 rounded-lg flex-col items-start hover:bg-gray-50"
+                @click="selectCity(city.address || '')"
+            >
+              <span :class="[ geo.city === city.address ? 'text-orange-500' : '']">
+                {{ city.city ? city.city : city.address }}
+              </span>
               <p v-if="city.city" class="text-xs">{{ city.region }} {{ city.region_type }}</p>
             </button>
           </template>

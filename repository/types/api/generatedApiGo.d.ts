@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 /* tslint:disable */
 /*
  * ---------------------------------------------------------------
@@ -435,6 +435,12 @@ export interface JSONResponseArrayProduct {
   message?: string;
 }
 
+export interface JSONResponseArrayShortProduct {
+  code?: number;
+  data?: ShortProduct[];
+  message?: string;
+}
+
 export interface JSONResponseArrayGithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
   code?: number;
   data?: GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse[];
@@ -612,6 +618,10 @@ export enum StockStatus {
   InStock = "IN_STOCK",
   PreOrder = "PRE_ORDER",
   OutOfStock = "OUT_OF_STOCK",
+}
+
+export interface SyncRelatedProductRequest {
+  product_ids?: string[];
 }
 
 export interface UpdateCategoryRequest {

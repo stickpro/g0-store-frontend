@@ -1,7 +1,5 @@
 import HttpFactory from "../factory";
 import type {
-    ProductResponse,
-    JSONResponseProductResponse,
     BreadcrumbDTO,
     JSONResponseArrayBreadcrumbDTO, ProductWithMediumResponse, JSONResponseProductWithMediumResponse,
 } from "~/repository/types/api/generatedApiGo";
@@ -21,6 +19,8 @@ class ProductModule extends HttpFactory {
         );
         return response.data || [];
     }
+
+
 }
 
 export default ProductModule;

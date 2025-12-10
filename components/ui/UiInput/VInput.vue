@@ -24,25 +24,23 @@
           class="w-full h-12 bg-gray-100 rounded-full pl-12 pr-4 text-base placeholder-gray-400 focus:outline-none"          :type="showPassword ? (isShowPassword ? 'text' : 'password') : type"
           :placeholder="inside ? '' : placeholder"
           :disabled="disabled"
-          @blur="onBlur"
-          @focus="onFocus"
-          @change="$emit('change')"
-          @input="onInput"
-          @keydown.esc="inputRef?.blur()"
           :readonly="readonly"
           :autofocus="autofocus"
           :tabindex="indexTab"
           :autocomplete="autocomplete"
           :name="name"
           :step="step"
-      />
+          @blur="onBlur"
+          @focus="onFocus"
+          @change="$emit('change')"
+          @input="onInput"
+          @keydown.esc="inputRef?.blur()"
+      >
     </div>
 
     <div ref="appendRef" class="ui-input__append">
-      <Transition v-if="clearable" name="fade">
-      </Transition>
-      <Transition v-if="showPassword" name="fade">
-      </Transition>
+      <Transition v-if="clearable" name="fade"/>
+      <Transition v-if="showPassword" name="fade"/>
 
       <slot name="append"/>
     </div>
@@ -80,10 +78,6 @@ function onBlur() {
   emits("blur");
 }
 
-function onClear() {
-  modelValue.value = props.isEmptyValueNull ? null : "";
-  emits("clear");
-}
 
 function onInput(e: Event) {
   if (props.isEmptyValueNull && (e.target as HTMLInputElement).value === "") {

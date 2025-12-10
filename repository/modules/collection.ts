@@ -2,6 +2,7 @@ import HttpFactory from "../factory";
 import type {
     Collection,
     CollectionWithProductResponse,
+    FullPagingData,
     JSONResponseCollectionWithProductResponse,
     JSONResponseResponseWithFullPaginationCollection
 } from "~/repository/types/api/generatedApiGo";
@@ -14,7 +15,7 @@ class CollectionModule extends HttpFactory {
         page?: number;
         page_size?: number;
         search?: string;
-    }): Promise<{ items: Collection[]; pagination?: any }> {
+    }): Promise<{ items: Collection[]; pagination?: FullPagingData }> {
         const response = await this.get<JSONResponseResponseWithFullPaginationCollection>(
             this.RESOURCE,
             params

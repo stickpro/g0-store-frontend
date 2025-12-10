@@ -8,16 +8,16 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "generate-api-go": "npx swagger-typescript-api -p http://localhost:8081/swagger.yaml -o ./repository/types/api -n generatedApiGo.d.ts --no-client"
+    "generate-api-go": "npx swagger-typescript-api -p http://localhost:8081/swagger.yaml -o ./repository/types/api -n generatedApiGo.d.ts --no-client",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@nuxt/eslint": "1.4.1",
     "@nuxt/fonts": "^0.11.4",
     "@nuxt/image": "1.10.0",
     "@pinia/nuxt": "0.11.1",
     "@tailwindcss/vite": "^4.1.8",
     "@vueuse/core": "^13.3.0",
-    "eslint": "^9.28.0",
     "nuxt": "^4.2.1",
     "nuxt-swiper": "2.0.1",
     "pinia": "^3.0.3",
@@ -26,5 +26,12 @@
     "vue-router": "^4.5.1",
     "vue-yandex-maps": "^2.2.5"
   },
-  "packageManager": "pnpm@10.12.1"
+  "packageManager": "pnpm@10.12.1",
+  "devDependencies": {
+    "@nuxt/eslint": "1.4.1",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "eslint": "^9.28.0",
+    "typescript": "^5.9.3"
+  }
 }

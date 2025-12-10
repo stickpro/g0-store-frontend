@@ -7,9 +7,9 @@
           @click="close"
       >
         <button
-            @click="close"
             class="absolute top-4 right-4 z-10 p-2 text-white hover:text-gray-300 transition-colors"
             aria-label="Закрыть"
+            @click="close"
         >
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -25,14 +25,14 @@
               :src="config.public.storageUrl + images[currentIndex]"
               :alt="`Изображение ${currentIndex + 1}`"
               class="max-w-full max-h-full object-contain"
-          />
+          >
         </div>
 
         <button
             v-if="images.length > 1"
-            @click.stop="previousImage"
             class="absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white hover:text-gray-300 transition-colors"
             aria-label="Предыдущее изображение"
+            @click.stop="previousImage"
         >
           <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -41,9 +41,9 @@
 
         <button
             v-if="images.length > 1"
-            @click.stop="nextImage"
             class="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white hover:text-gray-300 transition-colors"
             aria-label="Следующее изображение"
+            @click.stop="nextImage"
         >
           <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -57,17 +57,17 @@
           <button
               v-for="(image, index) in images"
               :key="index"
-              @click.stop="currentIndex = index"
               :class="[
                 'flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
                 currentIndex === index ? 'border-orange-500' : 'border-white/30 hover:border-white/60'
               ]"
+              @click.stop="currentIndex = index"
           >
             <img
                 :src="config.public.storageUrl + image"
                 :alt="`Миниатюра ${index + 1}`"
                 class="w-full h-full object-cover"
-            />
+            >
           </button>
         </div>
       </div>

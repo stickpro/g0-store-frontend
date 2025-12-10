@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import type {NuxtError} from '#app'
+import type { NuxtError } from '#app'
 
 const props = defineProps({
-  error: Object as () => NuxtError
+  error: {
+    type: Object as () => NuxtError,
+    required: true
+  },
 })
 
 const handleError = () => clearError({redirect: '/'})
@@ -42,8 +45,8 @@ const errorDescription = computed(() => {
 
           <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
-                @click="handleError"
                 class="bg-blue-600 text-white p-3 px-5 rounded-full hover:bg-blue-700 transition-colors"
+                @click="handleError"
             >
               Вернуться на главную
             </button>

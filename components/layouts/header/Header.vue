@@ -63,7 +63,7 @@ import IconPersone from "~/components/icons/IconPerson.vue";
 import Sidebar from "~/components/layouts/sidebar/Sidebar.vue";
 import IconNav from "~/components/icons/IconNav.vue";
 
-const { isOpen, toggleSidebar, closeSidebar } = useSidebar()
+const { toggleSidebar } = useSidebar()
 </script>
 
 <style scoped>

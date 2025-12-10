@@ -4,9 +4,9 @@
         to="/"
         class="flex items-center gap-2"
     >
-      <img src="@/assets/icons/home.svg" alt="Главная"/>
+      <img src="@/assets/icons/home.svg" alt="Главная">
     </NuxtLink>
-    <img src="@/assets/icons/chevron_right.svg" alt="arrow"/>
+    <img src="@/assets/icons/chevron_right.svg" alt="arrow">
     <NuxtLink
         to="/catalog"
         class="flex items-center gap-2"
@@ -17,7 +17,7 @@
         Каталог
       </span>
     </NuxtLink>
-    <img src="@/assets/icons/chevron_right.svg" alt="arrow"/>
+    <img src="@/assets/icons/chevron_right.svg" alt="arrow">
     <NuxtLink
         v-for="(crumb, index) in displayBreadcrumbs"
         :key="crumb.id || crumb.slug || index"
@@ -33,7 +33,7 @@
           v-if="index < displayBreadcrumbs.length - 1"
           class="text-zinc-400 text-[13px]"
       >
-        <img src="@/assets/icons/chevron_right.svg" alt="arrow"/>
+        <img src="@/assets/icons/chevron_right.svg" alt="arrow">
       </span>
     </NuxtLink>
   </nav>
@@ -59,7 +59,7 @@ interface Props {
 const props = defineProps<Props>();
 
 // Используем композабл для загрузки с API
-const {breadcrumbs: apiBreadcrumbs, loading, load, getTitle} = useBreadcrumbs();
+const {breadcrumbs: apiBreadcrumbs, load} = useBreadcrumbs();
 
 // Загружаем данные с API если передан productSlug
 if (props.productSlug) {
@@ -69,7 +69,7 @@ if (props.productSlug) {
 }
 
 // Преобразование BreadcrumbDTO в BreadcrumbItem
-const transformBreadcrumb = (crumb: BreadcrumbDTO, index: number): BreadcrumbItem => {
+const transformBreadcrumb = (crumb: BreadcrumbDTO): BreadcrumbItem => {
   return {
     id: crumb.id,
     title: crumb.meta_title || crumb.name || crumb.slug || '',

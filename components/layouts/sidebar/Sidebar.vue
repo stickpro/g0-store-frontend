@@ -39,15 +39,15 @@
       </div>
 
       <!-- Action Button -->
-      <Login />
+      <Login/>
       <!-- Store Sections -->
       <div class="space-x-1/2 px-4 pt-6 border-t border-dashed border-zinc-200">
         <!-- 3D Electronics -->
         <h3 class="h-10 flex items-center text-orange-500 font-semibold">Чат с 3D ELECTRONICS</h3>
-        <Geo />
-        <WorkingHours />
+        <Geo/>
+        <WorkingHours/>
         <!-- Company Info -->
-        <InfoCompany />
+        <InfoCompany/>
       </div>
     </div>
   </div>
@@ -62,8 +62,6 @@
 </template>
 
 <script setup lang="ts">
-
-import IconNav from "~/components/icons/IconNav.vue";
 import IconCart from "~/components/icons/IconCart.vue";
 import IconSearch from "~/components/icons/IconSearch.vue";
 import IconXmark from "~/components/icons/IconXmark.vue";
@@ -74,6 +72,6 @@ import Login from "~/components/user/Login.vue";
 import WorkingHours from "~/components/layouts/sidebar/WorkingHours.vue";
 import InfoCompany from "~/components/company/InfoCompany.vue";
 
-const { isOpen, closeSidebar } = useSidebar()
+const {isOpen, closeSidebar} = useSidebar()
 
 </script>

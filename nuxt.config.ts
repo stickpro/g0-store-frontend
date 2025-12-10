@@ -3,8 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
     app: {
-        pageTransition: { name: 'page', mode: 'out-in' },
-        layoutTransition: { name: 'layout', mode: 'out-in' },
+        pageTransition: {name: 'page', mode: 'out-in'},
+        layoutTransition: {name: 'layout', mode: 'out-in'},
     },
     compatibilityDate: '2025-01-30',
     future: {
@@ -40,7 +40,7 @@ export default defineNuxtConfig({
             tailwindcss(),
         ],
     },
-    modules: ['@nuxt/eslint', '@nuxt/image', "@nuxt/fonts", "@pinia/nuxt", "nuxt-swiper", "vue-yandex-maps/nuxt"],
+    modules: ['@nuxt/eslint', '@nuxt/image', "@nuxt/fonts", "@pinia/nuxt", "nuxt-swiper", "vue-yandex-maps/nuxt",],
     yandexMaps: {
         apikey: process.env.NUXT_PUBLIC_YANDEX_MAPS_API_KEY || '',
     }
