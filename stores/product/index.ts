@@ -45,8 +45,10 @@ export const useProductStore = defineStore('Product', {
                 // Удаляем самый старый элемент (первый в массиве)
                 const oldestSlug = this.accessOrder.shift();
                 if (oldestSlug) {
-                    delete this.products[oldestSlug];
-                    delete this.loadingStates[oldestSlug];
+                    const { [oldestSlug]: _, ...restProducts } = this.products;
+                    const { [oldestSlug]: __, ...restLoadingStates } = this.loadingStates;
+                    this.products = restProducts;
+                    this.loadingStates = restLoadingStates;
                 }
             }
         },
@@ -97,8 +99,10 @@ export const useProductStore = defineStore('Product', {
          * @param slug - slug товара для удаления
          */
         clearProduct(slug: string) {
-            delete this.products[slug];
-            delete this.loadingStates[slug];
+            const { [slug]: _, ...restProducts } = this.products;
+            const { [slug]: __, ...restLoadingStates } = this.loadingStates;
+            this.products = restProducts;
+            this.loadingStates = restLoadingStates;
 
             // Удаляем из порядка доступа
             const index = this.accessOrder.indexOf(slug);

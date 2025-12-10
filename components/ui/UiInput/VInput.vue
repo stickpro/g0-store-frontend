@@ -59,10 +59,10 @@ const props = withDefaults(defineProps<InputProps>(), {
 });
 
 const emits = defineEmits<{
-  change: [void];
-  clear: [void];
-  blur: [void];
-  input: [string];
+  change: [];
+  clear: [];
+  blur: [];
+  input: [value: string];
 }>();
 const modelValue = defineModel<string | null | number | undefined>("modelValue", {default: null});
 

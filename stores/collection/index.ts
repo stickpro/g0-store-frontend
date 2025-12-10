@@ -1,16 +1,11 @@
 import { defineStore } from 'pinia';
-import type { Collection, CollectionWithProductResponse } from "~/repository/types/api/generatedApiGo";
+import type { Collection, FullPagingData, CollectionWithProductResponse } from "~/repository/types/api/generatedApiGo";
 
 type State = {
     collections: Collection[];
     collectionsWithProducts: Record<string, CollectionWithProductResponse>;
     loadingStates: Record<string, boolean>;
-    pagination: {
-        page: number;
-        page_size: number;
-        total: number;
-        last_page: number;
-    } | null;
+    pagination: FullPagingData | null
     loading: boolean;
 }
 
@@ -92,8 +87,10 @@ export const useCollectionStore = defineStore('Collection', {
         },
 
         clearCollection(key: string) {
-            delete this.collectionsWithProducts[key];
-            delete this.loadingStates[key];
+            const { [key]: _, ...restCollections } = this.collectionsWithProducts;
+            const { [key]: __, ...restLoadingStates } = this.loadingStates;
+            this.collectionsWithProducts = restCollections;
+            this.loadingStates = restLoadingStates;
         },
 
         clearAllCollections() {

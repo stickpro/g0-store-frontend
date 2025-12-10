@@ -2,7 +2,7 @@ import { defineNuxtPlugin } from "#app";
 import GeoModule from "~/repository/modules/geo";
 import CollectionModule from "~/repository/modules/collection";
 import ProductModule from "~/repository/modules/product";
-import type { FetchOptions } from "ofetch";
+import type { FetchOptions, FetchContext } from "ofetch";
 
 interface IApiInstance {
     geo: GeoModule;
@@ -21,13 +21,11 @@ export default defineNuxtPlugin(() => {
 
     const fetchOptions: FetchOptions<'json'> = {
         baseURL: config.public.apiUrl,
-        onRequest({ options }: { options: any }) {
+        onRequest({ options }: FetchContext) {
             const token = useState('authToken').value;
             if (token) {
-                options.headers = {
-                    ...options.headers,
-                    Authorization: `Bearer ${token}`,
-                };
+                options.headers = new Headers(options.headers);
+                options.headers.set('Authorization', `Bearer ${token}`);
             }
         },
     };
