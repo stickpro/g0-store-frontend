@@ -1,15 +1,47 @@
 <template>
-  <div>
-    <div v-if="product" class="w-full">
-      <Breadcrumbs :product-slug="slug"/>
-      <div class="grid grid-cols-2 justify-between border-b border-b-zinc-600/15 my-6">
-        <div class="flex">
-          <button class="p-3 text-base">Все о товаре</button>
-          <button class="p-3 text-base">Характеристики</button>
-          <button class="p-3 text-base">Отзывы</button>
-        </div>
-
+  <div v-if="product" class="w-full">
+    <Breadcrumbs :product-slug="slug"/>
+    <div class="sticky top-[83px] z-50 bg-white grid grid-cols-2 border-b border-b-zinc-600/15 my-6 pt-2">
+      <div class="flex">
+        <button
+            class="p-3 text-base transition-colors"
+            :class="activeTab === 'about' ? 'border-b-2 border-orange-500' : 'text-zinc-600 hover:text-zinc-950'"
+            @click="activeTab = 'about'"
+        >
+          Все о товаре
+        </button>
+        <button
+            class="p-3 text-base transition-colors text-zinc-950"
+            :class="activeTab === 'specs' ? 'border-b-2 border-orange-500 ' : 'text-zinc-600 hover:text-zinc-950'"
+            @click="activeTab = 'specs'"
+        >
+          Характеристики
+        </button>
+        <button
+            class="p-3 text-base transition-colors"
+            :class="activeTab === 'reviews' ? 'border-b-2 border-orange-500 ' : 'text-zinc-600 hover:text-zinc-950'"
+            @click="activeTab = 'reviews'"
+        >
+          Отзывы
+        </button>
       </div>
+      <div class="flex justify-end gap-6 pb-2">
+        <div class="flex flex-col text-right">
+          <span class="text-orange-500 font-normal">{{ getStockStatusLabel(product?.stock_status) }}</span>
+          <span class="font-bold">{{ formatPrice(product?.price || 0) }}</span>
+        </div>
+        <button
+            class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors"
+            @click="addToCart"
+        >
+          <img src="@/assets/icons/add_shopping_cart.svg" alt="add_cart">
+          <span class="px-1">В Корзину</span>
+        </button>
+      </div>
+    </div>
+    <!-- Контент таба "Все о товаре" -->
+    <Transition name="fade" mode="out-in">
+    <div v-if="activeTab === 'about'" key="about">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         <!-- Левая колонка - Галерея изображений -->
         <div class="flex flex-row-reverse justify-end gap-6 min-w-[660px] max-h-[660px]">
@@ -199,13 +231,45 @@
           </div>
         </div>
       </div>
+      <!-- Связанные товары -->
+      <ProductList
+          v-if="!isLoading && relatedProducts.length > 0"
+          title="С этим товаром покупают"
+          :products="relatedProducts"
+          :loading="isRelatedProductsLoading"
+          class="mt-12"
+      />
+      <div class="grid grid-cols-2">
+        <!-- Описание товара -->
+        <div v-if="product.description" class="mt-12 prose max-w-none">
+          <h2 class="text-2xl font-medium text-zinc-950 mb-4">Описание</h2>
+          <div class="text-zinc-700 leading-relaxed">{{ product.description }}</div>
+        </div>
+      </div>
 
-      <!-- Описание товара -->
-      <div v-if="product.description" class="mt-12 prose max-w-none">
-        <h2 class="text-2xl font-medium text-zinc-950 mb-4">Описание</h2>
-        <div class="text-zinc-700 leading-relaxed">{{ product.description }}</div>
+    </div>
+    </Transition>
+    <!-- Контент таба "Характеристики" -->
+    <Transition name="fade" mode="out-in">
+    <div v-if="activeTab === 'specs'" key="specs" class="py-8">
+      <h2 class="text-2xl font-medium text-zinc-950 mb-6">Характеристики</h2>
+      <div class="space-y-2">
+        <!-- Здесь будут характеристики товара -->
+        <p class="text-zinc-600">Характеристики скоро появятся</p>
       </div>
     </div>
+    </Transition>
+
+    <!-- Контент таба "Отзывы" -->
+    <Transition name="fade" mode="out-in">
+    <div v-if="activeTab === 'reviews'" key="reviews" class="py-8">
+      <h2 class="text-2xl font-medium text-zinc-950 mb-6">Отзывы</h2>
+      <div class="space-y-4">
+        <!-- Здесь будут отзывы -->
+        <p class="text-zinc-600">Отзывов пока нет</p>
+      </div>
+    </div>
+    </Transition>
 
     <div v-if="isLoading" class="flex items-center justify-center py-20">
       <p class="text-zinc-500">Загрузка...</p>
@@ -219,11 +283,14 @@
         @close="closeGallery"
     />
   </div>
+
+
 </template>
 
 <script setup lang="ts">
 import Breadcrumbs from '@/components/ui/Breadcrumbs.vue'
 import ImageGalleryModal from '@/components/ui/ImageGalleryModal.vue'
+import ProductList from '@/components/product/ProductList.vue'
 import {useProductStore} from '@/stores/product/';
 import {useGeoStore} from '@/stores/geo';
 import {formatPrice} from '@/utils/formatters/price';
@@ -243,6 +310,10 @@ const productData = computed(() => productStore.getProductBySlug(slug));
 const product = computed(() => productData.value?.product);
 const medium = computed(() => productData.value?.medium || []);
 const isLoading = computed(() => productStore.isProductLoading(slug));
+
+// Связанные товары
+const relatedProducts = computed(() => productStore.getRelatedProducts(slug));
+const isRelatedProductsLoading = computed(() => productStore.isRelatedProductsLoading(slug));
 
 // Галерея изображений
 const selectedImage = ref<string>('');
@@ -270,6 +341,9 @@ function openGallery(index: number) {
 function closeGallery() {
   isGalleryOpen.value = false;
 }
+
+// Табы продукта
+const activeTab = ref<'about' | 'specs' | 'reviews'>('about');
 
 // Доставка
 const deliveryTabs = ['До ПВЗ', 'Курьером'];
@@ -314,6 +388,8 @@ definePageMeta({
 // Загружаем данные при монтировании
 onMounted(async () => {
   await productStore.loadProductBySlug(slug);
+  // Загружаем связанные товары
+  await productStore.loadRelatedProducts(slug);
 });
 
 // Отслеживаем состояние загрузки и показываем 404 если товар не найден
@@ -344,6 +420,25 @@ useHead(() => ({
 }));
 </script>
 
-<style scoped>
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
 
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>

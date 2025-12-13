@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <header class="bg-blue-50 relative overflow-hidden border-b-1 border-dashed border-zinc-600/15">
+  <div class="sticky top-0 z-50">
+    <header class="bg-blue-50 overflow-hidden border-b-1 border-dashed border-zinc-600/15">
       <div class="flex items-center space-x-4 mx-auto max-w-[1552px] py-4">
         <!-- SideBar Activator -->
         <button class="text-gray-600 hover:text-gray-800 p-3" @click="toggleSidebar">

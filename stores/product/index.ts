@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { ProductWithMediumResponse } from "~/repository/types/api/generatedApiGo";
+import type { ProductWithMediumResponse, ShortProduct } from "~/repository/types/api/generatedApiGo";
 
 const CACHE_SIZE = 10;
 
@@ -12,6 +12,8 @@ type State = {
     products: Record<string, CacheEntry>;
     accessOrder: string[]; // LRU (Least Recently Used) - порядок доступа
     loadingStates: Record<string, boolean>;
+    relatedProducts: Record<string, ShortProduct[]>; // Связанные товары по slug
+    relatedProductsLoading: Record<string, boolean>;
 }
 
 export const useProductStore = defineStore('Product', {
@@ -20,6 +22,8 @@ export const useProductStore = defineStore('Product', {
             products: {},
             accessOrder: [],
             loadingStates: {},
+            relatedProducts: {},
+            relatedProductsLoading: {},
         }
     },
 
@@ -130,6 +134,34 @@ export const useProductStore = defineStore('Product', {
                 accessOrder: [...this.accessOrder],
                 products: Object.keys(this.products)
             };
+        },
+
+        /**
+         * Загрузить связанные товары по slug
+         * @param slug - уникальный идентификатор товара в URL
+         * @returns ShortProduct[] или пустой массив
+         */
+        async loadRelatedProducts(slug: string) {
+            if (!import.meta.client) return;
+
+            // Если связанные товары уже загружены, возвращаем их
+            if (this.relatedProducts[slug]) {
+                return this.relatedProducts[slug];
+            }
+
+            const { $api } = useNuxtApp();
+            this.relatedProductsLoading[slug] = true;
+
+            try {
+                const products = await $api.product.getRelatedProductBySlug(slug);
+                this.relatedProducts[slug] = products;
+                return products;
+            } catch (error) {
+                console.error('Error loading related products:', error);
+                return [];
+            } finally {
+                this.relatedProductsLoading[slug] = false;
+            }
         }
     },
 
@@ -160,6 +192,20 @@ export const useProductStore = defineStore('Product', {
          */
         isCacheFull: (state) => {
             return Object.keys(state.products).length >= CACHE_SIZE;
+        },
+
+        /**
+         * Получить связанные товары по slug
+         */
+        getRelatedProducts: (state) => (slug: string) => {
+            return state.relatedProducts[slug] || [];
+        },
+
+        /**
+         * Проверить, загружаются ли связанные товары
+         */
+        isRelatedProductsLoading: (state) => (slug: string) => {
+            return state.relatedProductsLoading[slug] || false;
         }
     }
 });

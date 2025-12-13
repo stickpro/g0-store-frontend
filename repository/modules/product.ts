@@ -1,7 +1,11 @@
 import HttpFactory from "../factory";
 import type {
     BreadcrumbDTO,
-    JSONResponseArrayBreadcrumbDTO, ProductWithMediumResponse, JSONResponseProductWithMediumResponse,
+    JSONResponseArrayBreadcrumbDTO,
+    JSONResponseArrayShortProduct,
+    JSONResponseProductWithMediumResponse,
+    ProductWithMediumResponse,
+    ShortProduct,
 } from "~/repository/types/api/generatedApiGo";
 
 
@@ -20,6 +24,12 @@ class ProductModule extends HttpFactory {
         return response.data || [];
     }
 
+    async getRelatedProductBySlug(slug: string): Promise<ShortProduct[]> {
+        const response = await this.get<JSONResponseArrayShortProduct>(
+            `${this.RESOURCE}/${slug}/related-products`,
+        )
+        return response.data || [];
+    }
 
 }
 
