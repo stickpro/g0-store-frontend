@@ -3,10 +3,25 @@ import type {
     BreadcrumbDTO,
     JSONResponseArrayBreadcrumbDTO,
     JSONResponseArrayShortProduct,
+    JSONResponseAttributeGroupsResponse,
     JSONResponseProductWithMediumResponse,
     ProductWithMediumResponse,
+    ProductReviewResponse,
     ShortProduct,
+    GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO,
+    FullPagingData,
 } from "~/repository/types/api/generatedApiGo";
+
+interface ReviewsWithPaginationResponse {
+    items?: ProductReviewResponse[];
+    pagination?: FullPagingData;
+}
+
+interface JSONResponseReviewsWithPagination {
+    code?: number;
+    data?: ReviewsWithPaginationResponse;
+    message?: string;
+}
 
 
 class ProductModule extends HttpFactory {
@@ -29,6 +44,20 @@ class ProductModule extends HttpFactory {
             `${this.RESOURCE}/${slug}/related-products`,
         )
         return response.data || [];
+    }
+
+    async getAttributesBySlug(slug: string): Promise<GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO[]> {
+        const response = await this.get<JSONResponseAttributeGroupsResponse>(
+            `${this.RESOURCE}/${slug}/attributes`,
+        )
+        return response.data?.groups || [];
+    }
+
+    async getReviewsBySlug(slug: string): Promise<ProductReviewResponse[]> {
+        const response = await this.get<JSONResponseReviewsWithPagination>(
+            `${this.RESOURCE}/${slug}/reviews`,
+        )
+        return response.data?.items || [];
     }
 
 }

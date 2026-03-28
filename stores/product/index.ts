@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { ProductWithMediumResponse, ShortProduct } from "~/repository/types/api/generatedApiGo";
+import type { ProductWithMediumResponse, ShortProduct, GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
 
 const CACHE_SIZE = 10;
 
@@ -14,6 +14,10 @@ type State = {
     loadingStates: Record<string, boolean>;
     relatedProducts: Record<string, ShortProduct[]>; // Связанные товары по slug
     relatedProductsLoading: Record<string, boolean>;
+    attributes: Record<string, GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO[]>; // Атрибуты товара по slug
+    attributesLoading: Record<string, boolean>;
+    reviews: Record<string, ProductReviewResponse[]>; // Отзывы товара по slug
+    reviewsLoading: Record<string, boolean>;
 }
 
 export const useProductStore = defineStore('Product', {
@@ -24,6 +28,10 @@ export const useProductStore = defineStore('Product', {
             loadingStates: {},
             relatedProducts: {},
             relatedProductsLoading: {},
+            attributes: {},
+            attributesLoading: {},
+            reviews: {},
+            reviewsLoading: {},
         }
     },
 
@@ -162,6 +170,62 @@ export const useProductStore = defineStore('Product', {
             } finally {
                 this.relatedProductsLoading[slug] = false;
             }
+        },
+
+        /**
+         * Загрузить атрибуты товара по slug
+         * @param slug - уникальный идентификатор товара в URL
+         * @returns AttributeGroupWithValuesDTO[] или пустой массив
+         */
+        async loadAttributes(slug: string) {
+            if (!import.meta.client) return;
+
+            // Если атрибуты уже загружены, возвращаем их
+            if (this.attributes[slug]) {
+                return this.attributes[slug];
+            }
+
+            const { $api } = useNuxtApp();
+            this.attributesLoading[slug] = true;
+
+            try {
+                const attributes = await $api.product.getAttributesBySlug(slug);
+                this.attributes[slug] = attributes;
+                return attributes;
+            } catch (error) {
+                console.error('Error loading product attributes:', error);
+                return [];
+            } finally {
+                this.attributesLoading[slug] = false;
+            }
+        },
+
+        /**
+         * Загрузить отзывы товара по slug
+         * @param slug - уникальный идентификатор товара в URL
+         * @returns ProductReviewResponse[] или пустой массив
+         */
+        async loadReviews(slug: string) {
+            if (!import.meta.client) return;
+
+            // Если отзывы уже загружены, возвращаем их
+            if (this.reviews[slug]) {
+                return this.reviews[slug];
+            }
+
+            const { $api } = useNuxtApp();
+            this.reviewsLoading[slug] = true;
+
+            try {
+                const reviews = await $api.product.getReviewsBySlug(slug);
+                this.reviews[slug] = reviews;
+                return reviews;
+            } catch (error) {
+                console.error('Error loading product reviews:', error);
+                return [];
+            } finally {
+                this.reviewsLoading[slug] = false;
+            }
         }
     },
 
@@ -206,6 +270,34 @@ export const useProductStore = defineStore('Product', {
          */
         isRelatedProductsLoading: (state) => (slug: string) => {
             return state.relatedProductsLoading[slug] || false;
+        },
+
+        /**
+         * Получить атрибуты товара по slug
+         */
+        getAttributes: (state) => (slug: string) => {
+            return state.attributes[slug] || [];
+        },
+
+        /**
+         * Проверить, загружаются ли атрибуты
+         */
+        isAttributesLoading: (state) => (slug: string) => {
+            return state.attributesLoading[slug] || false;
+        },
+
+        /**
+         * Получить отзывы товара по slug
+         */
+        getReviews: (state) => (slug: string) => {
+            return state.reviews[slug] || [];
+        },
+
+        /**
+         * Проверить, загружаются ли отзывы
+         */
+        isReviewsLoading: (state) => (slug: string) => {
+            return state.reviewsLoading[slug] || false;
         }
     }
 });

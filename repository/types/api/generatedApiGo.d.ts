@@ -1,4 +1,4 @@
- 
+/* eslint-disable */
 /* tslint:disable */
 /*
  * ---------------------------------------------------------------
@@ -19,16 +19,86 @@ export interface APIErrors {
   errors?: APIError[];
 }
 
+export interface Attribute {
+  attribute_group_id?: UuidNullUUID;
+  created_at?: PgtypeTimestamp;
+  id?: string;
+  is_filterable?: PgtypeBool;
+  is_required?: PgtypeBool;
+  is_visible?: PgtypeBool;
+  name?: string;
+  slug?: string;
+  sort_order?: PgtypeInt4;
+  type?: string;
+  unit?: PgtypeText;
+  updated_at?: PgtypeTimestamp;
+}
+
+export interface AttributeGroup {
+  created_at?: PgtypeTimestamp;
+  description?: PgtypeText;
+  id?: string;
+  name?: string;
+  slug?: string;
+  updated_at?: PgtypeTimestamp;
+}
+
 export interface AttributeGroupResponse {
   created_at?: string;
   description?: string;
   id?: string;
   name?: string;
+  slug?: string;
   updated_at?: string;
 }
 
+export interface AttributeGroupWithValuesDTO {
+  attributes?: AttributeWithValuesDTO[];
+  group_description?: string;
+  group_id?: string;
+  group_name?: string;
+  group_slug?: string;
+}
+
 export interface AttributeGroupsResponse {
-  groups?: GithubComStickproGoStoreInternalDtoAttributeGroupDTO[];
+  groups?: AttributeGroupWithValuesDTO[];
+}
+
+export interface AttributeResponse {
+  attribute_group_id?: UuidNullUUID;
+  created_at?: string;
+  id?: string;
+  is_filterable?: boolean;
+  is_required?: boolean;
+  is_visible?: boolean;
+  name?: string;
+  slug?: string;
+  sort_order?: number;
+  type?: string;
+  unit?: string;
+  updated_at?: string;
+}
+
+export interface AttributeValueResponse {
+  attribute_id?: string;
+  created_at?: string;
+  display_order?: number;
+  id?: string;
+  is_active?: boolean;
+  updated_at?: string;
+  value?: string;
+  value_normalized?: string;
+  value_numeric?: number;
+}
+
+export interface AttributeWithValuesDTO {
+  id?: string;
+  is_filterable?: boolean;
+  name?: string;
+  slug?: string;
+  type?: string;
+  unit?: string;
+  values?: GithubComStickproGoStoreInternalDtoAttributeValueDTO[];
 }
 
 export interface AuthRequest {
@@ -176,26 +246,46 @@ export interface CreateAttributeGroupRequest {
    */
   description?: string;
   name: string;
+  slug: string;
 }
 
 export interface CreateAttributeRequest {
   attribute_group_id?: string;
-  is_filterable: boolean;
-  is_visible: boolean;
+  is_filterable?: boolean;
+  is_required?: boolean;
+  is_visible?: boolean;
   /**
    * @minLength 1
    * @maxLength 255
    */
   name: string;
-  /** @min 0 */
-  sort_order?: number;
   /**
    * @minLength 1
    * @maxLength 255
    */
-  type: string;
-  /** @minLength 1 */
+  slug: string;
+  /** @min 0 */
+  sort_order?: number;
+  type: "select" | "number" | "boolean" | "text";
+  /**
+   * @minLength 1
+   * @maxLength 50
+   */
+  unit?: string;
+}
+
+export interface CreateAttributeValueRequest {
+  attribute_id: string;
+  /** @min 0 */
+  display_order?: number;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
   value: string;
+  /** @maxLength 255 */
+  value_normalized?: string;
+  value_numeric?: number;
 }
 
 export interface CreateCategoryRequest {
@@ -315,6 +405,18 @@ export interface JSONResponseAttributeGroupsResponse {
   message?: string;
 }
 
+export interface JSONResponseAttributeResponse {
+  code?: number;
+  data?: AttributeResponse;
+  message?: string;
+}
+
+export interface JSONResponseAttributeValueResponse {
+  code?: number;
+  data?: AttributeValueResponse;
+  message?: string;
+}
+
 export interface JSONResponseAuthResponse {
   code?: number;
   data?: AuthResponse;
@@ -387,6 +489,18 @@ export interface JSONResponseRegisterUserResponse {
   message?: string;
 }
 
+export interface JSONResponseResponseWithFullPaginationAttribute {
+  code?: number;
+  data?: ResponseWithFullPaginationAttribute;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationAttributeGroup {
+  code?: number;
+  data?: ResponseWithFullPaginationAttributeGroup;
+  message?: string;
+}
+
 export interface JSONResponseResponseWithFullPaginationCategory {
   code?: number;
   data?: ResponseWithFullPaginationCategory;
@@ -417,9 +531,27 @@ export interface JSONResponseArrayAttributeGroupResponse {
   message?: string;
 }
 
+export interface JSONResponseArrayAttributeGroupWithValuesDTO {
+  code?: number;
+  data?: AttributeGroupWithValuesDTO[];
+  message?: string;
+}
+
+export interface JSONResponseArrayAttributeResponse {
+  code?: number;
+  data?: AttributeResponse[];
+  message?: string;
+}
+
 export interface JSONResponseArrayBreadcrumbDTO {
   code?: number;
   data?: BreadcrumbDTO[];
+  message?: string;
+}
+
+export interface JSONResponseArrayCategoryTreeDTO {
+  code?: number;
+  data?: any[];
   message?: string;
 }
 
@@ -441,15 +573,9 @@ export interface JSONResponseArrayShortProduct {
   message?: string;
 }
 
-export interface JSONResponseArrayGithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
+export interface JSONResponseArrayGithubComStickproGoStoreInternalDtoAttributeValueDTO {
   code?: number;
-  data?: GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse[];
-  message?: string;
-}
-
-export interface JSONResponseGithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
-  code?: number;
-  data?: GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse;
+  data?: GithubComStickproGoStoreInternalDtoAttributeValueDTO[];
   message?: string;
 }
 
@@ -589,6 +715,16 @@ export interface RegisterUserResponse {
   token?: string;
 }
 
+export interface ResponseWithFullPaginationAttribute {
+  items?: Attribute[];
+  pagination?: FullPagingData;
+}
+
+export interface ResponseWithFullPaginationAttributeGroup {
+  items?: AttributeGroup[];
+  pagination?: FullPagingData;
+}
+
 export interface ResponseWithFullPaginationCategory {
   items?: Category[];
   pagination?: FullPagingData;
@@ -622,6 +758,30 @@ export enum StockStatus {
 
 export interface SyncRelatedProductRequest {
   product_ids?: string[];
+}
+
+export interface UpdateAttributeGroupRequest {
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  description?: string;
+  name: string;
+  slug: string;
+}
+
+export interface UpdateAttributeValueRequest {
+  /** @min 0 */
+  display_order?: number;
+  is_active?: boolean;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  value: string;
+  /** @maxLength 255 */
+  value_normalized?: string;
+  value_numeric?: number;
 }
 
 export interface UpdateCategoryRequest {
@@ -734,17 +894,13 @@ export interface UserInfoResponse {
   updated_at?: string;
 }
 
-export interface GithubComStickproGoStoreInternalDeliveryHttpRequestAttributeRequestUpdateAttributeGroupRequest {
-  /**
-   * @minLength 1
-   * @maxLength 100
-   */
-  description?: string;
-  name: string;
+export interface DecimalNullDecimal {
+  decimal?: number;
+  valid?: boolean;
 }
 
 export interface GithubComStickproGoStoreInternalDeliveryHttpRequestProductRequestSyncProductAttributeRequest {
-  attribute_ids: string[];
+  attribute_value_ids: string[];
 }
 
 export interface GithubComStickproGoStoreInternalDeliveryHttpRequestProductReviewRequestCreateProductReviewRequest {
@@ -754,34 +910,20 @@ export interface GithubComStickproGoStoreInternalDeliveryHttpRequestProductRevie
   title?: string;
 }
 
-export interface GithubComStickproGoStoreInternalDeliveryHttpResponseAttributeResponseAttributeResponse {
-  attribute_group_id?: UuidNullUUID;
-  created_at?: string;
+export interface GithubComStickproGoStoreInternalDtoAttributeValueDTO {
+  display_order?: number;
   id?: string;
-  is_filterable?: boolean;
-  is_visible?: boolean;
-  name?: string;
-  sort_order?: number;
-  type?: string;
-  updated_at?: string;
+  usage_count?: number;
   value?: string;
+  value_normalized?: string;
+  value_numeric?: DecimalNullDecimal;
 }
 
-export interface GithubComStickproGoStoreInternalDtoAttributeDTO {
+export interface GithubComStickproGoStoreInternalDtoCategoryTreeDTO {
+  children?: GithubComStickproGoStoreInternalDtoCategoryTreeDTO[];
   id?: string;
-  is_filterable?: boolean;
-  is_visible?: boolean;
   name?: string;
-  sort_order?: number;
-  type?: string;
-  value?: string;
-}
-
-export interface GithubComStickproGoStoreInternalDtoAttributeGroupDTO {
-  attributes?: GithubComStickproGoStoreInternalDtoAttributeDTO[];
-  group_description?: string;
-  group_id?: string;
-  group_name?: string;
+  slug?: string;
 }
 
 export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
@@ -820,10 +962,20 @@ export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProd
   width?: number;
 }
 
+export interface PgtypeBool {
+  bool?: boolean;
+  valid?: boolean;
+}
+
 export enum PgtypeInfinityModifier {
   Infinity = 1,
   Finite = 0,
   NegativeInfinity = -1,
+}
+
+export interface PgtypeInt4 {
+  int32?: number;
+  valid?: boolean;
 }
 
 export interface PgtypeText {
