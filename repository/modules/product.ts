@@ -1,5 +1,6 @@
 import HttpFactory from "../factory";
 import type {
+    AttributeGroupWithValuesDTO,
     BreadcrumbDTO,
     JSONResponseArrayBreadcrumbDTO,
     JSONResponseArrayShortProduct,
@@ -8,7 +9,6 @@ import type {
     ProductWithMediumResponse,
     ProductReviewResponse,
     ShortProduct,
-    GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO,
     FullPagingData,
 } from "~/repository/types/api/generatedApiGo";
 
@@ -46,7 +46,7 @@ class ProductModule extends HttpFactory {
         return response.data || [];
     }
 
-    async getAttributesBySlug(slug: string): Promise<GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO[]> {
+    async getAttributesBySlug(slug: string): Promise<AttributeGroupWithValuesDTO[]> {
         const response = await this.get<JSONResponseAttributeGroupsResponse>(
             `${this.RESOURCE}/${slug}/attributes`,
         )

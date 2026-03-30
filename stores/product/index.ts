@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { ProductWithMediumResponse, ShortProduct, GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
+import type { AttributeGroupWithValuesDTO, ProductWithMediumResponse, ShortProduct, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
 
 const CACHE_SIZE = 10;
 
@@ -14,7 +14,7 @@ type State = {
     loadingStates: Record<string, boolean>;
     relatedProducts: Record<string, ShortProduct[]>; // Связанные товары по slug
     relatedProductsLoading: Record<string, boolean>;
-    attributes: Record<string, GithubComStickproGoStoreInternalDtoAttributeGroupWithValuesDTO[]>; // Атрибуты товара по slug
+    attributes: Record<string, AttributeGroupWithValuesDTO[]>; // Атрибуты товара по slug
     attributesLoading: Record<string, boolean>;
     reviews: Record<string, ProductReviewResponse[]>; // Отзывы товара по slug
     reviewsLoading: Record<string, boolean>;
@@ -152,7 +152,6 @@ export const useProductStore = defineStore('Product', {
         async loadRelatedProducts(slug: string) {
             if (!import.meta.client) return;
 
-            // Если связанные товары уже загружены, возвращаем их
             if (this.relatedProducts[slug]) {
                 return this.relatedProducts[slug];
             }
@@ -261,7 +260,7 @@ export const useProductStore = defineStore('Product', {
         /**
          * Получить связанные товары по slug
          */
-        getRelatedProducts: (state) => (slug: string) => {
+        getRelatedProducts: (state) => (slug: string): ShortProduct[] => {
             return state.relatedProducts[slug] || [];
         },
 

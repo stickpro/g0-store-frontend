@@ -25,7 +25,6 @@
           :product="product"
           :show-stock="showStock"
           class="flex-shrink-0 w-[280px]"
-          @add-to-cart="handleAddToCart"
         />
       </div>
     </div>
@@ -43,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ShortProduct } from '@repository/types/api/generatedApiGo';
+import type { ShortProduct } from '~/repository/types/api/generatedApiGo';
 import ProductCard from '~/components/product/ProductCard.vue';
 
 interface Props {
@@ -64,7 +63,6 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  addToCart: [product: ShortProduct];
   loadMore: [];
 }>();
 
@@ -79,10 +77,6 @@ const hasMore = computed(() => {
   if (!props.limit) return false;
   return props.products.length > props.limit;
 });
-
-function handleAddToCart(product: ShortProduct) {
-  emit('addToCart', product);
-}
 
 function loadMore() {
   emit('loadMore');

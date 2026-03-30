@@ -31,7 +31,8 @@
 
         <!-- Add to Cart Button -->
         <button
-          class="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center text-white transition-colors flex-shrink-0"
+          class="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center text-white transition-colors flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+          :disabled="adding"
           @click.prevent="addToCart"
         >
           <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -44,8 +45,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ShortProduct } from '@repository/types/api/generatedApiGo';
+import type { ShortProduct } from '~/repository/types/api/generatedApiGo';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
+import { useCartStore } from '~/stores/cart';
 
 interface Props {
   product: ShortProduct;
@@ -56,9 +58,8 @@ const props = withDefaults(defineProps<Props>(), {
   showStock: false
 });
 
-const emit = defineEmits<{
-  addToCart: [product: ShortProduct]
-}>();
+const cartStore = useCartStore();
+const adding = ref(false);
 
 const productImage = computed(() => {
   if (typeof props.product.image === 'string') {
@@ -75,8 +76,18 @@ function formatPrice(price?: number): string {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
-function addToCart() {
-  emit('addToCart', props.product);
+async function addToCart() {
+  if (adding.value || !props.product.product_id || !props.product.id) return;
+  adding.value = true;
+  try {
+    await cartStore.addItem({
+      product_id: props.product.product_id,
+      variant_id: props.product.id,  // id — это variant_id
+      quantity: 1,
+    });
+  } finally {
+    adding.value = false;
+  }
 }
 </script>
 

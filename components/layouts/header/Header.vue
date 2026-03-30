@@ -37,7 +37,7 @@
             <div
                 class="absolute z-10 inset-0 -left-15 -top-0 w-[296px] h-[296px] rounded-full bg-[#BFDBFE] blur-[50px] pointer-events-none"/>
             <div class="relative z-20">
-              <button class="text-gray-600 hover:text-gray-800 p-3">
+              <button class="text-gray-600 hover:text-gray-800 p-3" @click="cartOpen = true">
                 <IconCart/>
               </button>
               <button class="text-gray-600 hover:text-gray-800 p-3">
@@ -52,6 +52,7 @@
       </div>
     </header>
     <Sidebar/>
+    <CartDrawer :open="cartOpen" @close="cartOpen = false" />
   </div>
 </template>
 
@@ -62,8 +63,10 @@ import IconPhone from "~/components/icons/IconPhone.vue";
 import IconPersone from "~/components/icons/IconPerson.vue";
 import Sidebar from "~/components/layouts/sidebar/Sidebar.vue";
 import IconNav from "~/components/icons/IconNav.vue";
+import CartDrawer from "~/components/cart/CartDrawer.vue";
 
-const { toggleSidebar } = useSidebar()
+const { toggleSidebar } = useSidebar();
+const cartOpen = ref(false);
 </script>
 
 <style scoped>

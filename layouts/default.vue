@@ -5,15 +5,17 @@
       <div class="mx-auto flex max-w-[1552px]">
         <!-- Sidebar -->
         <div class="w-76 min-w-76 mr-6 flex-shrink-0 border-r-1 border-dashed border-zinc-600/15 min-h-screen">
-          <SidebarCategory class="border-b-1 border-dashed border-zinc-600/15" />
+          <SidebarCategory class="border-b-1 border-dashed border-zinc-600/15"/>
           <div class="border-b-1 border-dashed border-zinc-600/15">
-            <Login />
+            <Login/>
           </div>
           <div class="border-b-1 border-dashed border-zinc-600/15 px-4 py-6">
             <h3 class="h-10 flex items-center text-orange-500 font-semibold">Чат с 3D ELECTRONICS</h3>
-            <Geo />
-            <WorkingHours />
-            <InfoCompany />
+            <Geo/>
+            <WorkingHours/>
+          </div>
+          <div class="border-b-1 border-dashed border-zinc-600/15">
+            <InfoCompany/>
           </div>
         </div>
 
@@ -24,7 +26,7 @@
       </div>
     </main>
 
-    <Footer />
+    <Footer/>
     <GeoModal/>
   </div>
 </template>

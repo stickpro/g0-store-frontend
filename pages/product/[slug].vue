@@ -290,6 +290,7 @@
           <!-- Правая колонка: Отзывы -->
           <div>
             <h2 class="text-2xl font-medium text-zinc-950 mb-4">Отзывы</h2>
+
             <div v-if="reviews.length > 0" class="space-y-4">
               <div
                   v-for="review in reviews.slice(0, 3)"
