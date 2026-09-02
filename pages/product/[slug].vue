@@ -1,7 +1,7 @@
 <template>
   <div v-if="product" class="w-full">
-    <Breadcrumbs :product-slug="slug"/>
-    <div class="sticky top-[83px] z-50 bg-white grid grid-cols-2 border-b border-b-zinc-600/15 my-6 pt-2">
+    <Breadcrumbs :items="breadcrumbItems"/>
+    <div class="sticky top-[83px] z-10 bg-white grid grid-cols-2 border-b border-b-zinc-600/15 my-6 pt-2">
       <div class="flex">
         <button
             class="p-3 text-base transition-colors"
@@ -28,7 +28,7 @@
       <div class="flex justify-end gap-6 pb-2">
         <div class="flex flex-col text-right">
           <span class="text-orange-500 font-normal">{{ getStockStatusLabel(product?.stock_status) }}</span>
-          <span class="font-bold">{{ formatPrice(product?.price || 0) }}</span>
+          <span class="font-bold">{{ formatPrice(product?.price_retail || 0) }}</span>
         </div>
         <button
             class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors"
@@ -48,14 +48,15 @@
             <!-- Основное изображение -->
             <div
                 class="bg-white rounded-lg overflow-hidden cursor-zoom-in"
-                @click="openGallery(thumbnails.indexOf(selectedImage))"
+                @click="openGallery(selectedIndex)"
             >
-              <img
-                  v-if="selectedImage || thumbnails[0] || product?.image"
-                  :src="config.public.storageUrl + (selectedImage || thumbnails[0] || product?.image)"
-                  :alt="product?.name || ''"
+              <ProductPicture
+                  v-if="selectedImage"
+                  :image="selectedImage"
+                  preset="pdp"
+                  :alt="selectedImage.alt || productTitle"
                   class="w-full h-auto object-contain"
-              >
+              />
               <div v-else class="w-full flex items-center justify-center text-gray-300">
                 <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -68,22 +69,23 @@
             </div>
 
             <!-- Миниатюры -->
-            <div v-if="product" class="flex flex-col gap-3 overflow-x-auto min-w-[80px]">
+            <div v-if="galleryImages.length" class="flex flex-col gap-3 overflow-x-auto min-w-[80px]">
               <button
-                  v-for="(img, index) in thumbnails"
-                  :key="index"
+                  v-for="(img, index) in galleryImages"
+                  :key="img.id || index"
                   :class="[
                 'p-2 flex-shrink-0 w-20 h-20 rounded-lg border-1 overflow-hidden transition-all cursor-zoom-in',
-                selectedImage === img ? 'border-blue-600' : 'border-zinc-200 hover:border-zinc-300'
+                selectedIndex === index ? 'border-blue-600' : 'border-zinc-200 hover:border-zinc-300'
               ]"
                   @click="openGallery(index)"
-                  @mouseenter="selectedImage = img"
+                  @mouseenter="selectedIndex = index"
               >
-                <img
-                    :src="config.public.storageUrl + img"
-                    :alt="`${product.name} - ${index + 1}`"
+                <ProductPicture
+                    :image="img"
+                    preset="thumb"
+                    :alt="img.alt || `${productTitle} — фото ${index + 1}`"
                     class="w-full h-full object-cover"
-                >
+                />
               </button>
             </div>
           </div>
@@ -92,7 +94,7 @@
           <div class="flex flex-col">
             <!-- Заголовок -->
             <h1 class="text-3xl lg:text-3xl font-normal text-zinc-950 mb-4">
-              {{ product.name }}
+              {{ productHeading }}
             </h1>
 
             <!-- Рейтинг и отзывы -->
@@ -102,13 +104,13 @@
                     v-for="star in 5"
                     :key="star"
                     class="w-5 h-5"
-                    :class="star <= 4 ? 'text-orange-500' : 'text-zinc-300'"
+                    :class="star <= Math.round(averageRating) ? 'text-orange-500' : 'text-zinc-300'"
                     fill="currentColor" viewBox="0 0 20 20">
                   <path
                       d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                 </svg>
               </div>
-              <span class="text-sm text-zinc-600">Отзывов: 3</span>
+              <span class="text-sm text-zinc-600">Отзывов: {{ reviews.length }}</span>
               <span v-if="product.sku" class="text-sm text-blue-600 ml-auto">Код товара: {{ product.sku }}</span>
             </div>
 
@@ -120,7 +122,7 @@
             <!-- Цена -->
             <div class="flex justify-between">
               <div class="text-4xl font-bold text-zinc-950 mb-8">
-                {{ formatPrice(product?.price || 0) }}
+                {{ formatPrice(product?.price_retail || 0) }}
               </div>
 
               <!-- Кнопка купить -->
@@ -243,9 +245,9 @@
           <!-- Левая колонка: Описание и Характеристики -->
           <div>
             <!-- Описание товара -->
-            <div v-if="product.description" class="prose max-w-none mb-12">
+            <div v-if="product.variant?.description" class="prose max-w-none mb-12">
               <h2 class="text-2xl font-medium text-zinc-950 mb-4">Описание</h2>
-              <div class="text-zinc-700 leading-relaxed">{{ product.description }}</div>
+              <div class="text-zinc-700 leading-relaxed whitespace-pre-line break-words">{{ product.variant?.description }}</div>
             </div>
 
             <!-- Характеристики товара -->
@@ -420,7 +422,7 @@
     <!-- Галерея на весь экран -->
     <ImageGalleryModal
         :is-open="isGalleryOpen"
-        :images="thumbnails"
+        :images="galleryImages"
         :initial-index="galleryInitialIndex"
         @close="closeGallery"
     />
@@ -432,54 +434,192 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/ui/Breadcrumbs.vue'
 import ImageGalleryModal from '@/components/ui/ImageGalleryModal.vue'
+import ProductPicture from '@/components/product/ProductPicture.vue'
 import ProductList from '@/components/product/ProductList.vue'
 import {useProductStore} from '@/stores/product/';
 import {useGeoStore} from '@/stores/geo';
 import {formatPrice} from '@/utils/formatters/price';
 import {getStockStatusLabel} from '~/utils/constants/stockStatus';
+import {
+  buildBreadcrumbJsonLd,
+  buildProductJsonLd,
+  seoAvailability,
+  seoParsePrice,
+  seoPlainText,
+} from '~/utils/seo';
+import { imageSrc } from '~/utils/media';
+
+definePageMeta({
+  layout: 'product',
+})
 
 const route = useRoute();
 const productStore = useProductStore();
 const geoStore = useGeoStore();
-
 const config = useRuntimeConfig();
+const requestURL = useRequestURL();
 
-// Получаем slug из параметров маршрута
-const slug = String(route.params.slug);
+const slug = computed(() => String(route.params.slug || ''));
+const { $api } = useNuxtApp();
 
-// Загружаем товар через store
-const productData = computed(() => productStore.getProductBySlug(slug));
+const { pending, data: productPageData } = await useAsyncData(
+    () => `product-page-${slug.value}`,
+    async () => {
+      if (!slug.value) {
+        throw createError({ statusCode: 404, message: 'Товар не найден', fatal: true });
+      }
+
+      const data = await $api.product.getBySlug(slug.value).catch(() => null);
+      if (!data?.product) {
+        throw createError({ statusCode: 404, message: 'Товар не найден', fatal: true });
+      }
+
+      const currentSlug = slug.value;
+      productStore.products[currentSlug] = {
+        data,
+        timestamp: Date.now(),
+      };
+      productStore.updateAccessOrder(currentSlug);
+
+      const [breadcrumbs, related, attributes, reviews] = await Promise.all([
+        $api.product.getBreadcrumbsBySlug(currentSlug).catch(() => []),
+        $api.product.getRelatedProductBySlug(currentSlug).catch(() => []),
+        $api.product.getAttributesBySlug(currentSlug).catch(() => []),
+        $api.product.getReviewsBySlug(currentSlug).catch(() => []),
+      ]);
+
+      productStore.breadcrumbs[currentSlug] = breadcrumbs || [];
+      productStore.relatedProducts[currentSlug] = related || [];
+      productStore.attributes[currentSlug] = attributes || [];
+      productStore.reviews[currentSlug] = reviews || [];
+
+      return {
+        breadcrumbs: breadcrumbs || [],
+      };
+    },
+    { watch: [slug] },
+);
+
+const productData = computed(() => productStore.getProductBySlug(slug.value));
 const product = computed(() => productData.value?.product);
-const medium = computed(() => productData.value?.medium || []);
-const isLoading = computed(() => productStore.isProductLoading(slug));
+const galleryImages = computed(() => productData.value?.images || []);
+const isLoading = computed(() => pending.value || productStore.isProductLoading(slug.value));
 
-// Связанные товары
-const relatedProducts = computed(() => productStore.getRelatedProducts(slug));
-const isRelatedProductsLoading = computed(() => productStore.isRelatedProductsLoading(slug));
+const relatedProducts = computed(() => productStore.getRelatedProducts(slug.value));
+const isRelatedProductsLoading = computed(() => productStore.isRelatedProductsLoading(slug.value));
 
-// Атрибуты товара
-const attributes = computed(() => productStore.getAttributes(slug));
-const isAttributesLoading = computed(() => productStore.isAttributesLoading(slug));
+const attributes = computed(() => productStore.getAttributes(slug.value));
+const isAttributesLoading = computed(() => productStore.isAttributesLoading(slug.value));
 
-// Отзывы товара
-const reviews = computed(() => productStore.getReviews(slug));
-const isReviewsLoading = computed(() => productStore.isReviewsLoading(slug));
+const reviews = computed(() => productStore.getReviews(slug.value));
+const isReviewsLoading = computed(() => productStore.isReviewsLoading(slug.value));
 
-// Галерея изображений
-const selectedImage = ref<string>('');
-const thumbnails = computed(() => {
-  // Используем массив изображений из medium
-  if (medium.value && medium.value.length > 0) {
-    return medium.value.map(m => m.path || '').filter(Boolean);
-  }
-  // Если medium нет, используем основное изображение товара
-  if (product.value?.image) {
-    return [product.value.image];
-  }
-  return [];
+const productTitle = computed(() =>
+    product.value?.variant?.meta_title || product.value?.variant?.name || 'Товар',
+);
+const productHeading = computed(() =>
+    product.value?.variant?.meta_h1 || product.value?.variant?.name || 'Товар',
+);
+const productDescription = computed(() =>
+    seoPlainText(
+        product.value?.variant?.meta_description || product.value?.variant?.description,
+        160,
+    ),
+);
+
+const averageRating = computed(() => {
+  const rated = reviews.value.filter((item) => typeof item.rating === 'number' && item.rating > 0);
+  if (!rated.length) return 0;
+  return rated.reduce((sum, item) => sum + (item.rating || 0), 0) / rated.length;
 });
 
-// Модальное окно галереи
+const selectedIndex = ref(0);
+const selectedImage = computed(() => galleryImages.value[selectedIndex.value] || galleryImages.value[0]);
+
+watch(galleryImages, (images) => {
+  if (selectedIndex.value >= images.length) selectedIndex.value = 0;
+}, { immediate: true });
+
+const pageUrl = computed(() => `${requestURL.origin}/product/${slug.value}`);
+const imageUrls = computed(() =>
+    galleryImages.value
+        .map((image) => imageSrc(String(config.public.storageUrl), image, 'pdp', 'jpeg'))
+        .filter(Boolean),
+);
+
+const breadcrumbItems = computed(() => {
+  const crumbs = [...(productPageData.value?.breadcrumbs || [])];
+  crumbs.sort((a, b) => (b.depth ?? 0) - (a.depth ?? 0));
+
+  const items = crumbs.map((item) => ({
+    id: item.id,
+    title: item.name || item.slug || '',
+    slug: item.slug,
+    url: `/category/${item.slug}`,
+  }));
+
+  items.push({
+    id: product.value?.id,
+    title: product.value?.variant?.name || productHeading.value,
+    slug: slug.value,
+    url: `/product/${slug.value}`,
+  });
+
+  return items;
+});
+
+const jsonLd = computed(() => {
+  const origin = requestURL.origin;
+  const productSchema = buildProductJsonLd({
+    name: productHeading.value,
+    description: productDescription.value || undefined,
+    url: pageUrl.value,
+    images: imageUrls.value,
+    sku: product.value?.sku,
+    mpn: product.value?.mpn,
+    ean: product.value?.ean,
+    price: seoParsePrice(product.value?.price_retail),
+    availability: seoAvailability(product.value?.stock_status),
+    reviewCount: reviews.value.length,
+    ratingValue: averageRating.value || undefined,
+  });
+
+  const breadcrumbSchema = buildBreadcrumbJsonLd(origin, [
+    { title: 'Главная', url: '/' },
+    { title: 'Каталог', url: '/category' },
+    ...breadcrumbItems.value.map((item) => ({ title: item.title, url: item.url })),
+  ]);
+
+  return [productSchema, breadcrumbSchema];
+});
+
+useSeoMeta({
+  title: () => productTitle.value,
+  description: () => productDescription.value || undefined,
+  ogTitle: () => productTitle.value,
+  ogDescription: () => productDescription.value || undefined,
+  ogType: 'website',
+  ogUrl: () => pageUrl.value,
+  ogImage: () => imageUrls.value[0],
+  ogLocale: 'ru_RU',
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => productTitle.value,
+  twitterDescription: () => productDescription.value || undefined,
+  twitterImage: () => imageUrls.value[0],
+  robots: () => product.value?.is_enable === false ? 'noindex, nofollow' : 'index, follow',
+});
+
+useHead(() => ({
+  title: productTitle.value,
+  link: [
+    { rel: 'canonical', href: pageUrl.value },
+  ],
+  script: jsonLd.value.map((schema) => ({
+    type: 'application/ld+json',
+    innerHTML: JSON.stringify(schema),
+  })),
+}));
+
 const isGalleryOpen = ref(false);
 const galleryInitialIndex = ref(0);
 
@@ -492,10 +632,8 @@ function closeGallery() {
   isGalleryOpen.value = false;
 }
 
-// Табы продукта
 const activeTab = ref<'about' | 'specs' | 'reviews'>('about');
 
-// Доставка
 const deliveryTabs = ['До ПВЗ', 'Курьером'];
 const selectedDeliveryTab = ref('До ПВЗ');
 const selectedDelivery = ref('СДЭК');
@@ -523,55 +661,11 @@ const deliveryOptions = computed(() => {
   ];
 });
 
-// Добавление в корзину
 function addToCart() {
   if (product.value) {
-    // Здесь будет логика добавления в корзину
     console.log('Добавление товара в корзину:', product.value);
   }
 }
-
-definePageMeta({
-  layout: 'product',
-})
-
-// Загружаем данные при монтировании
-onMounted(async () => {
-  await productStore.loadProductBySlug(slug);
-  // Загружаем связанные товары, атрибуты и отзывы параллельно
-  await Promise.all([
-    productStore.loadRelatedProducts(slug),
-    productStore.loadAttributes(slug),
-    productStore.loadReviews(slug),
-  ]);
-});
-
-// Отслеживаем состояние загрузки и показываем 404 если товар не найден
-watch([isLoading, product], ([loading, prod]) => {
-  // Если загрузка завершена и товара нет - показываем 404
-  if (!loading && !prod) {
-    showError({
-      statusCode: 404,
-      message: 'Товар не найден',
-      fatal: true
-    });
-  }
-
-  // Устанавливаем первое изображение из галереи как выбранное
-  if (!loading && prod && thumbnails.value.length > 0 && thumbnails.value[0] && !selectedImage.value) {
-    selectedImage.value = thumbnails.value[0];
-  }
-});
-
-
-// SEO meta tags
-useHead(() => ({
-  title: product.value?.meta_title || product.value?.name || 'Товар',
-  meta: [
-    {name: 'description', content: product.value?.meta_description || product.value?.description || ''},
-    {name: 'keywords', content: product.value?.meta_keyword || ''},
-  ],
-}));
 </script>
 
 <style>

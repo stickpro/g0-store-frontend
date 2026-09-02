@@ -66,7 +66,7 @@ export const useBreadcrumbs = () => {
    * @param crumb - хлебная крошка
    */
   const getTitle = (crumb: BreadcrumbDTO): string => {
-    return crumb.meta_title || crumb.name || crumb.slug || '';
+    return crumb.name || crumb.slug || '';
   };
 
   return {

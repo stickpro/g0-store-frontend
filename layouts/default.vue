@@ -5,7 +5,10 @@
       <div class="mx-auto flex max-w-[1552px]">
         <!-- Sidebar -->
         <div class="w-76 min-w-76 mr-6 flex-shrink-0 border-r-1 border-dashed border-zinc-600/15 min-h-screen">
-          <SidebarCategory class="border-b-1 border-dashed border-zinc-600/15"/>
+          <SidebarCategory
+              v-if="!isCatalogPage"
+              class="border-b-1 border-dashed border-zinc-600/15"
+          />
           <div class="border-b-1 border-dashed border-zinc-600/15">
             <Login/>
           </div>
@@ -39,6 +42,9 @@ import Login from "~/components/user/Login.vue";
 import WorkingHours from "~/components/layouts/sidebar/WorkingHours.vue";
 import InfoCompany from "~/components/company/InfoCompany.vue";
 import GeoModal from "~/components/geo/GeoModal.vue";
+
+const route = useRoute();
+const isCatalogPage = computed(() => route.path === '/category');
 </script>
 
 <style scoped>

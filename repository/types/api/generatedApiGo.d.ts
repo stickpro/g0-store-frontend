@@ -202,7 +202,7 @@ export interface CollectionWithProductResponse {
   description?: string;
   id?: string;
   name?: string;
-  products?: ShortProduct[];
+  products?: ShortProductResponse[];
   slug?: string;
   updated_at?: string;
 }
@@ -320,6 +320,7 @@ export interface CreateManufacturerRequest {
 export interface CreateProductRequest {
   ean?: string;
   height?: number;
+  image?: string;
   is_enable?: boolean;
   isbn?: string;
   jan?: string;
@@ -328,16 +329,16 @@ export interface CreateProductRequest {
   manufacturer_id?: string;
   media_ids?: string[];
   minimum: number;
-  model: string;
   mpn?: string;
-  price: number;
+  price_business?: number;
+  price_retail?: number;
+  price_wholesale?: number;
   quantity?: number;
   sku?: string;
   sort_order?: number;
   stock_status?: string;
   subtract?: boolean;
   upc?: string;
-  variant: CreateProductVariantRequest;
   weight?: number;
   width?: number;
 }
@@ -345,12 +346,12 @@ export interface CreateProductRequest {
 export interface CreateProductVariantRequest {
   category_id?: string;
   description?: string;
-  image?: string;
   is_enable?: boolean;
   meta_description?: string;
   meta_h1?: string;
   meta_keyword?: string;
   meta_title?: string;
+  model: string;
   name: string;
   slug: string;
   sort_order?: number;
@@ -369,6 +370,14 @@ export interface GeoResponse {
 
 export interface GetRelatedProductsBatchRequest {
   variant_ids?: string[];
+}
+
+export interface ImageDTO {
+  alt?: string;
+  height?: number;
+  id?: string;
+  presets?: Record<string, Record<string, string>>;
+  width?: number;
 }
 
 export interface JSONResponseAttributeGroupResponse {
@@ -485,6 +494,12 @@ export interface JSONResponseResponseWithFullPaginationProductVariantListItem {
   message?: string;
 }
 
+export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalDtoEnrichedVariantDTO {
+  code?: number;
+  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalDtoEnrichedVariantDTO;
+  message?: string;
+}
+
 export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttribute {
   code?: number;
   data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttribute;
@@ -518,6 +533,12 @@ export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreI
 export interface JSONResponseUserInfoResponse {
   code?: number;
   data?: UserInfoResponse;
+  message?: string;
+}
+
+export interface JSONResponseViewedResponse {
+  code?: number;
+  data?: ViewedResponse;
   message?: string;
 }
 
@@ -569,6 +590,12 @@ export interface JSONResponseArrayShortProduct {
   message?: string;
 }
 
+export interface JSONResponseArrayVariantCategoryResponse {
+  code?: number;
+  data?: VariantCategoryResponse[];
+  message?: string;
+}
+
 export interface JSONResponseArrayGithubComStickproGoStoreInternalDtoAttributeValueDTO {
   code?: number;
   data?: GithubComStickproGoStoreInternalDtoAttributeValueDTO[];
@@ -584,6 +611,18 @@ export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsCity {
 export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsProduct {
   code?: number;
   data?: GithubComStickproGoStoreInternalModelsProduct[];
+  message?: string;
+}
+
+export interface JSONResponseGithubComStickproGoStoreInternalDtoCategoryFiltersDTO {
+  code?: number;
+  data?: GithubComStickproGoStoreInternalDtoCategoryFiltersDTO;
+  message?: string;
+}
+
+export interface JSONResponseGithubComStickproGoStoreInternalDtoCategoryProductsResultDTO {
+  code?: number;
+  data?: GithubComStickproGoStoreInternalDtoCategoryProductsResultDTO;
   message?: string;
 }
 
@@ -618,17 +657,20 @@ export interface MediumResponse {
   created_at?: string;
   disk_type?: string;
   file_name?: string;
+  height?: number;
   id?: string;
   mime_type?: string;
   name?: string;
   path?: string;
   size?: number;
+  width?: number;
 }
 
 export interface ProductResponse {
   ean?: string;
   height?: number;
   id?: string;
+  image?: string;
   is_enable?: boolean;
   isbn?: string;
   jan?: string;
@@ -636,9 +678,10 @@ export interface ProductResponse {
   location?: string;
   manufacturer_id?: UuidNullUUID;
   minimum?: number;
-  model?: string;
   mpn?: string;
-  price?: number;
+  price_business?: number;
+  price_retail?: number;
+  price_wholesale?: number;
   quantity?: number;
   sku?: string;
   sort_order?: number;
@@ -666,12 +709,12 @@ export interface ProductVariantListItem {
   created_at?: PgtypeTimestamp;
   description?: PgtypeText;
   id?: string;
-  image?: PgtypeText;
   is_enable?: boolean;
   meta_description?: PgtypeText;
   meta_h1?: PgtypeText;
   meta_keyword?: PgtypeText;
   meta_title?: PgtypeText;
+  model?: string;
   name?: string;
   product_id?: string;
   slug?: string;
@@ -684,19 +727,19 @@ export interface ProductVariantResponse {
   category_id?: UuidNullUUID;
   description?: string;
   id?: string;
-  image?: string;
   is_enable?: boolean;
   meta_description?: string;
   meta_h1?: string;
   meta_keyword?: string;
   meta_title?: string;
+  model?: string;
   name?: string;
   slug?: string;
   sort_order?: number;
 }
 
 export interface ProductWithMediumResponse {
-  medium?: MediumResponse[];
+  images?: GithubComStickproGoStoreInternalDtoImageDTO[];
   product?: ProductResponse;
 }
 
@@ -721,6 +764,11 @@ export interface RegisterUserResponse {
 
 export interface ResponseWithFullPaginationProductVariantListItem {
   items?: ProductVariantListItem[];
+  pagination?: FullPagingData;
+}
+
+export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalDtoEnrichedVariantDTO {
+  items?: GithubComStickproGoStoreInternalDtoEnrichedVariantDTO[];
   pagination?: FullPagingData;
 }
 
@@ -751,7 +799,18 @@ export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalStora
 
 export interface ShortProduct {
   id?: string;
-  image?: PgtypeText;
+  image?: ImageDTO;
+  is_enable?: boolean;
+  model?: string;
+  name?: string;
+  price?: number;
+  product_id?: string;
+  slug?: string;
+}
+
+export interface ShortProductResponse {
+  id?: string;
+  image?: ImageDTO;
   is_enable?: boolean;
   model?: string;
   name?: string;
@@ -762,6 +821,14 @@ export interface ShortProduct {
 
 export interface SyncRelatedProductRequest {
   variant_ids?: string[];
+}
+
+export interface SyncVariantCategoriesRequest {
+  category_ids?: string[];
+}
+
+export interface TrackViewedRequest {
+  variant_id: string;
 }
 
 export interface UpdateAttributeGroupRequest {
@@ -866,14 +933,15 @@ export interface UpdateProductRequest {
   minimum?: number;
   model?: string;
   mpn?: string;
-  price?: number;
+  price_business?: number;
+  price_retail?: number;
+  price_wholesale?: number;
   quantity?: number;
   sku?: string;
   sort_order?: number;
   stock_status?: string;
   subtract?: boolean;
   upc?: string;
-  variant: UpdateProductVariantRequest;
   weight?: number;
   width?: number;
 }
@@ -888,6 +956,7 @@ export interface UpdateProductVariantRequest {
   meta_h1?: string;
   meta_keyword?: string;
   meta_title?: string;
+  model: string;
   name?: string;
   slug?: string;
   sort_order?: number;
@@ -907,6 +976,26 @@ export interface UserInfoResponse {
   location: string;
   /** @format date-time */
   updated_at?: string;
+}
+
+export interface VariantCategoryResponse {
+  category_id?: string;
+  category_is_enable?: boolean;
+  category_name?: string;
+  category_slug?: string;
+}
+
+export interface ViewedItemResponse {
+  image_url?: string;
+  name?: string;
+  price?: number;
+  product_id?: string;
+  slug?: string;
+  variant_id?: string;
+}
+
+export interface ViewedResponse {
+  items?: ViewedItemResponse[];
 }
 
 export interface DecimalNullDecimal {
@@ -932,6 +1021,96 @@ export interface GithubComStickproGoStoreInternalDtoAttributeValueDTO {
   value?: string;
   value_normalized?: string;
   value_numeric?: DecimalNullDecimal;
+}
+
+export interface GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO {
+  group_name?: string;
+  group_slug?: string;
+  /** number attributes only */
+  max?: number;
+  /** number attributes only */
+  min?: number;
+  name?: string;
+  options?: GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO[];
+  slug?: string;
+  /** select | number | boolean | text */
+  type?: string;
+  unit?: string;
+}
+
+export interface GithubComStickproGoStoreInternalDtoCategoryFacetStat {
+  max?: number;
+  min?: number;
+}
+
+export interface GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO {
+  count?: number;
+  label?: string;
+  value?: string;
+}
+
+export interface GithubComStickproGoStoreInternalDtoCategoryFiltersDTO {
+  attributes?: GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO[];
+  manufacturers?: GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO[];
+  price?: GithubComStickproGoStoreInternalDtoCategoryPriceRangeDTO;
+  stock_statuses?: GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO[];
+}
+
+export interface GithubComStickproGoStoreInternalDtoCategoryPriceRangeDTO {
+  max?: number;
+  min?: number;
+}
+
+export interface GithubComStickproGoStoreInternalDtoCategoryProductsResultDTO {
+  facet_stats?: Record<
+    string,
+    GithubComStickproGoStoreInternalDtoCategoryFacetStat
+  >;
+  facets?: Record<string, Record<string, number>>;
+  items?: GithubComStickproGoStoreInternalDtoEnrichedVariantDTO[];
+  pagination?: FullPagingData;
+}
+
+export interface GithubComStickproGoStoreInternalDtoEnrichedVariantDTO {
+  category_id?: UuidNullUUID;
+  /**
+   * CategoryIDs holds the variant's category plus all its ancestors (and the same
+   * for its additional categories) so the search index can filter a whole subtree.
+   */
+  category_ids?: string[];
+  created_at?: PgtypeTimestamp;
+  description?: PgtypeText;
+  id?: string;
+  /**
+   * Image is the product's main image (first by product_media.sort_order), baked into
+   * the search document; nil when the product has no gallery.
+   */
+  image?: GithubComStickproGoStoreInternalDtoImageDTO;
+  is_enable?: boolean;
+  manufacturer_id?: UuidNullUUID;
+  meta_description?: PgtypeText;
+  meta_h1?: PgtypeText;
+  meta_keyword?: PgtypeText;
+  meta_title?: PgtypeText;
+  model?: string;
+  name?: string;
+  price_business?: number;
+  price_retail?: number;
+  price_wholesale?: number;
+  product_id?: string;
+  slug?: string;
+  sort_order?: number;
+  stock_status?: StockStatus;
+  updated_at?: PgtypeTimestamp;
+  viewed?: number;
+}
+
+export interface GithubComStickproGoStoreInternalDtoImageDTO {
+  alt?: string;
+  height?: number;
+  id?: string;
+  presets?: Record<string, Record<string, string>>;
+  width?: number;
 }
 
 export interface GithubComStickproGoStoreInternalModelsAttribute {
@@ -1017,6 +1196,7 @@ export interface GithubComStickproGoStoreInternalModelsProduct {
   external_id?: PgtypeText;
   height?: number;
   id?: string;
+  image?: PgtypeText;
   is_enable?: boolean;
   isbn?: PgtypeText;
   jan?: PgtypeText;
@@ -1024,9 +1204,10 @@ export interface GithubComStickproGoStoreInternalModelsProduct {
   location?: PgtypeText;
   manufacturer_id?: UuidNullUUID;
   minimum?: number;
-  model?: string;
   mpn?: PgtypeText;
-  price?: number;
+  price_business?: number;
+  price_retail?: number;
+  price_wholesale?: number;
   quantity?: number;
   sku?: PgtypeText;
   sort_order?: number;
@@ -1044,6 +1225,7 @@ export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProd
   external_id?: PgtypeText;
   height?: number;
   id?: string;
+  image?: PgtypeText;
   is_enable?: boolean;
   isbn?: PgtypeText;
   jan?: PgtypeText;
@@ -1051,9 +1233,10 @@ export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProd
   location?: PgtypeText;
   manufacturer_id?: UuidNullUUID;
   minimum?: number;
-  model?: string;
   mpn?: PgtypeText;
-  price?: number;
+  price_business?: number;
+  price_retail?: number;
+  price_wholesale?: number;
   quantity?: number;
   sku?: PgtypeText;
   sort_order?: number;

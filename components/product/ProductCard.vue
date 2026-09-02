@@ -5,12 +5,13 @@
   >
     <!-- Product Image -->
     <div class="relative w-full h-[190px] bg-white flex items-center justify-center mb-4">
-      <img
-        v-if="productImage"
-        :src="config.public.storageUrl + productImage"
+      <ProductPicture
+        v-if="hasCardImage"
+        :image="product.image"
+        preset="card"
         :alt="product.name"
         class="w-full h-full object-contain"
-      >
+      />
       <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
         <svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -46,8 +47,10 @@
 
 <script setup lang="ts">
 import type { ShortProduct } from '~/repository/types/api/generatedApiGo';
+import ProductPicture from '~/components/product/ProductPicture.vue';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
 import { useCartStore } from '~/stores/cart';
+import { imageHasMedia } from '~/utils/media';
 
 interface Props {
   product: ShortProduct;
@@ -60,20 +63,16 @@ const props = withDefaults(defineProps<Props>(), {
 
 const cartStore = useCartStore();
 const adding = ref(false);
-
-const productImage = computed(() => {
-  if (typeof props.product.image === 'string') {
-    return props.product.image;
-  }
-  return props.product.image?.string || '';
-});
-
-const config = useRuntimeConfig();
+const hasCardImage = computed(() => imageHasMedia(props.product.image, 'card'));
 
 
-function formatPrice(price?: number): string {
-  if (!price) return '0';
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+function formatPrice(price?: number | string): string {
+  const n = typeof price === 'string' ? Number(price.replace(',', '.')) : price;
+  if (n == null || !Number.isFinite(n)) return '0';
+
+  const [integer, fraction] = n.toString().split('.');
+  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return fraction ? `${grouped}.${fraction}` : grouped;
 }
 
 async function addToCart() {

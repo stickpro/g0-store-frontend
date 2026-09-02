@@ -32,14 +32,15 @@ export default defineNuxtPlugin(() => {
         sessionId.value = crypto.randomUUID();
     }
 
+    const authToken = useState<string | null>('authToken', () => null);
+
     const fetchOptions: FetchOptions<'json'> = {
         baseURL: config.public.apiUrl,
         onRequest({ options }: FetchContext) {
             options.headers = new Headers(options.headers);
             options.headers.set('X-Session-ID', sessionId.value!);
-            const token = useState('authToken').value;
-            if (token) {
-                options.headers.set('Authorization', `Bearer ${token}`);
+            if (authToken.value) {
+                options.headers.set('Authorization', `Bearer ${authToken.value}`);
             }
         },
     };

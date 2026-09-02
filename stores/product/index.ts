@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { AttributeGroupWithValuesDTO, ProductWithMediumResponse, ShortProduct, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
+import type { AttributeGroupWithValuesDTO, BreadcrumbDTO, ProductWithMediumResponse, ShortProduct, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
 
 const CACHE_SIZE = 10;
 
@@ -18,6 +18,7 @@ type State = {
     attributesLoading: Record<string, boolean>;
     reviews: Record<string, ProductReviewResponse[]>; // Отзывы товара по slug
     reviewsLoading: Record<string, boolean>;
+    breadcrumbs: Record<string, BreadcrumbDTO[]>;
 }
 
 export const useProductStore = defineStore('Product', {
@@ -32,6 +33,7 @@ export const useProductStore = defineStore('Product', {
             attributesLoading: {},
             reviews: {},
             reviewsLoading: {},
+            breadcrumbs: {},
         }
     },
 
@@ -71,9 +73,6 @@ export const useProductStore = defineStore('Product', {
          * @returns ProductWithMediumResponse или undefined
          */
         async loadProductBySlug(slug: string) {
-            if (!import.meta.client) return;
-
-            // Если товар уже загружен, обновляем порядок доступа и возвращаем
             if (this.products[slug]) {
                 this.updateAccessOrder(slug);
                 return this.products[slug].data;
@@ -150,8 +149,6 @@ export const useProductStore = defineStore('Product', {
          * @returns ShortProduct[] или пустой массив
          */
         async loadRelatedProducts(slug: string) {
-            if (!import.meta.client) return;
-
             if (this.relatedProducts[slug]) {
                 return this.relatedProducts[slug];
             }
@@ -177,9 +174,6 @@ export const useProductStore = defineStore('Product', {
          * @returns AttributeGroupWithValuesDTO[] или пустой массив
          */
         async loadAttributes(slug: string) {
-            if (!import.meta.client) return;
-
-            // Если атрибуты уже загружены, возвращаем их
             if (this.attributes[slug]) {
                 return this.attributes[slug];
             }
@@ -205,9 +199,6 @@ export const useProductStore = defineStore('Product', {
          * @returns ProductReviewResponse[] или пустой массив
          */
         async loadReviews(slug: string) {
-            if (!import.meta.client) return;
-
-            // Если отзывы уже загружены, возвращаем их
             if (this.reviews[slug]) {
                 return this.reviews[slug];
             }
@@ -224,6 +215,23 @@ export const useProductStore = defineStore('Product', {
                 return [];
             } finally {
                 this.reviewsLoading[slug] = false;
+            }
+        },
+
+        async loadBreadcrumbs(slug: string) {
+            if (this.breadcrumbs[slug]) {
+                return this.breadcrumbs[slug];
+            }
+
+            const { $api } = useNuxtApp();
+
+            try {
+                const breadcrumbs = await $api.product.getBreadcrumbsBySlug(slug);
+                this.breadcrumbs[slug] = breadcrumbs;
+                return breadcrumbs;
+            } catch (error) {
+                console.error('Error loading product breadcrumbs:', error);
+                return [];
             }
         }
     },
@@ -297,6 +305,10 @@ export const useProductStore = defineStore('Product', {
          */
         isReviewsLoading: (state) => (slug: string) => {
             return state.reviewsLoading[slug] || false;
+        },
+
+        getBreadcrumbs: (state) => (slug: string): BreadcrumbDTO[] => {
+            return state.breadcrumbs[slug] || [];
         }
     }
 });

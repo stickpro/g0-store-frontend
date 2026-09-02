@@ -1,41 +1,31 @@
 <template>
-  <nav v-if="displayBreadcrumbs.length > 0" class="flex items-center gap-2 text-[13px]">
-    <NuxtLink
-        to="/"
-        class="flex items-center gap-2"
-    >
-      <img src="@/assets/icons/home.svg" alt="Главная">
+  <nav class="flex items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
+    <NuxtLink to="/" class="flex size-6 items-center justify-center rounded-full p-1">
+      <img src="@/assets/icons/home.svg" alt="Главная" class="size-4">
     </NuxtLink>
-    <img src="@/assets/icons/chevron_right.svg" alt="arrow">
+    <img src="@/assets/icons/chevron_right.svg" alt="" class="size-4">
     <NuxtLink
-        to="/catalog"
-        class="flex items-center gap-2"
+        to="/category"
+        class="rounded-full px-2 py-1 text-[13px] leading-4 text-zinc-950 hover:text-zinc-600"
     >
-      <span
-          class="text-zinc-950 text-[13px]"
-      >
-        Каталог
-      </span>
+      Каталог
     </NuxtLink>
-    <img src="@/assets/icons/chevron_right.svg" alt="arrow">
-    <NuxtLink
-        v-for="(crumb, index) in displayBreadcrumbs"
-        :key="crumb.id || crumb.slug || index"
-        :to="crumb.url"
-        class="flex items-center gap-2"
-    >
+    <template v-for="(crumb, index) in displayBreadcrumbs" :key="crumb.id || crumb.slug || index">
+      <img src="@/assets/icons/chevron_right.svg" alt="" class="size-4">
       <span
-          class="text-zinc-950 hover:text-zinc-600 text-[13px]"
+          v-if="crumb.current || index === displayBreadcrumbs.length - 1"
+          class="rounded-full px-2 py-1 text-[13px] leading-4 text-zinc-950"
       >
         {{ crumb.title }}
       </span>
-      <span
-          v-if="index < displayBreadcrumbs.length - 1"
-          class="text-zinc-400 text-[13px]"
+      <NuxtLink
+          v-else
+          :to="crumb.url"
+          class="rounded-full px-2 py-1 text-[13px] leading-4 text-zinc-950 hover:text-zinc-600"
       >
-        <img src="@/assets/icons/chevron_right.svg" alt="arrow">
-      </span>
-    </NuxtLink>
+        {{ crumb.title }}
+      </NuxtLink>
+    </template>
   </nav>
 </template>
 
@@ -47,6 +37,7 @@ interface BreadcrumbItem {
   title: string;
   slug?: string;
   url: string;
+  current?: boolean;
 }
 
 interface Props {
@@ -72,9 +63,9 @@ if (props.productSlug) {
 const transformBreadcrumb = (crumb: BreadcrumbDTO): BreadcrumbItem => {
   return {
     id: crumb.id,
-    title: crumb.meta_title || crumb.name || crumb.slug || '',
+    title: crumb.name || crumb.slug || '',
     slug: crumb.slug,
-    url: `/catalog/${crumb.slug}`
+    url: `/category/${crumb.slug}`
   };
 };
 

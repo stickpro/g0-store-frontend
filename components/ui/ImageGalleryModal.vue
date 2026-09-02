@@ -21,11 +21,13 @@
         </div>
 
         <div class="relative w-full h-full flex items-center justify-center p-16" @click.stop>
-          <img
-              :src="config.public.storageUrl + images[currentIndex]"
-              :alt="`Изображение ${currentIndex + 1}`"
+          <ProductPicture
+              v-if="currentImage"
+              :image="currentImage"
+              preset="zoom"
+              :alt="currentImage.alt || `Изображение ${currentIndex + 1}`"
               class="max-w-full max-h-full object-contain"
-          >
+          />
         </div>
 
         <button
@@ -46,7 +48,7 @@
             @click.stop="nextImage"
         >
           <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7 7-7"/>
           </svg>
         </button>
 
@@ -56,18 +58,19 @@
         >
           <button
               v-for="(image, index) in images"
-              :key="index"
+              :key="image.id || index"
               :class="[
                 'flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all',
                 currentIndex === index ? 'border-orange-500' : 'border-white/30 hover:border-white/60'
               ]"
               @click.stop="currentIndex = index"
           >
-            <img
-                :src="config.public.storageUrl + image"
-                :alt="`Миниатюра ${index + 1}`"
+            <ProductPicture
+                :image="image"
+                preset="thumb"
+                :alt="image.alt || `Миниатюра ${index + 1}`"
                 class="w-full h-full object-cover"
-            >
+            />
           </button>
         </div>
       </div>
@@ -76,9 +79,12 @@
 </template>
 
 <script setup lang="ts">
+import ProductPicture from '~/components/product/ProductPicture.vue'
+import type { StoreImage } from '~/utils/media'
+
 const props = defineProps<{
   isOpen: boolean
-  images: string[]
+  images: StoreImage[]
   initialIndex?: number
 }>()
 
@@ -86,15 +92,16 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const config = useRuntimeConfig()
 const currentIndex = ref(props.initialIndex || 0)
+const currentImage = computed(() => props.images[currentIndex.value])
 
-// Навигация
 const nextImage = () => {
+  if (!props.images.length) return
   currentIndex.value = (currentIndex.value + 1) % props.images.length
 }
 
 const previousImage = () => {
+  if (!props.images.length) return
   currentIndex.value = currentIndex.value === 0 ? props.images.length - 1 : currentIndex.value - 1
 }
 
@@ -102,7 +109,6 @@ const close = () => {
   emit('close')
 }
 
-// Обработка клавиш
 const handleKeydown = (e: KeyboardEvent) => {
   if (!props.isOpen) return
 
@@ -119,7 +125,6 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 }
 
-// Блокировка скролла body при открытой модалке
 watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     document.body.style.overflow = 'hidden'

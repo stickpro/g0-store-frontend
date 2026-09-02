@@ -16,9 +16,12 @@
 
           <!-- Кнопка Каталог -->
           <button
-              class="relative z-20 flex items-center space-x-2 rounded-full border border-zinc-600 bg-transparent px-4 py-3 mx-2 hover:bg-gray-50">
-            <IconCatalog/>
-            <span class="font-sans font-semibold">Каталог</span>
+              class="relative z-20 flex items-center space-x-2 rounded-full border border-zinc-600 px-3 py-3 mx-2"
+              :class="catalogOpen ? 'bg-zinc-600/5 backdrop-blur-md' : 'bg-transparent hover:bg-gray-50'"
+              @click="catalogOpen = !catalogOpen">
+            <IconXmark v-if="catalogOpen"/>
+            <IconCatalog v-else/>
+            <span class="font-sans">Каталог</span>
           </button>
         </div>
         <div class="flex-1 mx-4 max-w-3xl z-20">
@@ -51,6 +54,7 @@
         </div>
       </div>
     </header>
+    <CatalogDropdown :open="catalogOpen" @close="catalogOpen = false"/>
     <Sidebar/>
     <CartDrawer :open="cartOpen" @close="cartOpen = false" />
   </div>
@@ -58,15 +62,18 @@
 
 <script setup lang="ts">
 import IconCatalog from "~/components/icons/IconCatalog.vue";
+import IconXmark from "~/components/icons/IconXmark.vue";
 import IconCart from "~/components/icons/IconCart.vue";
 import IconPhone from "~/components/icons/IconPhone.vue";
 import IconPersone from "~/components/icons/IconPerson.vue";
 import Sidebar from "~/components/layouts/sidebar/Sidebar.vue";
 import IconNav from "~/components/icons/IconNav.vue";
 import CartDrawer from "~/components/cart/CartDrawer.vue";
+import CatalogDropdown from "~/components/category/CatalogDropdown.vue";
 
 const { toggleSidebar } = useSidebar();
 const cartOpen = ref(false);
+const catalogOpen = ref(false);
 </script>
 
 <style scoped>
