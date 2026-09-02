@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import ProductList from '~/components/product/ProductList.vue';
+import ProductPicture from '~/components/product/ProductPicture.vue';
 import { useCartStore } from '~/stores/cart';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
+import { imageHasMedia } from '~/utils/media';
+import type { ImageDTO } from '~/repository/types/api/generatedApiGo';
 
 defineProps<{
   open: boolean;
@@ -17,22 +20,99 @@ onMounted(() => {
   cartStore.loadCart();
 });
 
-function formatPrice(price?: number) {
-  if (!price) return `0 ${CURRENCY_CODE}`;
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ' + CURRENCY_CODE;
+function formatPrice(price?: number | string) {
+  const n = typeof price === 'string' ? Number(price.replace(',', '.')) : price;
+  if (n == null || !Number.isFinite(n)) return `0 ${CURRENCY_CODE}`;
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ' + CURRENCY_CODE;
 }
 
-async function decrease(variantId: string, quantity: number) {
-  if (quantity <= 1) {
-    await cartStore.removeItem(variantId);
-  } else {
-    await cartStore.updateItem(variantId, quantity - 1);
+function hasItemImage(image?: ImageDTO) {
+  return imageHasMedia(image, 'thumb');
+}
+
+const quantityDrafts = ref<Record<string, string>>({});
+const focusedVariantId = ref<string | null>(null);
+const pendingByVariant = new Map<string, Promise<void>>();
+
+function quantityValue(variantId?: string, quantity?: number) {
+  if (variantId && focusedVariantId.value === variantId && quantityDrafts.value[variantId] !== undefined) {
+    return quantityDrafts.value[variantId];
   }
+  return String(quantity ?? 1);
 }
 
-async function increase(variantId: string, quantity: number, max?: number) {
-  if (max && quantity >= max) return;
-  await cartStore.updateItem(variantId, quantity + 1);
+function onQuantityFocus(variantId: string, quantity?: number) {
+  focusedVariantId.value = variantId;
+  quantityDrafts.value[variantId] = String(quantity ?? 1);
+}
+
+function onQuantityInput(variantId: string, event: Event) {
+  const target = event.target as HTMLInputElement;
+  quantityDrafts.value[variantId] = target.value.replace(/\D/g, '');
+}
+
+async function waitPending(variantId: string) {
+  const pending = pendingByVariant.get(variantId);
+  if (pending) await pending;
+}
+
+function queuePending(variantId: string, task: Promise<void>) {
+  pendingByVariant.set(variantId, task);
+  return task.finally(() => {
+    if (pendingByVariant.get(variantId) === task) pendingByVariant.delete(variantId);
+  });
+}
+
+function clampQuantity(value: number, max?: number) {
+  if (max && value > max) return max;
+  return value;
+}
+
+async function applyQuantity(variantId: string, next: number, current: number) {
+  if (next <= 0) {
+    await cartStore.removeItem(variantId);
+    return;
+  }
+  if (next === current) return;
+  await cartStore.updateItem(variantId, next);
+}
+
+async function commitQuantity(variantId?: string, current?: number, max?: number) {
+  if (!variantId) return;
+  if (focusedVariantId.value === variantId) focusedVariantId.value = null;
+
+  const raw = quantityDrafts.value[variantId];
+  delete quantityDrafts.value[variantId];
+  if (raw === undefined) return;
+
+  const currentQty = current ?? 1;
+  if (raw === '') return;
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed)) return;
+
+  const next = clampQuantity(parsed, max);
+  await queuePending(variantId, applyQuantity(variantId, next, currentQty));
+}
+
+function onQuantityEnter(event: KeyboardEvent) {
+  (event.target as HTMLInputElement).blur();
+}
+
+async function decrease(variantId: string) {
+  await waitPending(variantId);
+  const item = cartStore.getItemByVariantId(variantId);
+  if (!item) return;
+  await applyQuantity(variantId, (item.quantity ?? 1) - 1, item.quantity ?? 1);
+}
+
+async function increase(variantId: string) {
+  await waitPending(variantId);
+  const item = cartStore.getItemByVariantId(variantId);
+  if (!item) return;
+  const current = item.quantity ?? 1;
+  const next = clampQuantity(current + 1, item.max_quantity);
+  await applyQuantity(variantId, next, current);
 }
 </script>
 
@@ -69,12 +149,13 @@ async function increase(variantId: string, quantity: number, max?: number) {
               class="flex items-start gap-4 py-4 border-b border-dashed border-zinc-600/15"
               :class="index % 2 === 1 ? 'pl-8 border-l border-dashed border-zinc-600/15' : 'pr-8'"
             >
-              <img
-                v-if="item.image_url"
-                :src="item.image_url"
+              <ProductPicture
+                v-if="hasItemImage(item.image)"
+                :image="item.image"
+                preset="thumb"
                 :alt="item.name"
                 class="w-16 h-16 object-contain flex-shrink-0"
-              >
+              />
               <div v-else class="w-16 h-16 bg-zinc-100 rounded flex-shrink-0" />
 
               <div class="flex flex-col gap-1 flex-1 min-w-0">
@@ -85,16 +166,29 @@ async function increase(variantId: string, quantity: number, max?: number) {
                 <div class="flex items-center gap-3 mt-2">
                   <div class="flex items-center border border-zinc-200 rounded-full overflow-hidden">
                     <button
+                      type="button"
                       class="w-8 h-8 flex items-center justify-center text-zinc-600 hover:bg-zinc-100 transition-colors"
-                      @click="decrease(item.variant_id!, item.quantity!)"
+                      @click="decrease(item.variant_id!)"
                     >
                       <svg width="12" height="2" viewBox="0 0 12 2" fill="none"><path d="M1 1H11" stroke="#09090B" stroke-width="1.5" stroke-linecap="round"/></svg>
                     </button>
-                    <span class="w-8 text-center text-sm font-medium text-zinc-950">{{ item.quantity }}</span>
+                    <input
+                      class="w-10 h-8 text-center text-sm font-medium text-zinc-950 bg-transparent outline-none tabular-nums"
+                      inputmode="numeric"
+                      pattern="[0-9]*"
+                      autocomplete="off"
+                      :aria-label="`Количество ${item.name || ''}`"
+                      :value="quantityValue(item.variant_id, item.quantity)"
+                      @focus="onQuantityFocus(item.variant_id!, item.quantity)"
+                      @input="onQuantityInput(item.variant_id!, $event)"
+                      @blur="commitQuantity(item.variant_id, item.quantity, item.max_quantity)"
+                      @keydown.enter.prevent="onQuantityEnter"
+                    >
                     <button
-                      class="w-8 h-8 flex items-center justify-center text-zinc-600 hover:bg-zinc-100 transition-colors"
+                      type="button"
+                      class="w-8 h-8 flex items-center justify-center text-zinc-600 hover:bg-zinc-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       :disabled="!!item.max_quantity && item.quantity! >= item.max_quantity"
-                      @click="increase(item.variant_id!, item.quantity!, item.max_quantity)"
+                      @click="increase(item.variant_id!)"
                     >
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="#09090B" stroke-width="1.5" stroke-linecap="round"/></svg>
                     </button>

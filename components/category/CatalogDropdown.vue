@@ -10,13 +10,16 @@
         </div>
 
         <div v-else-if="categories.length > 0" class="flex h-full min-w-0 flex-1">
-          <ul class="flex h-full w-[304px] shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-zinc-600/15 py-6 catalog-scroll">
+          <ul
+              class="flex h-full w-[304px] shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-zinc-600/15 py-6 catalog-scroll"
+              @mouseleave="clearHoverTimer"
+          >
             <li v-for="(category, index) in categories" :key="category.id">
               <NuxtLink
                   :to="`/category/${category.slug}`"
                   class="flex h-8 items-center px-3 text-[15px] leading-4 text-zinc-950"
                   :class="selectedIndex === index ? 'bg-zinc-600/5' : 'hover:bg-zinc-600/5'"
-                  @mouseenter="selectedIndex = index"
+                  @mouseenter="scheduleSelect(index)"
                   @click="close"
               >
                 {{ category.name }}
@@ -26,6 +29,7 @@
               <NuxtLink
                   to="/category"
                   class="flex h-8 items-center justify-between px-3 text-[15px] leading-4 text-zinc-950 hover:bg-zinc-600/5"
+                  @mouseenter="clearHoverTimer"
                   @click="close"
               >
                 Все категории
@@ -39,6 +43,7 @@
           <div
               v-if="selectedCategory?.children?.length"
               class="grid h-full min-w-0 flex-1 grid-cols-3"
+              @mouseenter="clearHoverTimer"
           >
             <div
                 v-for="(column, columnIndex) in groupColumns"
@@ -100,8 +105,30 @@ const categories = computed(() => categoryStore.getTree);
 const isLoading = computed(() => categoryStore.isLoading);
 
 const COLUMN_COUNT = 3;
+const HOVER_DELAY_MS = 220;
 const selectedIndex = ref(0);
 const selectedCategory = computed(() => categories.value[selectedIndex.value]);
+
+let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearHoverTimer() {
+  if (!hoverTimer) return;
+  clearTimeout(hoverTimer);
+  hoverTimer = null;
+}
+
+function scheduleSelect(index: number) {
+  if (index === selectedIndex.value) {
+    clearHoverTimer();
+    return;
+  }
+
+  clearHoverTimer();
+  hoverTimer = setTimeout(() => {
+    selectedIndex.value = index;
+    hoverTimer = null;
+  }, HOVER_DELAY_MS);
+}
 
 const groupColumns = computed(() => {
   const groups = selectedCategory.value?.children ?? [];
@@ -131,6 +158,7 @@ watch(
     (isOpen) => {
       lockBodyScroll(isOpen);
       if (isOpen) {
+        clearHoverTimer();
         selectedIndex.value = 0;
         categoryStore.loadTree();
       }
@@ -138,7 +166,10 @@ watch(
     { immediate: true },
 );
 
-onUnmounted(() => lockBodyScroll(false));
+onUnmounted(() => {
+  clearHoverTimer();
+  lockBodyScroll(false);
+});
 </script>
 
 <style scoped>

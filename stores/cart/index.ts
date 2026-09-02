@@ -1,10 +1,15 @@
 import { defineStore } from 'pinia';
-import type { AddCartItemRequest, CartItemResponse } from "~/repository/types/api/generatedApiGo";
+import type { AddCartItemRequest, CartItemResponse, CartResponse } from "~/repository/types/api/generatedApiGo";
 
 type State = {
     items: CartItemResponse[];
     totalPrice: number;
     loading: boolean;
+}
+
+function parsePrice(value: unknown): number {
+    const n = typeof value === 'string' ? Number(value.replace(',', '.')) : Number(value);
+    return Number.isFinite(n) ? n : 0;
 }
 
 export const useCartStore = defineStore('Cart', {
@@ -22,9 +27,7 @@ export const useCartStore = defineStore('Cart', {
             this.loading = true;
 
             try {
-                const cart = await $api.cart.getCart();
-                this.items = cart.items || [];
-                this.totalPrice = cart.total_price || 0;
+                this.applyCart(await $api.cart.getCart());
             } catch (error) {
                 console.error('Error loading cart:', error);
             } finally {
@@ -38,9 +41,7 @@ export const useCartStore = defineStore('Cart', {
             const { $api } = useNuxtApp();
 
             try {
-                const cart = await $api.cart.addItem(request);
-                this.items = cart.items || [];
-                this.totalPrice = cart.total_price || 0;
+                this.applyCart(await $api.cart.addItem(request));
             } catch (error) {
                 console.error('Error adding item to cart:', error);
                 throw error;
@@ -53,9 +54,7 @@ export const useCartStore = defineStore('Cart', {
             const { $api } = useNuxtApp();
 
             try {
-                const cart = await $api.cart.updateItem(variantId, { quantity });
-                this.items = cart.items || [];
-                this.totalPrice = cart.total_price || 0;
+                this.applyCart(await $api.cart.updateItem(variantId, { quantity }));
             } catch (error) {
                 console.error('Error updating cart item:', error);
                 throw error;
@@ -68,9 +67,7 @@ export const useCartStore = defineStore('Cart', {
             const { $api } = useNuxtApp();
 
             try {
-                const cart = await $api.cart.removeItem(variantId);
-                this.items = cart.items || [];
-                this.totalPrice = cart.total_price || 0;
+                this.applyCart(await $api.cart.removeItem(variantId));
             } catch (error) {
                 console.error('Error removing cart item:', error);
                 throw error;
@@ -90,6 +87,11 @@ export const useCartStore = defineStore('Cart', {
                 console.error('Error clearing cart:', error);
                 throw error;
             }
+        },
+
+        applyCart(cart: CartResponse) {
+            this.items = cart.items || [];
+            this.totalPrice = parsePrice(cart.total_price);
         },
     },
 

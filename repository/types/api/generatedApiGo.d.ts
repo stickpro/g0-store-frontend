@@ -122,7 +122,7 @@ export interface BreadcrumbDTO {
 
 export interface CartItemResponse {
   available?: boolean;
-  image_url?: string;
+  image?: ImageDTO;
   max_quantity?: number;
   name?: string;
   price?: number;
@@ -986,7 +986,7 @@ export interface VariantCategoryResponse {
 }
 
 export interface ViewedItemResponse {
-  image_url?: string;
+  image?: ImageDTO;
   name?: string;
   price?: number;
   product_id?: string;

@@ -31,7 +31,8 @@
           <span class="font-bold">{{ formatPrice(product?.price_retail || 0) }}</span>
         </div>
         <button
-            class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors"
+            class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            :disabled="adding"
             @click="addToCart"
         >
           <img src="@/assets/icons/add_shopping_cart.svg" alt="add_cart">
@@ -127,7 +128,8 @@
 
               <!-- Кнопка купить -->
               <button
-                  class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors mb-8"
+                  class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed"
+                  :disabled="adding"
                   @click="addToCart"
               >
                 <img src="@/assets/icons/add_shopping_cart.svg" alt="add_cart">
@@ -437,6 +439,7 @@ import ImageGalleryModal from '@/components/ui/ImageGalleryModal.vue'
 import ProductPicture from '@/components/product/ProductPicture.vue'
 import ProductList from '@/components/product/ProductList.vue'
 import {useProductStore} from '@/stores/product/';
+import {useCartStore} from '@/stores/cart';
 import {useGeoStore} from '@/stores/geo';
 import {formatPrice} from '@/utils/formatters/price';
 import {getStockStatusLabel} from '~/utils/constants/stockStatus';
@@ -455,7 +458,9 @@ definePageMeta({
 
 const route = useRoute();
 const productStore = useProductStore();
+const cartStore = useCartStore();
 const geoStore = useGeoStore();
+const adding = ref(false);
 const config = useRuntimeConfig();
 const requestURL = useRequestURL();
 
@@ -661,9 +666,20 @@ const deliveryOptions = computed(() => {
   ];
 });
 
-function addToCart() {
-  if (product.value) {
-    console.log('Добавление товара в корзину:', product.value);
+async function addToCart() {
+  const current = product.value;
+  const variantId = current?.variant?.id;
+  if (adding.value || !current?.id || !variantId) return;
+
+  adding.value = true;
+  try {
+    await cartStore.addItem({
+      product_id: current.id,
+      variant_id: variantId,
+      quantity: current.minimum && current.minimum > 0 ? current.minimum : 1,
+    });
+  } finally {
+    adding.value = false;
   }
 }
 </script>

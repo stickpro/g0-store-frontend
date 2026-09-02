@@ -20,7 +20,7 @@ class CartModule extends HttpFactory {
     }
 
     async updateItem(variantId: string, body: UpdateCartItemRequest): Promise<CartResponse> {
-        const response = await this.put<JSONResponseCartResponse>(`${this.RESOURCE}/items/${variantId}`, body);
+        const response = await this.patch<JSONResponseCartResponse>(`${this.RESOURCE}/items/${variantId}`, body);
         return response.data || {};
     }
 
