@@ -24,7 +24,7 @@
           <button class="text-gray-600 hover:text-gray-800 p-3">
             <IconPhone/>
           </button>
-          <button class="text-gray-600 hover:text-gray-800 p-3">
+          <button class="text-gray-600 hover:text-gray-800 p-3" type="button" aria-label="Профиль" @click="openAuth">
             <IconPerson/>
           </button>
         </div>
@@ -74,9 +74,19 @@ import IconCatalog from "~/components/icons/IconCatalog.vue";
 import Login from "~/components/user/Login.vue";
 import WorkingHours from "~/components/layouts/sidebar/WorkingHours.vue";
 import InfoCompany from "~/components/company/InfoCompany.vue";
+import { useAuthStore } from "~/stores/auth";
 
 const route = useRoute()
 const {isOpen, closeSidebar} = useSidebar()
+const authStore = useAuthStore()
+
+function openAuth() {
+  closeSidebar()
+  if (authStore.isAuthenticated) {
+    return navigateTo('/account')
+  }
+  authStore.openModal()
+}
 
 watch(() => route.fullPath, () => {
   if (isOpen.value) closeSidebar()

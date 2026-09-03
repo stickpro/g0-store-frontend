@@ -52,7 +52,13 @@
               <button class="text-gray-600 hover:text-gray-800 p-3">
                 <IconPhone/>
               </button>
-              <button class="text-gray-600 hover:text-gray-800 p-3">
+              <button
+                  class="text-gray-600 hover:text-gray-800 p-3"
+                  :class="{ 'text-blue-600': authStore.isAuthenticated }"
+                  type="button"
+                  aria-label="Профиль"
+                  @click="openProfile"
+              >
                 <IconPersone/>
               </button>
             </div>
@@ -64,6 +70,7 @@
     <SearchDropdown :open="searchOpen" :query="searchQuery" @close="searchOpen = false"/>
     <Sidebar/>
     <CartDrawer :open="cartOpen" @close="cartOpen = false" />
+    <AuthModal />
   </div>
 </template>
 
@@ -78,9 +85,12 @@ import IconNav from "~/components/icons/IconNav.vue";
 import CartDrawer from "~/components/cart/CartDrawer.vue";
 import CatalogDropdown from "~/components/category/CatalogDropdown.vue";
 import SearchDropdown from "~/components/search/SearchDropdown.vue";
+import AuthModal from "~/components/user/AuthModal.vue";
+import { useAuthStore } from "~/stores/auth";
 
 const route = useRoute();
 const { toggleSidebar } = useSidebar();
+const authStore = useAuthStore();
 const cartOpen = ref(false);
 const catalogOpen = ref(false);
 const searchOpen = ref(false);
@@ -121,6 +131,13 @@ function openCart() {
   cartOpen.value = true;
   catalogOpen.value = false;
   searchOpen.value = false;
+}
+
+function openProfile() {
+  if (authStore.isAuthenticated) {
+    return navigateTo('/account');
+  }
+  authStore.openModal();
 }
 
 function submitSearch() {

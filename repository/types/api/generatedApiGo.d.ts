@@ -40,6 +40,30 @@ export interface AddCartItemRequest {
   variant_id: string;
 }
 
+export interface Attribute {
+  attribute_group_id?: UuidNullUUID;
+  created_at?: PgtypeTimestamp;
+  id?: string;
+  is_filterable?: PgtypeBool;
+  is_required?: PgtypeBool;
+  is_visible?: PgtypeBool;
+  name?: string;
+  slug?: string;
+  sort_order?: PgtypeInt4;
+  type?: string;
+  unit?: PgtypeText;
+  updated_at?: PgtypeTimestamp;
+}
+
+export interface AttributeGroup {
+  created_at?: PgtypeTimestamp;
+  description?: PgtypeText;
+  id?: string;
+  name?: string;
+  slug?: string;
+  updated_at?: PgtypeTimestamp;
+}
+
 export interface AttributeGroupResponse {
   attributes?: AttributeResponse[];
   group_description?: string;
@@ -206,6 +230,15 @@ export interface CityResponse {
   settlement_type?: string;
   tax_office?: string;
   timezone?: string;
+}
+
+export interface Collection {
+  created_at?: PgtypeTimestamptz;
+  description?: PgtypeText;
+  id?: string;
+  name?: string;
+  slug?: string;
+  updated_at?: PgtypeTimestamptz;
 }
 
 export interface CollectionResponse {
@@ -508,15 +541,27 @@ export interface JSONResponseProductWithMediumResponse {
   message?: string;
 }
 
-export interface JSONResponseRegisterUserResponse {
+export interface JSONResponseResponseWithFullPaginationAttribute {
   code?: number;
-  data?: RegisterUserResponse;
+  data?: ResponseWithFullPaginationAttribute;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationAttributeGroup {
+  code?: number;
+  data?: ResponseWithFullPaginationAttributeGroup;
   message?: string;
 }
 
 export interface JSONResponseResponseWithFullPaginationCategoryResponse {
   code?: number;
   data?: ResponseWithFullPaginationCategoryResponse;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationCollection {
+  code?: number;
+  data?: ResponseWithFullPaginationCollection;
   message?: string;
 }
 
@@ -544,27 +589,15 @@ export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreI
   message?: string;
 }
 
-export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttribute {
-  code?: number;
-  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttribute;
-  message?: string;
-}
-
-export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttributeGroup {
-  code?: number;
-  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttributeGroup;
-  message?: string;
-}
-
-export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
-  code?: number;
-  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection;
-  message?: string;
-}
-
 export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
   code?: number;
   data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow;
+  message?: string;
+}
+
+export interface JSONResponseSendCodeResponse {
+  code?: number;
+  data?: SendCodeResponse;
   message?: string;
 }
 
@@ -769,27 +802,23 @@ export interface ProductWithMediumResponse {
   product?: ProductResponse;
 }
 
-export interface RegisterRequest {
-  email: string;
-  /**
-   * @minLength 2
-   * @maxLength 2
-   */
-  language: string;
-  location: string;
-  /**
-   * @minLength 8
-   * @maxLength 32
-   */
-  password: string;
+export interface ResponseWithFullPaginationAttribute {
+  items?: Attribute[];
+  pagination?: FullPagingData;
 }
 
-export interface RegisterUserResponse {
-  token?: string;
+export interface ResponseWithFullPaginationAttributeGroup {
+  items?: AttributeGroup[];
+  pagination?: FullPagingData;
 }
 
 export interface ResponseWithFullPaginationCategoryResponse {
   items?: CategoryResponse[];
+  pagination?: FullPagingData;
+}
+
+export interface ResponseWithFullPaginationCollection {
+  items?: Collection[];
   pagination?: FullPagingData;
 }
 
@@ -813,24 +842,17 @@ export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalDtoEn
   pagination?: FullPagingData;
 }
 
-export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttribute {
-  items?: GithubComStickproGoStoreInternalModelsAttribute[];
-  pagination?: FullPagingData;
-}
-
-export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsAttributeGroup {
-  items?: GithubComStickproGoStoreInternalModelsAttributeGroup[];
-  pagination?: FullPagingData;
-}
-
-export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
-  items?: GithubComStickproGoStoreInternalModelsCollection[];
-  pagination?: FullPagingData;
-}
-
 export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
   items?: GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow[];
   pagination?: FullPagingData;
+}
+
+export interface SendCodeRequest {
+  email: string;
+}
+
+export interface SendCodeResponse {
+  sent?: boolean;
 }
 
 export interface SyncRelatedProductRequest {
@@ -1026,6 +1048,11 @@ export interface VariantListResponse {
   pagination?: FullPagingData;
 }
 
+export interface VerifyCodeRequest {
+  code: string;
+  email: string;
+}
+
 export interface ViewedItemResponse {
   image?: ImageDTO;
   name?: string;
@@ -1109,39 +1136,6 @@ export interface GithubComStickproGoStoreInternalDtoImageDTO {
   id?: string;
   presets?: Record<string, Record<string, string>>;
   width?: number;
-}
-
-export interface GithubComStickproGoStoreInternalModelsAttribute {
-  attribute_group_id?: UuidNullUUID;
-  created_at?: PgtypeTimestamp;
-  id?: string;
-  is_filterable?: PgtypeBool;
-  is_required?: PgtypeBool;
-  is_visible?: PgtypeBool;
-  name?: string;
-  slug?: string;
-  sort_order?: PgtypeInt4;
-  type?: string;
-  unit?: PgtypeText;
-  updated_at?: PgtypeTimestamp;
-}
-
-export interface GithubComStickproGoStoreInternalModelsAttributeGroup {
-  created_at?: PgtypeTimestamp;
-  description?: PgtypeText;
-  id?: string;
-  name?: string;
-  slug?: string;
-  updated_at?: PgtypeTimestamp;
-}
-
-export interface GithubComStickproGoStoreInternalModelsCollection {
-  created_at?: PgtypeTimestamptz;
-  description?: PgtypeText;
-  id?: string;
-  name?: string;
-  slug?: string;
-  updated_at?: PgtypeTimestamptz;
 }
 
 export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {

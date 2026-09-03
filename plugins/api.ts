@@ -5,7 +5,9 @@ import ProductModule from "~/repository/modules/product";
 import CategoryModule from "~/repository/modules/category";
 import CartModule from "~/repository/modules/cart";
 import SearchModule from "~/repository/modules/search";
+import AuthModule from "~/repository/modules/auth";
 import type { FetchOptions, FetchContext } from "ofetch";
+import { USER } from "~/utils/constants/user";
 
 interface IApiInstance {
     geo: GeoModule;
@@ -14,6 +16,7 @@ interface IApiInstance {
     category: CategoryModule;
     cart: CartModule;
     search: SearchModule;
+    auth: AuthModule;
 }
 
 declare module "#app" {
@@ -22,7 +25,9 @@ declare module "#app" {
     }
 }
 
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin({
+    name: 'api',
+    setup() {
     const config = useRuntimeConfig()
 
     const sessionId = useCookie('session_id', {
@@ -34,7 +39,11 @@ export default defineNuxtPlugin(() => {
         sessionId.value = crypto.randomUUID();
     }
 
-    const authToken = useState<string | null>('authToken', () => null);
+    const authToken = useCookie<string | null>(USER.TOKEN_KEY_LS, {
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: 'lax',
+        path: '/',
+    });
 
     const fetchOptions: FetchOptions<'json'> = {
         baseURL: config.public.apiUrl,
@@ -54,6 +63,7 @@ export default defineNuxtPlugin(() => {
         category: new CategoryModule(fetchOptions),
         cart: new CartModule(fetchOptions),
         search: new SearchModule(fetchOptions),
+        auth: new AuthModule(fetchOptions),
     };
 
     return {
@@ -61,4 +71,5 @@ export default defineNuxtPlugin(() => {
             api: modules,
         },
     };
+    },
 });
