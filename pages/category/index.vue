@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import Breadcrumbs from '~/components/ui/Breadcrumbs.vue';
 import { useCategoryStore } from '@/stores/category';
-import type { CategoryTreeDTO } from '~/repository/types/api/generatedApiGo';
+import type { CategoryTreeResponse } from '~/repository/types/api/generatedApiGo';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd } from '~/utils/seo';
 
 const categoryStore = useCategoryStore();
@@ -101,10 +101,10 @@ function matchesQuery(name: string | undefined, query: string) {
   return (name ?? '').toLowerCase().includes(query);
 }
 
-function filterCategory(category: CategoryTreeDTO, query: string): CategoryTreeDTO | null {
+function filterCategory(category: CategoryTreeResponse, query: string): CategoryTreeResponse | null {
   const children = (category.children ?? [])
       .map((child) => filterCategory(child, query))
-      .filter((child): child is CategoryTreeDTO => child !== null);
+      .filter((child): child is CategoryTreeResponse => child !== null);
 
   if (matchesQuery(category.name, query) || children.length > 0) {
     return { ...category, children };
@@ -119,7 +119,7 @@ const visibleCategories = computed(() => {
 
   return categories.value
       .map((category) => filterCategory(category, query))
-      .filter((category): category is CategoryTreeDTO => category !== null);
+      .filter((category): category is CategoryTreeResponse => category !== null);
 });
 
 const pageUrl = computed(() => `${requestURL.origin}/category`);

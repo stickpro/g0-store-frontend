@@ -1,30 +1,30 @@
 import { defineStore } from 'pinia';
 import type {
-    BreadcrumbDTO,
+    BreadcrumbResponse,
+    CategoryFiltersResponse,
     CategoryResponse,
-    CategoryTreeDTO,
+    CategoryTreeResponse,
     FullPagingData,
-    GithubComStickproGoStoreInternalDtoCategoryFiltersDTO,
-    GithubComStickproGoStoreInternalDtoEnrichedVariantDTO,
+    VariantCardResponse,
 } from "~/repository/types/api/generatedApiGo";
 import type { CategoryProductsParams } from '~/repository/modules/category';
 
 type ProductsState = {
-    items: GithubComStickproGoStoreInternalDtoEnrichedVariantDTO[];
+    items: VariantCardResponse[];
     pagination: FullPagingData | null;
 }
 
 type State = {
-    tree: CategoryTreeDTO[];
+    tree: CategoryTreeResponse[];
     loading: boolean;
     loaded: boolean;
     details: Record<string, CategoryResponse>;
     detailsLoading: Record<string, boolean>;
     products: Record<string, ProductsState>;
     productsLoading: Record<string, boolean>;
-    filters: Record<string, GithubComStickproGoStoreInternalDtoCategoryFiltersDTO>;
+    filters: Record<string, CategoryFiltersResponse>;
     filtersLoading: Record<string, boolean>;
-    breadcrumbs: Record<string, BreadcrumbDTO[]>;
+    breadcrumbs: Record<string, BreadcrumbResponse[]>;
 }
 
 export const useCategoryStore = defineStore('Category', {

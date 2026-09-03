@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
-import type { Collection, FullPagingData, CollectionWithProductResponse } from "~/repository/types/api/generatedApiGo";
+import type { CollectionResponse, FullPagingData, CollectionWithProductResponse } from "~/repository/types/api/generatedApiGo";
 
 type State = {
-    collections: Collection[];
+    collections: CollectionResponse[];
     collectionsWithProducts: Record<string, CollectionWithProductResponse>;
     loadingStates: Record<string, boolean>;
     pagination: FullPagingData | null
@@ -26,8 +26,6 @@ export const useCollectionStore = defineStore('Collection', {
             page_size?: number;
             search?: string;
         }) {
-            if (!import.meta.client) return;
-
             const { $api } = useNuxtApp();
             this.loading = true;
 
@@ -43,9 +41,6 @@ export const useCollectionStore = defineStore('Collection', {
         },
 
         async loadCollectionById(id: string) {
-            if (!import.meta.client) return;
-
-            // Если коллекция уже загружена, не загружаем заново
             if (this.collectionsWithProducts[id]) {
                 return this.collectionsWithProducts[id];
             }
@@ -65,9 +60,6 @@ export const useCollectionStore = defineStore('Collection', {
         },
 
         async loadCollectionBySlug(slug: string) {
-            if (!import.meta.client) return;
-
-            // Если коллекция уже загружена, не загружаем заново
             if (this.collectionsWithProducts[slug]) {
                 return this.collectionsWithProducts[slug];
             }

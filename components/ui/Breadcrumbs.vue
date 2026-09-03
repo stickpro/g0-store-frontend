@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import type {BreadcrumbDTO} from '~/repository/types/api/generatedApiGo';
+import type {BreadcrumbResponse} from '~/repository/types/api/generatedApiGo';
 
 interface BreadcrumbItem {
   id?: string;
@@ -59,8 +59,7 @@ if (props.productSlug) {
   });
 }
 
-// Преобразование BreadcrumbDTO в BreadcrumbItem
-const transformBreadcrumb = (crumb: BreadcrumbDTO): BreadcrumbItem => {
+const transformBreadcrumb = (crumb: BreadcrumbResponse): BreadcrumbItem => {
   return {
     id: crumb.id,
     title: crumb.name || crumb.slug || '',
@@ -77,7 +76,7 @@ const displayBreadcrumbs = computed<BreadcrumbItem[]>(() => {
 
   // Если загружены с API - преобразуем их
   if (apiBreadcrumbs.value.length > 0) {
-    return apiBreadcrumbs.value.map((crumb, index) => transformBreadcrumb(crumb, index));
+    return apiBreadcrumbs.value.map((crumb) => transformBreadcrumb(crumb));
   }
 
   // Fallback - пустой массив

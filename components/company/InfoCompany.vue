@@ -3,11 +3,17 @@
     <h4 class="h-10 flex items-center font-bold px-4">Информация о компании</h4>
     <ul class="space-y-1/2">
       <li>
-        <nuxt-link :to="{name: 'contacts'}" class="h-10 flex items-center px-4" :class="{ 'bg-zinc-600/5' : $route.name === 'contacts' }">Контакты</nuxt-link>
+        <nuxt-link :to="{name: 'contacts'}" class="h-10 flex items-center px-4" :class="{ 'bg-zinc-600/5' : $route.name === 'contacts' }" @click="closeSidebar">Контакты</nuxt-link>
       </li>
-      <li class="h-10 flex items-center px-4">Гарантия</li>
-      <li class="h-10 flex items-center px-4">Доставка и оплата</li>
-      <li class="h-10 flex items-center px-4">Возврат товара</li>
+      <li>
+        <nuxt-link to="/warranty" class="h-10 flex items-center px-4" :class="{ 'bg-zinc-600/5' : $route.path === '/warranty' }" @click="closeSidebar">Гарантия</nuxt-link>
+      </li>
+      <li>
+        <nuxt-link to="/dostavka" class="h-10 flex items-center px-4" :class="{ 'bg-zinc-600/5' : $route.path === '/dostavka' }" @click="closeSidebar">Доставка и оплата</nuxt-link>
+      </li>
+      <li>
+        <nuxt-link to="/warranty" class="h-10 flex items-center px-4" :class="{ 'bg-zinc-600/5' : $route.path === '/warranty' }" @click="closeSidebar">Возврат товара</nuxt-link>
+      </li>
       <li class="h-10 flex items-center px-4">Поставщикам</li>
       <li class="h-10 flex items-center px-4">Партнёрская программа</li>
       <li class="h-10 flex items-center px-4">Условия использования сайта</li>
@@ -18,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-
+const { closeSidebar } = useSidebar()
 </script>
 
 <style scoped>

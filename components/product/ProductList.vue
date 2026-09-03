@@ -42,12 +42,12 @@
 </template>
 
 <script setup lang="ts">
-import type { ShortProduct } from '~/repository/types/api/generatedApiGo';
+import type { VariantCardResponse } from '~/repository/types/api/generatedApiGo';
 import ProductCard from '~/components/product/ProductCard.vue';
 
 interface Props {
   title: string;
-  products?: ShortProduct[];
+  products?: VariantCardResponse[];
   loading?: boolean;
   showLoadMore?: boolean;
   showStock?: boolean;

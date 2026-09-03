@@ -31,11 +31,14 @@
       </div>
 
       <div class="flex px-4 mt-6">
-        <button
-            class="flex justify-center space-x-4 rounded-full border border-zinc-600 bg-transparent px-4 py-2 w-full  hover:bg-gray-50">
+        <NuxtLink
+            to="/category"
+            class="flex justify-center space-x-4 rounded-full border border-zinc-600 bg-transparent px-4 py-2 w-full hover:bg-gray-50"
+            @click="closeSidebar"
+        >
           <IconCatalog/>
           <span class="font-sans font-semibold">Каталог</span>
-        </button>
+        </NuxtLink>
       </div>
 
       <!-- Action Button -->
@@ -72,6 +75,11 @@ import Login from "~/components/user/Login.vue";
 import WorkingHours from "~/components/layouts/sidebar/WorkingHours.vue";
 import InfoCompany from "~/components/company/InfoCompany.vue";
 
+const route = useRoute()
 const {isOpen, closeSidebar} = useSidebar()
+
+watch(() => route.fullPath, () => {
+  if (isOpen.value) closeSidebar()
+})
 
 </script>

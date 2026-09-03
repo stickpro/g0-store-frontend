@@ -44,9 +44,9 @@
         <div>
           <h4 class="text-lg font-bold mb-4">Покупателям</h4>
           <ul class="space-y-2 text-sm text-zinc-400">
-            <li><nuxt-link to="/delivery" class="hover:text-orange-500 transition-colors">Доставка и оплата</nuxt-link></li>
+            <li><nuxt-link to="/dostavka" class="hover:text-orange-500 transition-colors">Доставка и оплата</nuxt-link></li>
             <li><nuxt-link to="/warranty" class="hover:text-orange-500 transition-colors">Гарантия</nuxt-link></li>
-            <li><nuxt-link to="/return" class="hover:text-orange-500 transition-colors">Возврат товара</nuxt-link></li>
+            <li><nuxt-link to="/warranty" class="hover:text-orange-500 transition-colors">Возврат товара</nuxt-link></li>
             <li><nuxt-link to="/faq" class="hover:text-orange-500 transition-colors">Вопросы и ответы</nuxt-link></li>
             <li><nuxt-link to="/contacts" class="hover:text-orange-500 transition-colors">Контакты</nuxt-link></li>
           </ul>

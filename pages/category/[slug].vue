@@ -7,9 +7,12 @@
         <h1 class="min-w-0 flex-1 text-[28px] font-normal leading-[45px] text-zinc-950">
           {{ categoryHeading }}
         </h1>
-        <p v-if="totalCount !== null" class="shrink-0 text-[13px] leading-[21px] text-zinc-950">
-          Найдено {{ totalCount }} товаров
-        </p>
+        <div class="flex shrink-0 items-center gap-4">
+          <CategorySort />
+          <p v-if="totalCount !== null" class="text-[13px] leading-[21px] text-zinc-950">
+            Найдено {{ totalCount }} товаров
+          </p>
+        </div>
       </div>
     </div>
 
@@ -103,13 +106,10 @@
 <script setup lang="ts">
 import Breadcrumbs from '~/components/ui/Breadcrumbs.vue';
 import ProductCard from '~/components/product/ProductCard.vue';
+import CategorySort from '~/components/category/CategorySort.vue';
 import { useCategoryStore } from '~/stores/category';
 import { categoryFilterQueryKey, categoryProductsParamsFromQuery } from '~/composables/useCategoryProductQuery';
-import type {
-    CategoryTreeDTO,
-    ShortProduct,
-    GithubComStickproGoStoreInternalDtoEnrichedVariantDTO,
-} from '~/repository/types/api/generatedApiGo';
+import type { CategoryTreeResponse } from '~/repository/types/api/generatedApiGo';
 import {
     buildBreadcrumbJsonLd,
     buildCollectionPageJsonLd,
@@ -149,31 +149,7 @@ const hasMore = computed(() => {
   return page.value < lastPage;
 });
 
-const products = computed<ShortProduct[]>(() =>
-    variantItems.value.map(toShortProduct),
-);
-
-function parsePrice(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value.replace(',', '.'));
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  return undefined;
-}
-
-function toShortProduct(variant: GithubComStickproGoStoreInternalDtoEnrichedVariantDTO): ShortProduct {
-  return {
-    id: variant.id,
-    product_id: variant.product_id,
-    name: variant.name,
-    slug: variant.slug,
-    model: variant.model,
-    is_enable: variant.is_enable,
-    price: parsePrice(variant.price_retail),
-    image: variant.image,
-  };
-}
+const products = computed(() => variantItems.value);
 
 const { pending, data: categoryPageData } = await useAsyncData(
     () => `category-page-${slug.value}-${filterQueryKey.value}`,
@@ -227,7 +203,7 @@ const { pending, data: categoryPageData } = await useAsyncData(
     { watch: [slug, filterQueryKey] },
 );
 
-function findCategoryNode(nodes: CategoryTreeDTO[], targetSlug: string): CategoryTreeDTO | null {
+function findCategoryNode(nodes: CategoryTreeResponse[], targetSlug: string): CategoryTreeResponse | null {
   for (const node of nodes) {
     if (node.slug === targetSlug) return node;
     if (node.children?.length) {

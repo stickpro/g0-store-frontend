@@ -48,7 +48,10 @@ import { useCollectionStore } from "~/stores/collection";
 import { storeToRefs } from "pinia";
 
 const collectionStore = useCollectionStore();
-const { collections, loading, pagination } = storeToRefs(collectionStore);
+const { $api } = useNuxtApp();
+const { collections, pagination } = storeToRefs(collectionStore);
+
+const page = ref(1);
 
 const emit = defineEmits<{
   collectionClick: [slug: string]
@@ -58,11 +61,18 @@ function onCollectionClick(slug: string) {
   emit('collectionClick', slug);
 }
 
-function loadPage(page: number) {
-  collectionStore.loadCollections({ page });
-}
+const { pending: loading } = await useAsyncData(
+    () => `collections-${page.value}`,
+    async () => {
+      const response = await $api.collection.getAll({ page: page.value });
+      collectionStore.collections = response.items;
+      collectionStore.pagination = response.pagination || null;
+      return response;
+    },
+    { watch: [page] },
+);
 
-onMounted(() => {
-  collectionStore.loadCollections();
-});
+function loadPage(nextPage: number) {
+  page.value = nextPage;
+}
 </script>

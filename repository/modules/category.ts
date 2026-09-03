@@ -1,14 +1,15 @@
 import HttpFactory from "../factory";
 import type {
     CategoryResponse,
-    CategoryTreeDTO,
-    BreadcrumbDTO,
-    GithubComStickproGoStoreInternalDtoCategoryFiltersDTO,
-    GithubComStickproGoStoreInternalDtoCategoryProductsResultDTO,
+    CategoryTreeResponse,
+    BreadcrumbResponse,
+    CategoryFiltersResponse,
+    VariantListResponse,
     JSONResponseCategoryResponse,
-    JSONResponseArrayBreadcrumbDTO,
-    JSONResponseGithubComStickproGoStoreInternalDtoCategoryFiltersDTO,
-    JSONResponseGithubComStickproGoStoreInternalDtoCategoryProductsResultDTO,
+    JSONResponseArrayBreadcrumbResponse,
+    JSONResponseArrayCategoryTreeResponse,
+    JSONResponseCategoryFiltersResponse,
+    JSONResponseVariantListResponse,
 } from "~/repository/types/api/generatedApiGo";
 
 export type CategoryProductsParams = {
@@ -23,12 +24,6 @@ export type CategoryProductsParams = {
     [key: string]: string | number | boolean | undefined;
 };
 
-interface JSONResponseCategoryTree {
-    code?: number;
-    data?: CategoryTreeDTO[];
-    message?: string;
-}
-
 class CategoryModule extends HttpFactory {
     private RESOURCE = '/category'
 
@@ -36,8 +31,8 @@ class CategoryModule extends HttpFactory {
      * Get category tree
      * @returns Array of categories with children
      */
-    async getTree(): Promise<CategoryTreeDTO[]> {
-        const response = await this.get<JSONResponseCategoryTree>(`${this.RESOURCE}/tree`);
+    async getTree(): Promise<CategoryTreeResponse[]> {
+        const response = await this.get<JSONResponseArrayCategoryTreeResponse>(`${this.RESOURCE}/tree`);
         return response.data || [];
     }
 
@@ -46,15 +41,15 @@ class CategoryModule extends HttpFactory {
         return response.data || {} as CategoryResponse;
     }
 
-    async getBreadcrumbs(slug: string): Promise<BreadcrumbDTO[]> {
-        const response = await this.get<JSONResponseArrayBreadcrumbDTO>(
+    async getBreadcrumbs(slug: string): Promise<BreadcrumbResponse[]> {
+        const response = await this.get<JSONResponseArrayBreadcrumbResponse>(
             `${this.RESOURCE}/${slug}/breadcrumbs`,
         );
         return response.data || [];
     }
 
-    async getFilters(slug: string): Promise<GithubComStickproGoStoreInternalDtoCategoryFiltersDTO> {
-        const response = await this.get<JSONResponseGithubComStickproGoStoreInternalDtoCategoryFiltersDTO>(
+    async getFilters(slug: string): Promise<CategoryFiltersResponse> {
+        const response = await this.get<JSONResponseCategoryFiltersResponse>(
             `${this.RESOURCE}/${slug}/filters`,
         );
         return response.data || {};
@@ -63,12 +58,12 @@ class CategoryModule extends HttpFactory {
     async getProducts(
         slug: string,
         params?: CategoryProductsParams,
-    ): Promise<GithubComStickproGoStoreInternalDtoCategoryProductsResultDTO> {
+    ): Promise<VariantListResponse> {
         const query = Object.fromEntries(
             Object.entries(params || {}).filter(([, value]) => value !== undefined && value !== ''),
         );
 
-        const response = await this.get<JSONResponseGithubComStickproGoStoreInternalDtoCategoryProductsResultDTO>(
+        const response = await this.get<JSONResponseVariantListResponse>(
             `${this.RESOURCE}/${slug}/products`,
             query,
         );

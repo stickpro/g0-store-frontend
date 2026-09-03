@@ -1,29 +1,24 @@
 <script setup lang="ts">
 import Slider from "~/components/home/Slider.vue";
 import ProductList from "~/components/product/ProductList.vue";
-import type {ShortProduct} from "~/repository/types/api/generatedApiGo";
 import { useCollectionStore } from "~/stores/collection";
 
 const collectionStore = useCollectionStore();
+const { $api } = useNuxtApp();
 
 const POPULAR_SLUG = 'popular';
 
-const popularProducts = computed(() => {
-  const collection = collectionStore.getCollectionWithProducts(POPULAR_SLUG);
-  return collection?.products || [];
+const { data: popularCollection, pending } = await useAsyncData(`collection-${POPULAR_SLUG}`, async () => {
+  if (collectionStore.collectionsWithProducts[POPULAR_SLUG]) {
+    return collectionStore.collectionsWithProducts[POPULAR_SLUG];
+  }
+
+  const collection = await $api.collection.getBySlug(POPULAR_SLUG);
+  collectionStore.collectionsWithProducts[POPULAR_SLUG] = collection;
+  return collection;
 });
 
-const loading = computed(() => collectionStore.isCollectionLoading(POPULAR_SLUG));
-
-function handleAddToCart(product: ShortProduct) {
-  console.log('Add to cart:', product);
-  // Здесь будет логика добавления в корзину
-}
-
-// Загружаем товары при монтировании
-onMounted(() => {
-  collectionStore.loadCollectionBySlug(POPULAR_SLUG);
-});
+const popularProducts = computed(() => popularCollection.value?.products || []);
 </script>
 
 <template>
@@ -32,8 +27,7 @@ onMounted(() => {
     <ProductList
         title="Популярные"
         :products="popularProducts"
-        :loading="loading"
-        @add-to-cart="handleAddToCart"
+        :loading="pending"
     />
     <div class="text-sm gap-6 grid  text-zinc-700">
       <p>Ноутбуки и планшеты – незаменимые гаджеты практически для каждого человека. Несмотря на то, что подобные

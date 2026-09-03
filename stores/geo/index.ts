@@ -1,10 +1,10 @@
 import {defineStore} from 'pinia';
-import type {City} from "~/repository/types/api/generatedApiGo";
+import type {CityResponse} from "~/repository/types/api/generatedApiGo";
 
 type State = {
     geo: {
         city: string,
-        popularCity: City[]
+        popularCity: CityResponse[]
     },
     isModalOpen: boolean
 }

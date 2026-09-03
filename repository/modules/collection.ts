@@ -1,10 +1,10 @@
 import HttpFactory from "../factory";
 import type {
-    Collection,
+    CollectionResponse,
     CollectionWithProductResponse,
     FullPagingData,
     JSONResponseCollectionWithProductResponse,
-    JSONResponseResponseWithFullPaginationCollection
+    JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection,
 } from "~/repository/types/api/generatedApiGo";
 
 
@@ -15,13 +15,13 @@ class CollectionModule extends HttpFactory {
         page?: number;
         page_size?: number;
         search?: string;
-    }): Promise<{ items: Collection[]; pagination?: FullPagingData }> {
-        const response = await this.get<JSONResponseResponseWithFullPaginationCollection>(
+    }): Promise<{ items: CollectionResponse[]; pagination?: FullPagingData }> {
+        const response = await this.get<JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection>(
             this.RESOURCE,
             params
         );
         return {
-            items: response.data?.items || [],
+            items: (response.data?.items || []) as CollectionResponse[],
             pagination: response.data?.pagination
         };
     }

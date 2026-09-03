@@ -1,4 +1,4 @@
-import type { BreadcrumbDTO } from '~/repository/types/api/generatedApiGo';
+import type { BreadcrumbResponse } from '~/repository/types/api/generatedApiGo';
 
 /**
  * Композабл для работы с хлебными крошками товара
@@ -11,7 +11,7 @@ import type { BreadcrumbDTO } from '~/repository/types/api/generatedApiGo';
 export const useBreadcrumbs = () => {
   const { $api } = useNuxtApp();
 
-  const breadcrumbs = ref<BreadcrumbDTO[]>([]);
+  const breadcrumbs = ref<BreadcrumbResponse[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -51,7 +51,7 @@ export const useBreadcrumbs = () => {
    * @param crumb - хлебная крошка
    * @param index - индекс крошки в массиве
    */
-  const buildUrl = (crumb: BreadcrumbDTO, index: number): string => {
+  const buildUrl = (crumb: BreadcrumbResponse, index: number): string => {
     // Если это первая крошка (обычно "Главная")
     if (index === 0) {
       return '/';
@@ -65,7 +65,7 @@ export const useBreadcrumbs = () => {
    * Получить название для отображения
    * @param crumb - хлебная крошка
    */
-  const getTitle = (crumb: BreadcrumbDTO): string => {
+  const getTitle = (crumb: BreadcrumbResponse): string => {
     return crumb.name || crumb.slug || '';
   };
 

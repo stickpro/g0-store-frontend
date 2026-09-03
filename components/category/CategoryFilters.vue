@@ -37,19 +37,14 @@
         v-if="stockStatuses.length"
         class="flex flex-col gap-0.5 border-b border-dashed border-zinc-600/15 px-3 py-6"
     >
-      <label
+      <VCheckbox
           v-for="status in stockStatuses"
           :key="status.value"
-          class="flex h-8 cursor-pointer items-center gap-2"
+          :model-value="isSelected('stock_status', status.value)"
+          @update:model-value="toggleValue('stock_status', status.value)"
       >
-        <input
-            :checked="isSelected('stock_status', status.value)"
-            type="checkbox"
-            class="filter-check"
-            @change="toggleValue('stock_status', status.value)"
-        >
-        <span class="px-1.5 leading-4">{{ stockLabel(status) }}</span>
-      </label>
+        {{ stockLabel(status) }}
+      </VCheckbox>
     </section>
 
     <section v-if="manufacturers.length" class="border-b border-dashed border-zinc-600/15 py-6">
@@ -81,15 +76,12 @@
 
       <ul class="flex flex-col gap-0.5 px-3">
         <li v-for="brand in visibleManufacturers" :key="brand.value">
-          <label class="flex h-8 cursor-pointer items-center gap-2">
-            <input
-                :checked="isSelected('manufacturer_id', brand.value)"
-                type="checkbox"
-                class="filter-check"
-                @change="toggleValue('manufacturer_id', brand.value)"
-            >
-            <span class="px-1.5 leading-4">{{ brand.label || brand.value }}</span>
-          </label>
+          <VCheckbox
+              :model-value="isSelected('manufacturer_id', brand.value)"
+              @update:model-value="toggleValue('manufacturer_id', brand.value)"
+          >
+            {{ brand.label || brand.value }}
+          </VCheckbox>
         </li>
       </ul>
     </section>
@@ -133,15 +125,13 @@
       </template>
 
       <template v-else-if="attribute.type === 'boolean'">
-        <label class="flex h-8 cursor-pointer items-center gap-2 px-3">
-          <input
-              :checked="isSelected(attrKey(attribute.slug!), 'true')"
-              type="checkbox"
-              class="filter-check"
-              @change="toggleValue(attrKey(attribute.slug!), 'true')"
-          >
-          <span class="px-1.5 leading-4">{{ attribute.name }}</span>
-        </label>
+        <VCheckbox
+            class="px-3"
+            :model-value="isSelected(attrKey(attribute.slug!), 'true')"
+            @update:model-value="toggleValue(attrKey(attribute.slug!), 'true')"
+        >
+          {{ attribute.name }}
+        </VCheckbox>
       </template>
 
       <template v-else>
@@ -177,15 +167,12 @@
 
         <ul class="flex flex-col gap-0.5 px-3">
           <li v-for="option in visibleOptions(attribute)" :key="option.value">
-            <label class="flex h-8 cursor-pointer items-center gap-2">
-              <input
-                  :checked="isSelected(attrKey(attribute.slug!), option.value)"
-                  type="checkbox"
-                  class="filter-check"
-                  @change="toggleValue(attrKey(attribute.slug!), option.value)"
-              >
-              <span class="px-1.5 leading-4">{{ option.label || option.value }}</span>
-            </label>
+            <VCheckbox
+                :model-value="isSelected(attrKey(attribute.slug!), option.value)"
+                @update:model-value="toggleValue(attrKey(attribute.slug!), option.value)"
+            >
+              {{ option.label || option.value }}
+            </VCheckbox>
           </li>
         </ul>
       </template>
@@ -195,12 +182,13 @@
 
 <script setup lang="ts">
 import IconXmark from '~/components/icons/IconXmark.vue';
+import VCheckbox from '~/components/ui/UiCheckbox/VCheckbox.vue';
 import { useCategoryStore } from '~/stores/category';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
 import { getStockStatusLabel } from '~/utils/constants/stockStatus';
 import type {
-    GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO,
-    GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO,
+    CategoryAttributeFilterResponse,
+    CategoryFilterOptionResponse,
 } from '~/repository/types/api/generatedApiGo';
 
 const route = useRoute();
@@ -312,26 +300,26 @@ function formatBound(value?: number) {
   return String(value);
 }
 
-function attributeTitle(attribute: GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO) {
+function attributeTitle(attribute: CategoryAttributeFilterResponse) {
   if (attribute.unit) return `${attribute.name} (${attribute.unit})`;
   return attribute.name || attribute.slug || '';
 }
 
-function stockLabel(status: GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO) {
+function stockLabel(status: CategoryFilterOptionResponse) {
   return getStockStatusLabel(status.value) !== status.value
       ? getStockStatusLabel(status.value)
       : (status.label || status.value || '');
 }
 
 function optionLabel(
-    attribute: GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO,
+    attribute: CategoryAttributeFilterResponse,
     value?: string,
 ) {
   const option = (attribute.options || []).find((item) => item.value === value);
   return option?.label || value || '';
 }
 
-function visibleOptions(attribute: GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO) {
+function visibleOptions(attribute: CategoryAttributeFilterResponse) {
   const options = attribute.options || [];
   const query = (optionQuery[attribute.slug!] || '').trim().toLowerCase();
   if (!query) return options;
@@ -376,23 +364,3 @@ function applyNumber(slug: string) {
   });
 }
 </script>
-
-<style scoped>
-.filter-check {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  border: 1.5px solid #09090b;
-  border-radius: 2px;
-  background: transparent;
-}
-
-.filter-check:checked {
-  background: #09090b;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23fff' d='M6.4 10.6 3.8 8l-.933.933L6.4 12.467l8-8-.933-.934L6.4 10.6Z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  border-color: #09090b;
-}
-</style>

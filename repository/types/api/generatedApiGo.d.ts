@@ -41,12 +41,11 @@ export interface AddCartItemRequest {
 }
 
 export interface AttributeGroupResponse {
-  created_at?: string;
-  description?: string;
-  id?: string;
-  name?: string;
-  slug?: string;
-  updated_at?: string;
+  attributes?: AttributeResponse[];
+  group_description?: string;
+  group_id?: string;
+  group_name?: string;
+  group_slug?: string;
 }
 
 export interface AttributeGroupWithValuesDTO {
@@ -58,34 +57,25 @@ export interface AttributeGroupWithValuesDTO {
 }
 
 export interface AttributeGroupsResponse {
-  groups?: AttributeGroupWithValuesDTO[];
+  groups?: AttributeGroupResponse[];
 }
 
 export interface AttributeResponse {
-  attribute_group_id?: UuidNullUUID;
-  created_at?: string;
   id?: string;
   is_filterable?: boolean;
-  is_required?: boolean;
-  is_visible?: boolean;
   name?: string;
   slug?: string;
-  sort_order?: number;
   type?: string;
   unit?: string;
-  updated_at?: string;
+  values?: AttributeValueResponse[];
 }
 
 export interface AttributeValueResponse {
-  attribute_id?: string;
-  created_at?: string;
   display_order?: number;
   id?: string;
-  is_active?: boolean;
-  updated_at?: string;
   value?: string;
   value_normalized?: string;
-  value_numeric?: number;
+  value_numeric?: DecimalNullDecimal;
 }
 
 export interface AttributeWithValuesDTO {
@@ -111,7 +101,7 @@ export interface AuthResponse {
   token?: string;
 }
 
-export interface BreadcrumbDTO {
+export interface BreadcrumbResponse {
   depth?: number;
   id?: string;
   meta_h1?: string;
@@ -137,6 +127,36 @@ export interface CartResponse {
   total_price?: number;
 }
 
+export interface CategoryAttributeFilterResponse {
+  group_name?: string;
+  group_slug?: string;
+  max?: number;
+  min?: number;
+  name?: string;
+  options?: CategoryFilterOptionResponse[];
+  slug?: string;
+  type?: string;
+  unit?: string;
+}
+
+export interface CategoryFilterOptionResponse {
+  count?: number;
+  label?: string;
+  value?: string;
+}
+
+export interface CategoryFiltersResponse {
+  attributes?: CategoryAttributeFilterResponse[];
+  manufacturers?: CategoryFilterOptionResponse[];
+  price?: CategoryPriceRangeResponse;
+  stock_statuses?: CategoryFilterOptionResponse[];
+}
+
+export interface CategoryPriceRangeResponse {
+  max?: number;
+  min?: number;
+}
+
 export interface CategoryResponse {
   created_at?: string;
   description?: string;
@@ -153,8 +173,8 @@ export interface CategoryResponse {
   updated_at?: string;
 }
 
-export interface CategoryTreeDTO {
-  children?: CategoryTreeDTO[];
+export interface CategoryTreeResponse {
+  children?: CategoryTreeResponse[];
   id?: string;
   name?: string;
   slug?: string;
@@ -202,7 +222,7 @@ export interface CollectionWithProductResponse {
   description?: string;
   id?: string;
   name?: string;
-  products?: ShortProductResponse[];
+  products?: VariantCardResponse[];
   slug?: string;
   updated_at?: string;
 }
@@ -416,6 +436,12 @@ export interface JSONResponseCartResponse {
   message?: string;
 }
 
+export interface JSONResponseCategoryFiltersResponse {
+  code?: number;
+  data?: CategoryFiltersResponse;
+  message?: string;
+}
+
 export interface JSONResponseCategoryResponse {
   code?: number;
   data?: CategoryResponse;
@@ -488,6 +514,24 @@ export interface JSONResponseRegisterUserResponse {
   message?: string;
 }
 
+export interface JSONResponseResponseWithFullPaginationCategoryResponse {
+  code?: number;
+  data?: ResponseWithFullPaginationCategoryResponse;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationProductResponse {
+  code?: number;
+  data?: ResponseWithFullPaginationProductResponse;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationProductReviewResponse {
+  code?: number;
+  data?: ResponseWithFullPaginationProductReviewResponse;
+  message?: string;
+}
+
 export interface JSONResponseResponseWithFullPaginationProductVariantListItem {
   code?: number;
   data?: ResponseWithFullPaginationProductVariantListItem;
@@ -512,12 +556,6 @@ export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreI
   message?: string;
 }
 
-export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory {
-  code?: number;
-  data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory;
-  message?: string;
-}
-
 export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
   code?: number;
   data?: ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection;
@@ -533,6 +571,12 @@ export interface JSONResponseResponseWithFullPaginationGithubComStickproGoStoreI
 export interface JSONResponseUserInfoResponse {
   code?: number;
   data?: UserInfoResponse;
+  message?: string;
+}
+
+export interface JSONResponseVariantListResponse {
+  code?: number;
+  data?: VariantListResponse;
   message?: string;
 }
 
@@ -566,15 +610,21 @@ export interface JSONResponseArrayAttributeResponse {
   message?: string;
 }
 
-export interface JSONResponseArrayBreadcrumbDTO {
+export interface JSONResponseArrayBreadcrumbResponse {
   code?: number;
-  data?: BreadcrumbDTO[];
+  data?: BreadcrumbResponse[];
   message?: string;
 }
 
-export interface JSONResponseArrayCategoryTreeDTO {
+export interface JSONResponseArrayCategoryTreeResponse {
   code?: number;
-  data?: CategoryTreeDTO[];
+  data?: CategoryTreeResponse[];
+  message?: string;
+}
+
+export interface JSONResponseArrayCityResponse {
+  code?: number;
+  data?: CityResponse[];
   message?: string;
 }
 
@@ -584,9 +634,9 @@ export interface JSONResponseArrayProductVariantResponse {
   message?: string;
 }
 
-export interface JSONResponseArrayShortProduct {
+export interface JSONResponseArrayVariantCardResponse {
   code?: number;
-  data?: ShortProduct[];
+  data?: VariantCardResponse[];
   message?: string;
 }
 
@@ -602,33 +652,9 @@ export interface JSONResponseArrayGithubComStickproGoStoreInternalDtoAttributeVa
   message?: string;
 }
 
-export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsCity {
+export interface JSONResponseMapStringArrayVariantCardResponse {
   code?: number;
-  data?: GithubComStickproGoStoreInternalModelsCity[];
-  message?: string;
-}
-
-export interface JSONResponseArrayGithubComStickproGoStoreInternalModelsProduct {
-  code?: number;
-  data?: GithubComStickproGoStoreInternalModelsProduct[];
-  message?: string;
-}
-
-export interface JSONResponseGithubComStickproGoStoreInternalDtoCategoryFiltersDTO {
-  code?: number;
-  data?: GithubComStickproGoStoreInternalDtoCategoryFiltersDTO;
-  message?: string;
-}
-
-export interface JSONResponseGithubComStickproGoStoreInternalDtoCategoryProductsResultDTO {
-  code?: number;
-  data?: GithubComStickproGoStoreInternalDtoCategoryProductsResultDTO;
-  message?: string;
-}
-
-export interface JSONResponseMapStringArrayShortProduct {
-  code?: number;
-  data?: MapStringArrayShortProduct;
+  data?: MapStringArrayVariantCardResponse;
   message?: string;
 }
 
@@ -762,6 +788,21 @@ export interface RegisterUserResponse {
   token?: string;
 }
 
+export interface ResponseWithFullPaginationCategoryResponse {
+  items?: CategoryResponse[];
+  pagination?: FullPagingData;
+}
+
+export interface ResponseWithFullPaginationProductResponse {
+  items?: ProductResponse[];
+  pagination?: FullPagingData;
+}
+
+export interface ResponseWithFullPaginationProductReviewResponse {
+  items?: ProductReviewResponse[];
+  pagination?: FullPagingData;
+}
+
 export interface ResponseWithFullPaginationProductVariantListItem {
   items?: ProductVariantListItem[];
   pagination?: FullPagingData;
@@ -782,11 +823,6 @@ export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModel
   pagination?: FullPagingData;
 }
 
-export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCategory {
-  items?: GithubComStickproGoStoreInternalModelsCategory[];
-  pagination?: FullPagingData;
-}
-
 export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModelsCollection {
   items?: GithubComStickproGoStoreInternalModelsCollection[];
   pagination?: FullPagingData;
@@ -795,28 +831,6 @@ export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalModel
 export interface ResponseWithFullPaginationGithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
   items?: GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow[];
   pagination?: FullPagingData;
-}
-
-export interface ShortProduct {
-  id?: string;
-  image?: ImageDTO;
-  is_enable?: boolean;
-  model?: string;
-  name?: string;
-  price?: number;
-  product_id?: string;
-  slug?: string;
-}
-
-export interface ShortProductResponse {
-  id?: string;
-  image?: ImageDTO;
-  is_enable?: boolean;
-  model?: string;
-  name?: string;
-  price?: number;
-  product_id?: string;
-  slug?: string;
 }
 
 export interface SyncRelatedProductRequest {
@@ -978,11 +992,38 @@ export interface UserInfoResponse {
   updated_at?: string;
 }
 
+export interface VariantCardResponse {
+  category_id?: UuidNullUUID;
+  description?: string;
+  id?: string;
+  image?: ImageDTO;
+  is_enable?: boolean;
+  manufacturer_id?: UuidNullUUID;
+  model?: string;
+  name?: string;
+  price_business?: number;
+  price_retail?: number;
+  price_wholesale?: number;
+  product_id?: string;
+  slug?: string;
+  stock_status?: string;
+}
+
 export interface VariantCategoryResponse {
   category_id?: string;
   category_is_enable?: boolean;
   category_name?: string;
   category_slug?: string;
+}
+
+export interface VariantListResponse {
+  facet_stats?: Record<
+    string,
+    GithubComStickproGoStoreInternalDtoCategoryFacetStat
+  >;
+  facets?: Record<string, Record<string, number>>;
+  items?: VariantCardResponse[];
+  pagination?: FullPagingData;
 }
 
 export interface ViewedItemResponse {
@@ -1023,52 +1064,9 @@ export interface GithubComStickproGoStoreInternalDtoAttributeValueDTO {
   value_numeric?: DecimalNullDecimal;
 }
 
-export interface GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO {
-  group_name?: string;
-  group_slug?: string;
-  /** number attributes only */
-  max?: number;
-  /** number attributes only */
-  min?: number;
-  name?: string;
-  options?: GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO[];
-  slug?: string;
-  /** select | number | boolean | text */
-  type?: string;
-  unit?: string;
-}
-
 export interface GithubComStickproGoStoreInternalDtoCategoryFacetStat {
   max?: number;
   min?: number;
-}
-
-export interface GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO {
-  count?: number;
-  label?: string;
-  value?: string;
-}
-
-export interface GithubComStickproGoStoreInternalDtoCategoryFiltersDTO {
-  attributes?: GithubComStickproGoStoreInternalDtoCategoryAttributeFilterDTO[];
-  manufacturers?: GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO[];
-  price?: GithubComStickproGoStoreInternalDtoCategoryPriceRangeDTO;
-  stock_statuses?: GithubComStickproGoStoreInternalDtoCategoryFilterOptionDTO[];
-}
-
-export interface GithubComStickproGoStoreInternalDtoCategoryPriceRangeDTO {
-  max?: number;
-  min?: number;
-}
-
-export interface GithubComStickproGoStoreInternalDtoCategoryProductsResultDTO {
-  facet_stats?: Record<
-    string,
-    GithubComStickproGoStoreInternalDtoCategoryFacetStat
-  >;
-  facets?: Record<string, Record<string, number>>;
-  items?: GithubComStickproGoStoreInternalDtoEnrichedVariantDTO[];
-  pagination?: FullPagingData;
 }
 
 export interface GithubComStickproGoStoreInternalDtoEnrichedVariantDTO {
@@ -1137,50 +1135,6 @@ export interface GithubComStickproGoStoreInternalModelsAttributeGroup {
   updated_at?: PgtypeTimestamp;
 }
 
-export interface GithubComStickproGoStoreInternalModelsCategory {
-  created_at?: PgtypeTimestamp;
-  description?: PgtypeText;
-  id?: string;
-  image_path?: PgtypeText;
-  is_enable?: boolean;
-  meta_description?: PgtypeText;
-  meta_h1?: PgtypeText;
-  meta_keyword?: PgtypeText;
-  meta_title?: PgtypeText;
-  name?: string;
-  parent_id?: UuidNullUUID;
-  slug?: string;
-  updated_at?: PgtypeTimestamp;
-}
-
-export interface GithubComStickproGoStoreInternalModelsCity {
-  address?: string;
-  area?: PgtypeText;
-  area_type?: PgtypeText;
-  capital_marker?: number;
-  city?: string;
-  city_type?: string;
-  country?: string;
-  federal_district?: string;
-  fias_id?: string;
-  fias_level?: number;
-  foundation_year?: number;
-  geo_lat?: number;
-  geo_lon?: number;
-  id?: string;
-  kladr_id?: string;
-  okato?: string;
-  oktmo?: string;
-  population?: number;
-  postal_code?: string;
-  region?: string;
-  region_type?: string;
-  settlement?: PgtypeText;
-  settlement_type?: PgtypeText;
-  tax_office?: string;
-  timezone?: string;
-}
-
 export interface GithubComStickproGoStoreInternalModelsCollection {
   created_at?: PgtypeTimestamptz;
   description?: PgtypeText;
@@ -1188,35 +1142,6 @@ export interface GithubComStickproGoStoreInternalModelsCollection {
   name?: string;
   slug?: string;
   updated_at?: PgtypeTimestamptz;
-}
-
-export interface GithubComStickproGoStoreInternalModelsProduct {
-  created_at?: PgtypeTimestamp;
-  ean?: PgtypeText;
-  external_id?: PgtypeText;
-  height?: number;
-  id?: string;
-  image?: PgtypeText;
-  is_enable?: boolean;
-  isbn?: PgtypeText;
-  jan?: PgtypeText;
-  length?: number;
-  location?: PgtypeText;
-  manufacturer_id?: UuidNullUUID;
-  minimum?: number;
-  mpn?: PgtypeText;
-  price_business?: number;
-  price_retail?: number;
-  price_wholesale?: number;
-  quantity?: number;
-  sku?: PgtypeText;
-  sort_order?: number;
-  stock_status?: StockStatus;
-  subtract?: boolean;
-  upc?: PgtypeText;
-  updated_at?: PgtypeTimestamp;
-  weight?: number;
-  width?: number;
 }
 
 export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProductsFindRow {
@@ -1248,7 +1173,10 @@ export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProd
   width?: number;
 }
 
-export type MapStringArrayShortProduct = Record<string, ShortProduct[]>;
+export type MapStringArrayVariantCardResponse = Record<
+  string,
+  VariantCardResponse[]
+>;
 
 export interface PgtypeBool {
   bool?: boolean;

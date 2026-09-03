@@ -89,7 +89,7 @@
 
 <script setup lang="ts">
 import { useCategoryStore } from '~/stores/category';
-import type { CategoryTreeDTO } from '~/repository/types/api/generatedApiGo';
+import type { CategoryTreeResponse } from '~/repository/types/api/generatedApiGo';
 import IconChevron from '~/components/icons/IconChevron.vue';
 
 const props = defineProps<{
@@ -132,7 +132,7 @@ function scheduleSelect(index: number) {
 
 const groupColumns = computed(() => {
   const groups = selectedCategory.value?.children ?? [];
-  const columns: CategoryTreeDTO[][] = Array.from({ length: COLUMN_COUNT }, () => []);
+  const columns: CategoryTreeResponse[][] = Array.from({ length: COLUMN_COUNT }, () => []);
   const weights = Array(COLUMN_COUNT).fill(0);
 
   for (const group of groups) {

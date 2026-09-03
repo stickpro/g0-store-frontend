@@ -4,6 +4,7 @@ import CollectionModule from "~/repository/modules/collection";
 import ProductModule from "~/repository/modules/product";
 import CategoryModule from "~/repository/modules/category";
 import CartModule from "~/repository/modules/cart";
+import SearchModule from "~/repository/modules/search";
 import type { FetchOptions, FetchContext } from "ofetch";
 
 interface IApiInstance {
@@ -12,6 +13,7 @@ interface IApiInstance {
     product: ProductModule;
     category: CategoryModule;
     cart: CartModule;
+    search: SearchModule;
 }
 
 declare module "#app" {
@@ -51,6 +53,7 @@ export default defineNuxtPlugin(() => {
         product: new ProductModule(fetchOptions),
         category: new CategoryModule(fetchOptions),
         cart: new CartModule(fetchOptions),
+        search: new SearchModule(fetchOptions),
     };
 
     return {

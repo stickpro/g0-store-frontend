@@ -28,7 +28,7 @@
 
       <!-- Price and Cart Button -->
       <div class="flex items-center justify-between mt-auto">
-        <span class="text-sm font-bold text-zinc-950">{{ formatPrice(product.price) }} {{ CURRENCY_CODE }}</span>
+        <span class="text-sm font-bold text-zinc-950">{{ formatPrice(product.price_retail) }} {{ CURRENCY_CODE }}</span>
 
         <!-- Add to Cart Button -->
         <button
@@ -46,14 +46,14 @@
 </template>
 
 <script setup lang="ts">
-import type { ShortProduct } from '~/repository/types/api/generatedApiGo';
+import type { VariantCardResponse } from '~/repository/types/api/generatedApiGo';
 import ProductPicture from '~/components/product/ProductPicture.vue';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
 import { useCartStore } from '~/stores/cart';
 import { imageHasMedia } from '~/utils/media';
 
 interface Props {
-  product: ShortProduct;
+  product: VariantCardResponse;
   showStock?: boolean;
 }
 

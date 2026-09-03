@@ -1,9 +1,9 @@
 import HttpFactory from "../factory";
 import type {
-    City,
+    CityResponse,
     GeoResponse,
     JSONResponseGeoResponse,
-    JSONResponseArrayCity
+    JSONResponseArrayCityResponse,
 } from "~/repository/types/api/generatedApiGo";
 
 
@@ -15,13 +15,13 @@ class GeoModule extends HttpFactory {
         return response.data || { city: '' };
     }
 
-    async getPopularCity(): Promise<City[]> {
-        const response = await this.get<JSONResponseArrayCity>(`${this.RESOURCE}/city/popular`);
+    async getPopularCity(): Promise<CityResponse[]> {
+        const response = await this.get<JSONResponseArrayCityResponse>(`${this.RESOURCE}/city/popular`);
         return response.data || [];
     }
 
-    async findCity(cityName: string): Promise<City[]> {
-        const response = await this.get<JSONResponseArrayCity>(`${this.RESOURCE}/city/find`, { city: cityName });
+    async findCity(cityName: string): Promise<CityResponse[]> {
+        const response = await this.get<JSONResponseArrayCityResponse>(`${this.RESOURCE}/city/find`, { city: cityName });
         return response.data || [];
     }
 }

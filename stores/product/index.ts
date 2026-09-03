@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { AttributeGroupWithValuesDTO, BreadcrumbDTO, ProductWithMediumResponse, ShortProduct, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
+import type { AttributeGroupResponse, BreadcrumbResponse, ProductWithMediumResponse, VariantCardResponse, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
 
 const CACHE_SIZE = 10;
 
@@ -12,13 +12,13 @@ type State = {
     products: Record<string, CacheEntry>;
     accessOrder: string[]; // LRU (Least Recently Used) - порядок доступа
     loadingStates: Record<string, boolean>;
-    relatedProducts: Record<string, ShortProduct[]>; // Связанные товары по slug
+    relatedProducts: Record<string, VariantCardResponse[]>; // Связанные товары по slug
     relatedProductsLoading: Record<string, boolean>;
-    attributes: Record<string, AttributeGroupWithValuesDTO[]>; // Атрибуты товара по slug
+    attributes: Record<string, AttributeGroupResponse[]>; // Атрибуты товара по slug
     attributesLoading: Record<string, boolean>;
     reviews: Record<string, ProductReviewResponse[]>; // Отзывы товара по slug
     reviewsLoading: Record<string, boolean>;
-    breadcrumbs: Record<string, BreadcrumbDTO[]>;
+    breadcrumbs: Record<string, BreadcrumbResponse[]>;
 }
 
 export const useProductStore = defineStore('Product', {
@@ -146,7 +146,7 @@ export const useProductStore = defineStore('Product', {
         /**
          * Загрузить связанные товары по slug
          * @param slug - уникальный идентификатор товара в URL
-         * @returns ShortProduct[] или пустой массив
+         * @returns VariantCardResponse[] или пустой массив
          */
         async loadRelatedProducts(slug: string) {
             if (this.relatedProducts[slug]) {
@@ -171,7 +171,7 @@ export const useProductStore = defineStore('Product', {
         /**
          * Загрузить атрибуты товара по slug
          * @param slug - уникальный идентификатор товара в URL
-         * @returns AttributeGroupWithValuesDTO[] или пустой массив
+         * @returns AttributeGroupResponse[] или пустой массив
          */
         async loadAttributes(slug: string) {
             if (this.attributes[slug]) {
@@ -268,7 +268,7 @@ export const useProductStore = defineStore('Product', {
         /**
          * Получить связанные товары по slug
          */
-        getRelatedProducts: (state) => (slug: string): ShortProduct[] => {
+        getRelatedProducts: (state) => (slug: string): VariantCardResponse[] => {
             return state.relatedProducts[slug] || [];
         },
 
@@ -307,7 +307,7 @@ export const useProductStore = defineStore('Product', {
             return state.reviewsLoading[slug] || false;
         },
 
-        getBreadcrumbs: (state) => (slug: string): BreadcrumbDTO[] => {
+        getBreadcrumbs: (state) => (slug: string): BreadcrumbResponse[] => {
             return state.breadcrumbs[slug] || [];
         }
     }
