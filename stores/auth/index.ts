@@ -1,21 +1,13 @@
 import { defineStore } from 'pinia';
 import type { UserInfoResponse } from '~/repository/types/api/generatedApiGo';
-import { USER } from '~/utils/constants/user';
 import { translateAuthError } from '~/utils/authErrors';
 
 export type AuthStep = 'email' | 'code';
 export type AuthTab = 'login' | 'register';
 
-function useAuthTokenCookie() {
-    return useCookie<string | null>(USER.TOKEN_KEY_LS, {
-        maxAge: 60 * 60 * 24 * 365,
-        sameSite: 'lax',
-        path: '/',
-    });
-}
-
 type State = {
     user: UserInfoResponse | null;
+    token: string | null;
     isModalOpen: boolean;
     step: AuthStep;
     tab: AuthTab;
@@ -27,6 +19,7 @@ type State = {
 export const useAuthStore = defineStore('Auth', {
     state: (): State => ({
         user: null,
+        token: null,
         isModalOpen: false,
         step: 'email',
         tab: 'login',
@@ -36,7 +29,7 @@ export const useAuthStore = defineStore('Auth', {
     }),
 
     getters: {
-        isAuthenticated: (state) => Boolean(state.user?.email),
+        isAuthenticated: (state) => Boolean(state.user?.email || state.token),
     },
 
     actions: {
@@ -70,12 +63,14 @@ export const useAuthStore = defineStore('Auth', {
         },
 
         setToken(token: string | null) {
-            useAuthTokenCookie().value = token;
+            useAuthToken().setToken(token);
+            this.token = token;
         },
 
         async fetchUser() {
-            const token = useAuthTokenCookie().value;
-            if (!token) {
+            const { token } = useAuthToken();
+            this.token = token.value;
+            if (!token.value) {
                 this.user = null;
                 return null;
             }
@@ -83,16 +78,20 @@ export const useAuthStore = defineStore('Auth', {
             const { $api } = useNuxtApp();
 
             try {
-                this.user = await $api.auth.getInfo();
+                const user = await $api.auth.getInfo(token.value);
+                if (!user?.email) {
+                    return this.user;
+                }
+                this.user = user;
                 return this.user;
             } catch (error) {
                 const status = (error as { status?: number; statusCode?: number }).status
                     || (error as { statusCode?: number }).statusCode;
                 if (status === 401) {
                     this.setToken(null);
+                    this.user = null;
                 }
-                this.user = null;
-                return null;
+                return this.user;
             }
         },
 
@@ -127,6 +126,10 @@ export const useAuthStore = defineStore('Auth', {
                     throw new Error('Токен не получен');
                 }
                 this.setToken(response.token);
+                this.user = {
+                    email: this.email,
+                    location: '',
+                };
                 await this.fetchUser();
                 this.step = 'email';
                 this.closeModal();

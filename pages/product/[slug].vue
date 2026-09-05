@@ -374,6 +374,11 @@
         <div v-else>
           <p class="text-zinc-600">Характеристики отсутствуют</p>
         </div>
+        <ProductList
+            v-if="viewedProducts.length"
+            title="Просмотренные"
+            :products="viewedProducts"
+        />
       </div>
     </Transition>
 
@@ -451,6 +456,7 @@ import {
   seoPlainText,
 } from '~/utils/seo';
 import { imageSrc } from '~/utils/media';
+import type { VariantCardResponse } from '~/repository/types/api/generatedApiGo';
 
 definePageMeta({
   layout: 'product',
@@ -509,6 +515,15 @@ const productData = computed(() => productStore.getProductBySlug(slug.value));
 const product = computed(() => productData.value?.product);
 const galleryImages = computed(() => productData.value?.images || []);
 const isLoading = computed(() => pending.value || productStore.isProductLoading(slug.value));
+
+watch(
+    () => product.value?.variant?.id,
+    (variantId) => {
+      if (!import.meta.client || !variantId) return;
+      $api.viewed.track(variantId).catch(() => {});
+    },
+    { immediate: true },
+);
 
 const relatedProducts = computed(() => productStore.getRelatedProducts(slug.value));
 const isRelatedProductsLoading = computed(() => productStore.isRelatedProductsLoading(slug.value));
@@ -638,6 +653,29 @@ function closeGallery() {
 }
 
 const activeTab = ref<'about' | 'specs' | 'reviews'>('about');
+const viewedProducts = ref<VariantCardResponse[]>([]);
+
+async function loadViewedProducts() {
+  if (!import.meta.client) return;
+  try {
+    const items = await $api.viewed.list();
+    const currentId = product.value?.variant?.id;
+    viewedProducts.value = currentId
+      ? items.filter((item) => item.id !== currentId)
+      : items;
+  } catch {
+    viewedProducts.value = [];
+  }
+}
+
+watch(activeTab, (tab) => {
+  if (tab === 'specs') loadViewedProducts();
+});
+
+watch(slug, () => {
+  viewedProducts.value = [];
+  if (activeTab.value === 'specs') loadViewedProducts();
+});
 
 const deliveryTabs = ['До ПВЗ', 'Курьером'];
 const selectedDeliveryTab = ref('До ПВЗ');

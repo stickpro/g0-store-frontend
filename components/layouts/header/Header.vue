@@ -45,19 +45,32 @@
           <div class="relative">
             <div
                 class="absolute z-10 inset-0 -left-15 -top-0 w-[296px] h-[296px] rounded-full bg-[#BFDBFE] blur-[50px] pointer-events-none"/>
-            <div class="relative z-20">
-              <button class="text-gray-600 hover:text-gray-800 p-3" @click="openCart">
+            <div class="relative z-20 flex items-center">
+              <button
+                  class="inline-flex text-gray-600 hover:text-gray-800 p-3"
+                  type="button"
+                  aria-label="Корзина"
+                  @click="onToggleCart"
+              >
                 <IconCart/>
               </button>
-              <button class="text-gray-600 hover:text-gray-800 p-3">
+              <button class="inline-flex text-gray-600 hover:text-gray-800 p-3">
                 <IconPhone/>
               </button>
+              <NuxtLink
+                  v-if="authStore.isAuthenticated"
+                  to="/account"
+                  class="inline-flex text-blue-600 hover:text-blue-700 p-3"
+                  aria-label="Личный кабинет"
+              >
+                <IconPersone/>
+              </NuxtLink>
               <button
-                  class="text-gray-600 hover:text-gray-800 p-3"
-                  :class="{ 'text-blue-600': authStore.isAuthenticated }"
+                  v-else
+                  class="inline-flex text-gray-600 hover:text-gray-800 p-3"
                   type="button"
-                  aria-label="Профиль"
-                  @click="openProfile"
+                  aria-label="Войти"
+                  @click="authStore.openModal()"
               >
                 <IconPersone/>
               </button>
@@ -68,8 +81,8 @@
     </header>
     <CatalogDropdown :open="catalogOpen" @close="catalogOpen = false"/>
     <SearchDropdown :open="searchOpen" :query="searchQuery" @close="searchOpen = false"/>
+    <CartDrawer :open="cartOpen" @close="closeCart"/>
     <Sidebar/>
-    <CartDrawer :open="cartOpen" @close="cartOpen = false" />
     <AuthModal />
   </div>
 </template>
@@ -90,8 +103,8 @@ import { useAuthStore } from "~/stores/auth";
 
 const route = useRoute();
 const { toggleSidebar } = useSidebar();
+const { isOpen: cartOpen, closeCart, toggleCart } = useCartDrawer();
 const authStore = useAuthStore();
-const cartOpen = ref(false);
 const catalogOpen = ref(false);
 const searchOpen = ref(false);
 const searchQuery = ref(typeof route.query.q === 'string' ? route.query.q : '');
@@ -122,23 +135,22 @@ function onSearchInput() {
 function toggleCatalog() {
   catalogOpen.value = !catalogOpen.value;
   if (catalogOpen.value) {
+    searchOpen.value = false;
     cartOpen.value = false;
+  }
+}
+
+function onToggleCart() {
+  toggleCart();
+  if (cartOpen.value) {
+    catalogOpen.value = false;
     searchOpen.value = false;
   }
 }
 
-function openCart() {
-  cartOpen.value = true;
-  catalogOpen.value = false;
-  searchOpen.value = false;
-}
-
-function openProfile() {
-  if (authStore.isAuthenticated) {
-    return navigateTo('/account');
-  }
-  authStore.openModal();
-}
+watch(() => route.fullPath, () => {
+  closeCart();
+});
 
 function submitSearch() {
   const q = searchQuery.value.trim();

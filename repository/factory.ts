@@ -9,50 +9,53 @@ class HttpFactory {
         this.$fetch = $fetch;
     }
 
+    private request<T>(url: string, options: FetchOptions<'json'> = {}) {
+        return this.$fetch<T>(url, {
+            ...this.defaultOptions,
+            ...options,
+            onRequest: this.defaultOptions.onRequest,
+        });
+    }
+
     async get<T>(url: string, query?: object, options?: FetchOptions<'json'>): Promise<T> {
-        return await this.$fetch<T>(url, {
+        return await this.request<T>(url, {
             method: 'GET',
             query,
-            ...this.defaultOptions,
             ...options,
         });
     }
 
     async post<T>(url: string, data?: object, query?: object, options?: FetchOptions<'json'>): Promise<T> {
-        return await this.$fetch<T>(url, {
+        return await this.request<T>(url, {
             method: 'POST',
             body: data,
             query,
-            ...this.defaultOptions,
             ...options,
         });
     }
 
     async put<T>(url: string, data?: object, query?: object, options?: FetchOptions<'json'>): Promise<T> {
-        return await this.$fetch<T>(url, {
+        return await this.request<T>(url, {
             method: 'PUT',
             body: data,
             query,
-            ...this.defaultOptions,
             ...options,
         });
     }
 
     async patch<T>(url: string, data?: object, query?: object, options?: FetchOptions<'json'>): Promise<T> {
-        return await this.$fetch<T>(url, {
+        return await this.request<T>(url, {
             method: 'PATCH',
             body: data,
             query,
-            ...this.defaultOptions,
             ...options,
         });
     }
 
     async delete<T>(url: string, query?: object, options?: FetchOptions<'json'>): Promise<T> {
-        return await this.$fetch<T>(url, {
+        return await this.request<T>(url, {
             method: 'DELETE',
             query,
-            ...this.defaultOptions,
             ...options,
         });
     }

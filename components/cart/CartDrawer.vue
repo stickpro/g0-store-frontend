@@ -4,9 +4,9 @@ import ProductPicture from '~/components/product/ProductPicture.vue';
 import { useCartStore } from '~/stores/cart';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
 import { imageHasMedia } from '~/utils/media';
-import type { ImageDTO } from '~/repository/types/api/generatedApiGo';
+import type { ImageDTO, VariantCardResponse } from '~/repository/types/api/generatedApiGo';
 
-defineProps<{
+const props = defineProps<{
   open: boolean;
 }>();
 
@@ -15,10 +15,28 @@ const emit = defineEmits<{
 }>();
 
 const cartStore = useCartStore();
+const viewedProducts = ref<VariantCardResponse[]>([]);
+
+async function loadViewed() {
+  const { $api } = useNuxtApp();
+  try {
+    viewedProducts.value = await $api.viewed.list();
+  } catch {
+    viewedProducts.value = [];
+  }
+}
 
 onMounted(() => {
   cartStore.loadCart();
 });
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) return;
+    loadViewed();
+  },
+);
 
 function formatPrice(price?: number | string) {
   const n = typeof price === 'string' ? Number(price.replace(',', '.')) : price;
@@ -208,14 +226,21 @@ async function increase(variantId: string) {
           <!-- Footer: total + checkout -->
           <div class="flex items-center justify-end gap-6 pt-4">
             <span class="text-xl font-semibold text-zinc-950">{{ formatPrice(cartStore.totalPrice) }}</span>
-            <button class="bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-3 rounded-full transition-colors">
+            <NuxtLink
+              to="/cart"
+              class="inline-flex items-center bg-orange-500 hover:bg-orange-600 text-white font-medium px-8 py-3 rounded-full transition-colors"
+              @click="emit('close')"
+            >
               Оформить заказ
-            </button>
+            </NuxtLink>
           </div>
         </template>
 
-        <!-- Просмотренные (заглушка) -->
-        <ProductList title="Просмотренные" :products="[]" />
+        <ProductList
+          v-if="viewedProducts.length"
+          title="Просмотренные"
+          :products="viewedProducts"
+        />
       </div>
     </div>
   </Transition>

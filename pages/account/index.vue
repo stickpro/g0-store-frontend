@@ -7,12 +7,12 @@
         </NuxtLink>
         <img src="@/assets/icons/chevron_right.svg" alt="" class="size-4">
         <span class="rounded-full px-2 py-1 text-[13px] leading-4 text-zinc-950">
-          Личный кабинет
+          Аккаунт
         </span>
       </nav>
 
       <h1 class="text-[28px] font-normal leading-[45px] text-zinc-950">
-        Личный кабинет
+        Аккаунт
       </h1>
     </div>
 
@@ -45,13 +45,11 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
 
+definePageMeta({
+  layout: 'account',
+});
+
 const authStore = useAuthStore();
-
-if (!authStore.isAuthenticated) {
-  authStore.openModal();
-  await navigateTo('/');
-}
-
 const user = computed(() => authStore.user || { email: '', location: '' });
 
 const createdAt = computed(() => {
@@ -62,7 +60,7 @@ const createdAt = computed(() => {
 });
 
 useSeoMeta({
-  title: 'Личный кабинет',
+  title: 'Аккаунт',
   robots: 'noindex, nofollow',
 });
 

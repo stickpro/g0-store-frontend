@@ -21,9 +21,13 @@ class AuthModule extends HttpFactory {
         return response.data || {};
     }
 
-    async getInfo(): Promise<UserInfoResponse> {
-        const response = await this.get<JSONResponseUserInfoResponse>('/user/info');
-        return response.data || { email: '', location: '' };
+    async getInfo(token?: string): Promise<UserInfoResponse | null> {
+        const response = await this.get<JSONResponseUserInfoResponse>(
+            '/user/info',
+            undefined,
+            token ? { headers: { Authorization: `Bearer ${token}` } } : undefined,
+        );
+        return response.data || null;
     }
 }
 

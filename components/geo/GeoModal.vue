@@ -30,9 +30,9 @@
           <template v-for="city in geo.popularCity" :key="city.id">
             <button
                 class="flex w-full py-1 px-2 rounded-lg flex-col items-start hover:bg-gray-50"
-                @click="selectCity(city.address || '')"
+                @click="selectCity(city)"
             >
-              <span :class="[ geo.city === city.address ? 'text-orange-500' : '']">
+              <span :class="[ isSelected(city) ? 'text-orange-500' : '']">
                 {{ city.city ? city.city : city.address }}
               </span>
               <p v-if="city.city" class="text-xs">{{ city.region }} {{ city.region_type }}</p>
@@ -61,6 +61,7 @@ import VInput from "~/components/ui/UiInput/VInput.vue";
 import {useGeoStore} from "~/stores/geo";
 import {useDebounce} from "@vueuse/core";
 import {storeToRefs} from 'pinia';
+import type {CityResponse} from '~/repository/types/api/generatedApiGo';
 
 const searchQuery = ref('');
 
@@ -68,7 +69,14 @@ const geoStore = useGeoStore()
 const {geo} = storeToRefs(geoStore)
 const {loadPopularCities, setCity, findCity, loadGeo} = geoStore
 
-function selectCity(city: string) {
+function isSelected(city: CityResponse) {
+  const current = geo.value.cityData;
+  if (current?.id && city.id) return current.id === city.id;
+  if (current?.fias_id && city.fias_id) return current.fias_id === city.fias_id;
+  return geo.value.city === city.address;
+}
+
+function selectCity(city: CityResponse) {
   setCity(city)
   geoStore.closeModal()
 }

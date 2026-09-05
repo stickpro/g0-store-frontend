@@ -18,13 +18,33 @@
           </button>
         </div>
         <div class="flex items-center ml-auto">
-          <button class="text-gray-600 hover:text-gray-800 p-3">
+          <button
+              class="text-gray-600 hover:text-gray-800 p-3"
+              type="button"
+              aria-label="Корзина"
+              @click="openCartFromSidebar"
+          >
             <IconCart/>
           </button>
           <button class="text-gray-600 hover:text-gray-800 p-3">
             <IconPhone/>
           </button>
-          <button class="text-gray-600 hover:text-gray-800 p-3" type="button" aria-label="Профиль" @click="openAuth">
+          <NuxtLink
+              v-if="authStore.isAuthenticated"
+              to="/account"
+              class="inline-flex text-blue-600 hover:text-blue-700 p-3"
+              aria-label="Личный кабинет"
+              @click="closeSidebar"
+          >
+            <IconPerson/>
+          </NuxtLink>
+          <button
+              v-else
+              class="text-gray-600 hover:text-gray-800 p-3"
+              type="button"
+              aria-label="Войти"
+              @click="openAuth"
+          >
             <IconPerson/>
           </button>
         </div>
@@ -78,14 +98,17 @@ import { useAuthStore } from "~/stores/auth";
 
 const route = useRoute()
 const {isOpen, closeSidebar} = useSidebar()
+const { openCart } = useCartDrawer()
 const authStore = useAuthStore()
 
 function openAuth() {
   closeSidebar()
-  if (authStore.isAuthenticated) {
-    return navigateTo('/account')
-  }
   authStore.openModal()
+}
+
+function openCartFromSidebar() {
+  closeSidebar()
+  openCart()
 }
 
 watch(() => route.fullPath, () => {

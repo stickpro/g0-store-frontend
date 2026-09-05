@@ -134,6 +134,35 @@ export interface BreadcrumbResponse {
   slug?: string;
 }
 
+export interface CDEKDeliveryPointResponse {
+  address?: string;
+  address_full?: string;
+  allowed_cod?: boolean;
+  city?: string;
+  city_code?: number;
+  code?: string;
+  country_code?: string;
+  email?: string;
+  have_cash?: boolean;
+  have_cashless?: boolean;
+  is_dressing_room?: boolean;
+  is_handout?: boolean;
+  is_reception?: boolean;
+  latitude?: number;
+  longitude?: number;
+  name?: string;
+  note?: string;
+  phones?: string[];
+  postal_code?: string;
+  region?: string;
+  region_code?: number;
+  take_only?: boolean;
+  type?: string;
+  weight_max?: number;
+  weight_min?: number;
+  work_time?: string;
+}
+
 export interface CartItemResponse {
   available?: boolean;
   image?: ImageDTO;
@@ -370,6 +399,33 @@ export interface CreateManufacturerRequest {
   slug: string;
 }
 
+export interface CreateOrderRequest {
+  /** @maxLength 2000 */
+  comment?: string;
+  email?: string;
+  /**
+   * ExpectedTotal, when set, must equal the server-computed grand total or the
+   * order is rejected (price/availability changed since the cart was shown).
+   * Decimal string, e.g. "1990.00".
+   */
+  expected_total?: string;
+  /** @maxLength 32 */
+  payment_method: string;
+  /** @maxLength 32 */
+  phone?: string;
+  /** @maxLength 512 */
+  ship_address: string;
+  ship_city_id?: string;
+  /** @maxLength 255 */
+  ship_city_name: string;
+  /** @maxLength 16 */
+  ship_postcode?: string;
+  /** @maxLength 255 */
+  ship_recipient: string;
+  /** @maxLength 64 */
+  shipping_method?: string;
+}
+
 export interface CreateProductRequest {
   ean?: string;
   height?: number;
@@ -415,10 +471,6 @@ export interface FullPagingData {
   page?: number;
   page_size?: number;
   total?: number;
-}
-
-export interface GeoResponse {
-  city?: string;
 }
 
 export interface GetRelatedProductsBatchRequest {
@@ -499,12 +551,6 @@ export interface JSONResponseCollectionWithProductResponse {
   message?: string;
 }
 
-export interface JSONResponseGeoResponse {
-  code?: number;
-  data?: GeoResponse;
-  message?: string;
-}
-
 export interface JSONResponseManufacturerResponse {
   code?: number;
   data?: ManufacturerResponse;
@@ -514,6 +560,12 @@ export interface JSONResponseManufacturerResponse {
 export interface JSONResponseMediumResponse {
   code?: number;
   data?: MediumResponse;
+  message?: string;
+}
+
+export interface JSONResponseOrderResponse {
+  code?: number;
+  data?: OrderResponse;
   message?: string;
 }
 
@@ -562,6 +614,12 @@ export interface JSONResponseResponseWithFullPaginationCategoryResponse {
 export interface JSONResponseResponseWithFullPaginationCollection {
   code?: number;
   data?: ResponseWithFullPaginationCollection;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationOrderResponse {
+  code?: number;
+  data?: ResponseWithFullPaginationOrderResponse;
   message?: string;
 }
 
@@ -649,6 +707,12 @@ export interface JSONResponseArrayBreadcrumbResponse {
   message?: string;
 }
 
+export interface JSONResponseArrayCDEKDeliveryPointResponse {
+  code?: number;
+  data?: CDEKDeliveryPointResponse[];
+  message?: string;
+}
+
 export interface JSONResponseArrayCategoryTreeResponse {
   code?: number;
   data?: CategoryTreeResponse[];
@@ -723,6 +787,49 @@ export interface MediumResponse {
   path?: string;
   size?: number;
   width?: number;
+}
+
+export interface OrderItemResponse {
+  image_path?: string;
+  line_total?: number;
+  name?: string;
+  product_id?: string;
+  quantity?: number;
+  sku?: string;
+  slug?: string;
+  unit_price?: number;
+  variant_id?: string;
+}
+
+export interface OrderResponse {
+  cancelled_at?: string;
+  comment?: string;
+  created_at?: string;
+  currency?: string;
+  discount_total?: number;
+  email?: string;
+  grand_total?: number;
+  id?: string;
+  items?: OrderItemResponse[];
+  number?: number;
+  paid_at?: string;
+  payment_method?: string;
+  payment_status?: string;
+  phone?: string;
+  shipping?: OrderShippingResponse;
+  shipping_total?: number;
+  status?: string;
+  subtotal?: number;
+  tax_total?: number;
+}
+
+export interface OrderShippingResponse {
+  address?: string;
+  city_id?: string;
+  city_name?: string;
+  method?: string;
+  postcode?: string;
+  recipient?: string;
 }
 
 export interface ProductResponse {
@@ -819,6 +926,11 @@ export interface ResponseWithFullPaginationCategoryResponse {
 
 export interface ResponseWithFullPaginationCollection {
   items?: Collection[];
+  pagination?: FullPagingData;
+}
+
+export interface ResponseWithFullPaginationOrderResponse {
+  items?: OrderResponse[];
   pagination?: FullPagingData;
 }
 

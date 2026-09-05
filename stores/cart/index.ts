@@ -21,8 +21,6 @@ export const useCartStore = defineStore('Cart', {
 
     actions: {
         async loadCart() {
-            if (!import.meta.client) return;
-
             const { $api } = useNuxtApp();
             this.loading = true;
 
