@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <div class="flex flex-col gap-3">
-      <nav class="flex items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
+      <nav class="flex flex-wrap items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
         <NuxtLink to="/" class="flex size-6 items-center justify-center rounded-full p-1">
           <img src="@/assets/icons/home.svg" alt="Главная" class="size-4">
         </NuxtLink>
@@ -11,7 +11,7 @@
         </span>
       </nav>
 
-      <h1 class="text-[28px] font-normal leading-[45px] text-zinc-950">
+      <h1 class="text-[24px] font-normal leading-9 text-zinc-950 lg:text-[28px] lg:leading-[45px]">
         {{ title }}
       </h1>
     </div>

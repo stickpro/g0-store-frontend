@@ -1,30 +1,28 @@
 <template>
-  <section class="product-list py-8">
-    <!-- Section Title -->
-    <div class="flex items-center justify-between mb-6">
+  <section class="product-list py-6 lg:py-8">
+    <div class="mb-4 flex items-center justify-between lg:mb-6">
       <h2 class="text-[22px] font-normal text-zinc-950">{{ title }}</h2>
     </div>
 
-    <!-- Products Grid -->
-    <div v-if="loading" class="text-center py-12">
+    <div v-if="loading" class="py-12 text-center">
       <p class="text-zinc-500">Загрузка...</p>
     </div>
 
-    <div v-else-if="products.length === 0" class="text-center py-12">
+    <div v-else-if="products.length === 0" class="py-12 text-center">
       <p class="text-zinc-500">Товары не найдены</p>
     </div>
 
     <div
       v-else
-      class="overflow-x-auto scrollbar-hide border-b-1 border-dashed border-zinc-600/15"
+      class="-mx-4 overflow-x-auto border-b border-dashed border-zinc-600/15 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0"
     >
-      <div class="flex">
+      <div class="flex min-w-max px-4 lg:px-0">
         <ProductCard
           v-for="product in displayedProducts"
           :key="product.id"
           :product="product"
           :show-stock="showStock"
-          class="flex-shrink-0 w-[280px]"
+          class="w-[200px] shrink-0 lg:w-[280px]"
         />
       </div>
     </div>

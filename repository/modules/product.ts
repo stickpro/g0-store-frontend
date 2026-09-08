@@ -2,15 +2,20 @@ import HttpFactory from "../factory";
 import type {
     AttributeGroupResponse,
     BreadcrumbResponse,
+    GithubComStickproGoStoreInternalDeliveryHttpRequestProductReviewRequestCreateProductReviewRequest,
     JSONResponseArrayBreadcrumbResponse,
     JSONResponseArrayVariantCardResponse,
     JSONResponseAttributeGroupsResponse,
+    JSONResponseProductReviewResponse,
     JSONResponseProductWithMediumResponse,
     JSONResponseResponseWithFullPaginationProductReviewResponse,
     ProductWithMediumResponse,
     ProductReviewResponse,
     VariantCardResponse,
 } from "~/repository/types/api/generatedApiGo";
+
+export type CreateProductReviewRequest =
+    GithubComStickproGoStoreInternalDeliveryHttpRequestProductReviewRequestCreateProductReviewRequest;
 
 class ProductModule extends HttpFactory {
     private RESOURCE = '/product'
@@ -46,6 +51,14 @@ class ProductModule extends HttpFactory {
             `${this.RESOURCE}/${slug}/reviews`,
         )
         return response.data?.items || [];
+    }
+
+    async createReview(body: CreateProductReviewRequest): Promise<ProductReviewResponse> {
+        const response = await this.post<JSONResponseProductReviewResponse>(
+            '/product-review/',
+            body,
+        );
+        return response.data || {};
     }
 
 }

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import type { AttributeGroupResponse, BreadcrumbResponse, ProductWithMediumResponse, VariantCardResponse, ProductReviewResponse } from "~/repository/types/api/generatedApiGo";
+import type { CreateProductReviewRequest } from "~/repository/modules/product";
 
 const CACHE_SIZE = 10;
 
@@ -216,6 +217,18 @@ export const useProductStore = defineStore('Product', {
             } finally {
                 this.reviewsLoading[slug] = false;
             }
+        },
+
+        async createReview(slug: string, payload: CreateProductReviewRequest) {
+            const { $api } = useNuxtApp();
+            const review = await $api.product.createReview(payload);
+
+            if (review.status === 'APPROVED') {
+                const current = this.reviews[slug] || [];
+                this.reviews[slug] = [review, ...current.filter((item) => item.id !== review.id)];
+            }
+
+            return review;
         },
 
         async loadBreadcrumbs(slug: string) {

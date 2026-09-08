@@ -19,8 +19,8 @@
           <yandex-map-listener :settings="listenerSettings"/>
           <CheckoutDeliveryCluster
               :points="points"
-              icon-src="/icons/cdek_point.svg"
-              cluster-class="bg-[#1AB248]"
+              icon-src="/icons/yandex_point.svg"
+              cluster-class="bg-[#FC3F1D]"
               @select="selectPoint"
               @updated-bounds="loadFromViewport"
           />
@@ -31,7 +31,7 @@
               :zero-sizes="false"
           >
             <img
-                src="/icons/cdek_point.svg"
+                src="/icons/yandex_point.svg"
                 width="28"
                 height="36"
                 alt=""
@@ -48,20 +48,20 @@
     </div>
 
     <p v-if="loading" class="px-1 text-[13px] leading-4 text-zinc-500">
-      Загрузка пунктов СДЭК…
+      Загрузка пунктов Яндекс Доставки…
     </p>
     <p v-else-if="loadError" class="px-1 text-[13px] leading-4 text-orange-600">
       {{ loadError }}
     </p>
     <p v-else-if="!points.length" class="px-1 text-[13px] leading-4 text-zinc-500">
-      Пункты СДЭК не найдены.
+      Пункты Яндекс Доставки не найдены.
     </p>
 
     <div v-if="modelValue" class="rounded-3xl bg-zinc-600/5 px-4 py-3 text-[15px] leading-6 text-zinc-950">
       <p class="font-medium">{{ modelValue.name || modelValue.code }}</p>
-      <p class="mt-1 text-zinc-600">{{ modelValue.address_full || modelValue.address }}</p>
-      <p v-if="modelValue.work_time" class="mt-1 text-[13px] leading-4 text-zinc-500">
-        {{ modelValue.work_time }}
+      <p class="mt-1 text-zinc-600">{{ modelValue.full_address || pointShortAddress(modelValue) }}</p>
+      <p v-if="selectedSchedule" class="mt-1 text-[13px] leading-4 text-zinc-500">
+        {{ selectedSchedule }}
       </p>
     </div>
   </div>
@@ -79,18 +79,27 @@ import {
 } from 'vue-yandex-maps';
 import type { YandexMapListenerSettings } from 'vue-yandex-maps';
 import { useDebounceFn } from '@vueuse/core';
-import type { CDEKDeliveryPointResponse } from '~/repository/types/api/generatedApiGo';
+import type { YandexDeliveryPointResponse } from '~/repository/types/api/generatedApiGo';
 import { useGeoStore } from '~/stores/geo';
-import type { CdekDeliveryPointsQuery } from '~/repository/modules/cdek';
+import type { YandexDeliveryPointsQuery } from '~/repository/modules/yandexDelivery';
 import CheckoutDeliveryCluster from '~/components/checkout/CheckoutDeliveryCluster.vue';
 
 const CITY_ZOOM = 11;
+const DAY_NAMES: Record<number, string> = {
+  1: 'Пн',
+  2: 'Вт',
+  3: 'Ср',
+  4: 'Чт',
+  5: 'Пт',
+  6: 'Сб',
+  7: 'Вс',
+};
 
-const modelValue = defineModel<CDEKDeliveryPointResponse | null>({ default: null });
+const modelValue = defineModel<YandexDeliveryPointResponse | null>({ default: null });
 const geoStore = useGeoStore();
 
 const map = ref<any>(null);
-const points = shallowRef<CDEKDeliveryPointResponse[]>([]);
+const points = shallowRef<YandexDeliveryPointResponse[]>([]);
 const loading = ref(false);
 const loadError = ref('');
 const ready = ref(false);
@@ -106,20 +115,70 @@ const mapSettings = computed(() => ({
   },
 }));
 
-function pointLat(point: CDEKDeliveryPointResponse) {
+function pointLat(point: YandexDeliveryPointResponse) {
   return Number(point.latitude);
 }
 
-function pointLon(point: CDEKDeliveryPointResponse) {
+function pointLon(point: YandexDeliveryPointResponse) {
   return Number(point.longitude);
 }
+
+function pointShortAddress(point: YandexDeliveryPointResponse) {
+  return [point.street, point.house].filter(Boolean).join(', ');
+}
+
+function formatDayRange(days: number[]) {
+  const unique = [...new Set(days.filter((day) => DAY_NAMES[day]))].sort((a, b) => a - b);
+  if (!unique.length) return '';
+
+  const ranges: string[] = [];
+  let start = unique[0];
+  let prev = unique[0];
+
+  for (let i = 1; i <= unique.length; i++) {
+    const day = unique[i];
+    if (day === prev + 1) {
+      prev = day;
+      continue;
+    }
+    ranges.push(start === prev ? DAY_NAMES[start] : `${DAY_NAMES[start]}–${DAY_NAMES[prev]}`);
+    start = day;
+    prev = day;
+  }
+
+  return ranges.join(', ');
+}
+
+function scheduleLabel(point: YandexDeliveryPointResponse) {
+  const byTime = new Map<string, number[]>();
+
+  for (const item of point.schedule || []) {
+    const time = [item.time_from, item.time_to].filter(Boolean).join('–');
+    if (!time) continue;
+    const days = byTime.get(time) || [];
+    days.push(...(item.days || []));
+    byTime.set(time, days);
+  }
+
+  return [...byTime.entries()]
+      .map(([time, days]) => {
+        const dayLabel = formatDayRange(days);
+        return dayLabel ? `${dayLabel} ${time}` : time;
+      })
+      .filter(Boolean)
+      .join('; ');
+}
+
+const selectedSchedule = computed(() =>
+    modelValue.value ? scheduleLabel(modelValue.value) : '',
+);
 
 function boundsQuery(
     minLon: number,
     minLat: number,
     maxLon: number,
     maxLat: number,
-): CdekDeliveryPointsQuery {
+): YandexDeliveryPointsQuery {
   return {
     min_lat: Math.min(minLat, maxLat),
     max_lat: Math.max(minLat, maxLat),
@@ -128,7 +187,7 @@ function boundsQuery(
   };
 }
 
-function isUsableQuery(query: CdekDeliveryPointsQuery | null): query is CdekDeliveryPointsQuery {
+function isUsableQuery(query: YandexDeliveryPointsQuery | null): query is YandexDeliveryPointsQuery {
   if (!query) return false;
   if (query.min_lat == null || query.max_lat == null || query.min_lon == null || query.max_lon == null) {
     return false;
@@ -140,7 +199,7 @@ function isUsableQuery(query: CdekDeliveryPointsQuery | null): query is CdekDeli
   return query.min_lat >= -90 && query.max_lat <= 90 && query.min_lon >= -180 && query.max_lon <= 180;
 }
 
-function queryFromBounds(bounds: unknown): CdekDeliveryPointsQuery | null {
+function queryFromBounds(bounds: unknown): YandexDeliveryPointsQuery | null {
   if (!Array.isArray(bounds) || !Array.isArray(bounds[0]) || !Array.isArray(bounds[1])) return null;
   const lon1 = Number(bounds[0][0]);
   const lat1 = Number(bounds[0][1]);
@@ -152,7 +211,7 @@ function queryFromBounds(bounds: unknown): CdekDeliveryPointsQuery | null {
   return boundsQuery(lon1 - padLon, lat1 - padLat, lon2 + padLon, lat2 + padLat);
 }
 
-function queryKey(query: CdekDeliveryPointsQuery) {
+function queryKey(query: YandexDeliveryPointsQuery) {
   return [
     query.min_lat?.toFixed(4),
     query.max_lat?.toFixed(4),
@@ -161,7 +220,7 @@ function queryKey(query: CdekDeliveryPointsQuery) {
   ].join(':');
 }
 
-async function loadPoints(query: CdekDeliveryPointsQuery | null, force = false) {
+async function loadPoints(query: YandexDeliveryPointsQuery | null, force = false) {
   if (!isUsableQuery(query)) return;
 
   const key = queryKey(query);
@@ -173,7 +232,7 @@ async function loadPoints(query: CdekDeliveryPointsQuery | null, force = false) 
   loadError.value = '';
 
   try {
-    const data = await $api.cdek.getDeliveryPoints(query);
+    const data = await $api.yandexDelivery.getDeliveryPoints(query);
     if (seq !== loadSeq) return;
     lastQueryKey = key;
     points.value = data.filter((point) =>
@@ -181,14 +240,14 @@ async function loadPoints(query: CdekDeliveryPointsQuery | null, force = false) 
     );
   } catch {
     if (seq !== loadSeq) return;
-    loadError.value = 'Не удалось загрузить пункты СДЭК';
+    loadError.value = 'Не удалось загрузить пункты Яндекс Доставки';
     points.value = [];
   } finally {
     if (seq === loadSeq) loading.value = false;
   }
 }
 
-function queryFromCenter(): CdekDeliveryPointsQuery | null {
+function queryFromCenter(): YandexDeliveryPointsQuery | null {
   const coords = mapCenter.value;
   if (!coords) return null;
   const [lon, lat] = coords;
@@ -196,7 +255,7 @@ function queryFromCenter(): CdekDeliveryPointsQuery | null {
   return boundsQuery(lon - pad, lat - pad, lon + pad, lat + pad);
 }
 
-function currentQuery(): CdekDeliveryPointsQuery | null {
+function currentQuery(): YandexDeliveryPointsQuery | null {
   const fromMap = queryFromBounds(map.value?.bounds);
   if (isUsableQuery(fromMap)) return fromMap;
   return queryFromCenter();
@@ -227,7 +286,7 @@ const loadFromViewport = useDebounceFn((bounds?: unknown) => {
   loadPoints(query);
 }, 300);
 
-function selectPoint(point: CDEKDeliveryPointResponse) {
+function selectPoint(point: YandexDeliveryPointResponse) {
   modelValue.value = point;
 }
 

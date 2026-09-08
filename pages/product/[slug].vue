@@ -1,43 +1,45 @@
 <template>
-  <div v-if="product" class="w-full">
+  <div v-if="product" class="w-full pb-24 lg:pb-0">
     <Breadcrumbs :items="breadcrumbItems"/>
-    <div class="sticky top-[83px] z-10 bg-white grid grid-cols-2 border-b border-b-zinc-600/15 my-6 pt-2">
-      <div class="flex">
-        <button
-            class="p-3 text-base transition-colors"
-            :class="activeTab === 'about' ? 'border-b-2 border-orange-500' : 'text-zinc-600 hover:text-zinc-950'"
-            @click="activeTab = 'about'"
-        >
-          Все о товаре
-        </button>
-        <button
-            class="p-3 text-base transition-colors text-zinc-950"
-            :class="activeTab === 'specs' ? 'border-b-2 border-orange-500 ' : 'text-zinc-600 hover:text-zinc-950'"
-            @click="activeTab = 'specs'"
-        >
-          Характеристики
-        </button>
-        <button
-            class="p-3 text-base transition-colors"
-            :class="activeTab === 'reviews' ? 'border-b-2 border-orange-500 ' : 'text-zinc-600 hover:text-zinc-950'"
-            @click="activeTab = 'reviews'"
-        >
-          Отзывы
-        </button>
-      </div>
-      <div class="flex justify-end gap-6 pb-2">
-        <div class="flex flex-col text-right">
-          <span class="text-orange-500 font-normal">{{ getStockStatusLabel(product?.stock_status) }}</span>
-          <span class="font-bold">{{ formatPrice(product?.price_retail || 0) }}</span>
+    <div class="sticky top-16 z-10 my-4 border-b border-b-zinc-600/15 bg-white pt-2 lg:top-[83px] lg:my-6">
+      <div class="flex items-end justify-between gap-4">
+        <div class="flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <button
+              class="shrink-0 p-3 text-sm transition-colors lg:text-base"
+              :class="activeTab === 'about' ? 'border-b-2 border-orange-500' : 'text-zinc-600 hover:text-zinc-950'"
+              @click="activeTab = 'about'"
+          >
+            Все о товаре
+          </button>
+          <button
+              class="shrink-0 p-3 text-sm transition-colors text-zinc-950 lg:text-base"
+              :class="activeTab === 'specs' ? 'border-b-2 border-orange-500 ' : 'text-zinc-600 hover:text-zinc-950'"
+              @click="activeTab = 'specs'"
+          >
+            Характеристики
+          </button>
+          <button
+              class="shrink-0 p-3 text-sm transition-colors lg:text-base"
+              :class="activeTab === 'reviews' ? 'border-b-2 border-orange-500 ' : 'text-zinc-600 hover:text-zinc-950'"
+              @click="activeTab = 'reviews'"
+          >
+            Отзывы
+          </button>
         </div>
-        <button
-            class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            :disabled="adding"
-            @click="addToCart"
-        >
-          <img src="@/assets/icons/add_shopping_cart.svg" alt="add_cart">
-          <span class="px-1">В Корзину</span>
-        </button>
+        <div class="hidden shrink-0 items-center justify-end gap-6 pb-2 lg:flex">
+          <div class="flex flex-col text-right">
+            <span class="font-normal text-orange-500">{{ getStockStatusLabel(product?.stock_status) }}</span>
+            <span class="font-bold">{{ formatPrice(product?.price_retail || 0) }}</span>
+          </div>
+          <button
+              class="flex items-center justify-center gap-2 rounded-full bg-orange-500 px-3 py-3 text-lg text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="adding"
+              @click="addToCart"
+          >
+            <img src="@/assets/icons/add_shopping_cart.svg" alt="add_cart">
+            <AddToCartCtaLabel :adding="adding" :added="added" idle="В Корзину"/>
+          </button>
+        </div>
       </div>
     </div>
     <!-- Контент таба "Все о товаре" -->
@@ -45,10 +47,9 @@
       <div v-if="activeTab === 'about'" key="about">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <!-- Левая колонка - Галерея изображений -->
-          <div class="flex flex-row-reverse justify-end gap-6 min-w-[660px] max-h-[660px]">
-            <!-- Основное изображение -->
+          <div class="flex w-full min-w-0 flex-col gap-3 lg:max-h-[660px] lg:flex-row-reverse lg:justify-end lg:gap-6">
             <div
-                class="bg-white rounded-lg overflow-hidden cursor-zoom-in"
+                class="flex max-h-[320px] cursor-zoom-in items-center justify-center overflow-hidden rounded-lg bg-white lg:max-h-none"
                 @click="openGallery(selectedIndex)"
             >
               <ProductPicture
@@ -56,10 +57,10 @@
                   :image="selectedImage"
                   preset="pdp"
                   :alt="selectedImage.alt || productTitle"
-                  class="w-full h-auto object-contain"
+                  class="max-h-[320px] w-full object-contain lg:max-h-none lg:h-auto"
               />
-              <div v-else class="w-full flex items-center justify-center text-gray-300">
-                <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div v-else class="flex w-full items-center justify-center text-gray-300">
+                <svg class="h-32 w-32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -69,13 +70,12 @@
               </div>
             </div>
 
-            <!-- Миниатюры -->
-            <div v-if="galleryImages.length" class="flex flex-col gap-3 overflow-x-auto min-w-[80px]">
+            <div v-if="galleryImages.length" class="flex min-w-0 gap-3 overflow-x-auto lg:min-w-[80px] lg:flex-col">
               <button
                   v-for="(img, index) in galleryImages"
                   :key="img.id || index"
                   :class="[
-                'p-2 flex-shrink-0 w-20 h-20 rounded-lg border-1 overflow-hidden transition-all cursor-zoom-in',
+                'h-16 w-16 shrink-0 overflow-hidden rounded-lg border p-2 transition-all lg:h-20 lg:w-20',
                 selectedIndex === index ? 'border-blue-600' : 'border-zinc-200 hover:border-zinc-300'
               ]"
                   @click="openGallery(index)"
@@ -85,7 +85,7 @@
                     :image="img"
                     preset="thumb"
                     :alt="img.alt || `${productTitle} — фото ${index + 1}`"
-                    class="w-full h-full object-cover"
+                    class="h-full w-full object-cover"
                 />
               </button>
             </div>
@@ -94,17 +94,16 @@
           <!-- Правая колонка - Информация о товаре -->
           <div class="flex flex-col">
             <!-- Заголовок -->
-            <h1 class="text-3xl lg:text-3xl font-normal text-zinc-950 mb-4">
+            <h1 class="mb-4 text-2xl font-normal text-zinc-950 lg:text-3xl">
               {{ productHeading }}
             </h1>
 
-            <!-- Рейтинг и отзывы -->
-            <div class="flex items-center gap-2 mb-4">
+            <div class="mb-4 flex flex-wrap items-center gap-2">
               <div class="flex items-center gap-1">
                 <svg
                     v-for="star in 5"
                     :key="star"
-                    class="w-5 h-5"
+                    class="h-5 w-5"
                     :class="star <= Math.round(averageRating) ? 'text-orange-500' : 'text-zinc-300'"
                     fill="currentColor" viewBox="0 0 20 20">
                   <path
@@ -112,7 +111,7 @@
                 </svg>
               </div>
               <span class="text-sm text-zinc-600">Отзывов: {{ reviews.length }}</span>
-              <span v-if="product.sku" class="text-sm text-blue-600 ml-auto">Код товара: {{ product.sku }}</span>
+              <span v-if="product.sku" class="ml-auto text-sm text-blue-600">Код товара: {{ product.sku }}</span>
             </div>
 
             <!-- Статус наличия -->
@@ -121,19 +120,18 @@
             </div>
 
             <!-- Цена -->
-            <div class="flex justify-between">
-              <div class="text-4xl font-bold text-zinc-950 mb-8">
+            <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div class="text-3xl font-bold text-zinc-950 lg:text-4xl">
                 {{ formatPrice(product?.price_retail || 0) }}
               </div>
 
-              <!-- Кнопка купить -->
               <button
-                  class="w-full lg:w-auto px-3 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded-full flex items-center justify-center gap-2 transition-colors mb-8 disabled:opacity-60 disabled:cursor-not-allowed"
+                  class="hidden items-center justify-center gap-2 rounded-full bg-orange-500 px-3 py-3 text-lg text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60 lg:flex"
                   :disabled="adding"
                   @click="addToCart"
               >
                 <img src="@/assets/icons/add_shopping_cart.svg" alt="add_cart">
-                <span class="px-1">Купить</span>
+                <AddToCartCtaLabel :adding="adding" :added="added" idle="Купить"/>
               </button>
             </div>
             <!-- Информационные блоки -->
@@ -175,14 +173,13 @@
                 </svg>
                 <h3 class="text-base text-zinc-950">Доставка</h3>
               </div>
-              <div class="flex justify-between">
-                <!-- Табы доставки -->
+              <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div
-                    class="inline-flex rounded-3xl border-1 border-zinc-600/5 mb-4 transition-colors hover:bg-zinc-600/3">
+                    class="inline-flex rounded-3xl border border-zinc-600/5 transition-colors hover:bg-zinc-600/3">
                   <button
                       v-for="tab in deliveryTabs"
                       :key="tab"
-                      class="px-4 py-2 text-base font-normal rounded-full transition-colors text-zinc-950"
+                      class="rounded-full px-4 py-2 text-sm font-normal text-zinc-950 transition-colors lg:text-base"
                       :class="[
                     selectedDeliveryTab === tab
                       ? 'bg-zinc-600/5'
@@ -194,15 +191,14 @@
                   </button>
                 </div>
 
-                <!-- Город -->
-                <div class="flex items-center justify-between mb-3 gap-4 text-base text-zinc-950 pr-2">
+                <div class="flex items-center justify-between gap-4 pr-2 text-base text-zinc-950 lg:mb-3">
                   Ваш город:
                   <button
-                      class="text-zinc-950/50 flex items-center gap-1 hover:text-orange-500"
+                      class="flex items-center gap-1 text-zinc-950/50 hover:text-orange-500"
                       @click="geoStore.openModal()"
                   >
                     {{ geoStore.geo.city }}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
@@ -212,8 +208,7 @@
                   </button>
                 </div>
               </div>
-              <!-- Варианты доставки -->
-              <div class="flex gap-3">
+              <div class="flex flex-col gap-3 sm:flex-row">
                 <div
                     v-for="option in deliveryOptions"
                     :key="option.name"
@@ -243,7 +238,7 @@
             :loading="isRelatedProductsLoading"
             class="mt-12"
         />
-        <div class="grid grid-cols-2 gap-12 mt-12">
+        <div class="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
           <!-- Левая колонка: Описание и Характеристики -->
           <div>
             <!-- Описание товара -->
@@ -264,8 +259,8 @@
                       :key="attr.id"
                       class="border-t border-b border-zinc-200"
                   >
-                    <td class="p-4 border-r border-zinc-200 text-zinc-950 w-1/2">{{ attr.name }}</td>
-                    <td class="p-4 text-zinc-950">
+                    <td class="w-1/2 border-r border-zinc-200 p-3 text-sm text-zinc-950 lg:p-4 lg:text-base">{{ attr.name }}</td>
+                    <td class="p-3 text-sm text-zinc-950 lg:p-4 lg:text-base">
                     <span v-for="(value, idx) in attr.values" :key="value.id">
                       {{ value.value }}{{
                         attr.unit ? ` ${attr.unit}` : ''
@@ -293,7 +288,16 @@
 
           <!-- Правая колонка: Отзывы -->
           <div>
-            <h2 class="text-2xl font-medium text-zinc-950 mb-4">Отзывы</h2>
+            <div class="mb-4 flex items-center justify-between gap-4">
+              <h2 class="text-2xl font-medium text-zinc-950">Отзывы</h2>
+              <button
+                  type="button"
+                  class="text-sm text-orange-500 hover:text-orange-600"
+                  @click="activeTab = 'reviews'"
+              >
+                Написать отзыв
+              </button>
+            </div>
 
             <div v-if="reviews.length > 0" class="space-y-4">
               <div
@@ -355,8 +359,8 @@
                   :key="attr.id"
                   class="border-t border-zinc-200"
               >
-                <td class="py-4 text-zinc-500 w-1/2">{{ attr.name }}</td>
-                <td class="py-4 text-zinc-950">
+                <td class="w-1/2 py-3 pr-3 text-sm text-zinc-500 lg:py-4 lg:text-base">{{ attr.name }}</td>
+                <td class="py-3 text-sm text-zinc-950 lg:py-4 lg:text-base">
                   <span v-for="(value, idx) in attr.values" :key="value.id">
                     {{ value.value }}{{
                       attr.unit ? ` ${attr.unit}` : ''
@@ -386,6 +390,11 @@
     <Transition name="fade" mode="out-in">
       <div v-if="activeTab === 'reviews'" key="reviews" class="py-8">
         <h2 class="text-2xl font-bold text-zinc-950 mb-6">Отзывы</h2>
+        <ProductReviewForm
+            class="mb-6"
+            :slug="slug"
+            :variant-id="product.variant?.id"
+        />
         <div v-if="reviews.length > 0" class="space-y-4">
           <div
               v-for="review in reviews"
@@ -426,6 +435,38 @@
       <p class="text-zinc-500">Загрузка...</p>
     </div>
 
+    <OrderSummarySheet
+        v-model:expanded="buySheetOpen"
+        :total="Number(product?.price_retail || 0)"
+        panel-class="bg-white"
+    >
+      <template #collapsed-action>
+        <button
+            class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-orange-500 px-5 text-[15px] font-medium text-white disabled:opacity-60"
+            :disabled="adding"
+            @click="addToCart"
+        >
+          <img src="@/assets/icons/add_shopping_cart.svg" alt="" class="size-5">
+          <AddToCartCtaLabel :adding="adding" :added="added" idle="В корзину"/>
+        </button>
+      </template>
+      <div class="px-4 pb-2">
+        <p class="text-[13px] text-orange-500">{{ getStockStatusLabel(product?.stock_status) }}</p>
+        <p v-if="product?.sku" class="mt-1 text-[13px] text-zinc-500">Код товара: {{ product.sku }}</p>
+        <p class="mt-3 text-[28px] font-bold leading-9 text-zinc-950">
+          {{ formatPrice(product?.price_retail || 0) }}
+        </p>
+        <button
+            class="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-orange-500 text-[15px] font-medium text-white disabled:opacity-60"
+            :disabled="adding"
+            @click="addToCart"
+        >
+          <img src="@/assets/icons/add_shopping_cart.svg" alt="" class="size-5">
+          <AddToCartCtaLabel :adding="adding" :added="added" idle="В корзину"/>
+        </button>
+      </div>
+    </OrderSummarySheet>
+
     <!-- Галерея на весь экран -->
     <ImageGalleryModal
         :is-open="isGalleryOpen"
@@ -442,7 +483,10 @@
 import Breadcrumbs from '@/components/ui/Breadcrumbs.vue'
 import ImageGalleryModal from '@/components/ui/ImageGalleryModal.vue'
 import ProductPicture from '@/components/product/ProductPicture.vue'
+import AddToCartCtaLabel from '@/components/product/AddToCartCtaLabel.vue'
 import ProductList from '@/components/product/ProductList.vue'
+import ProductReviewForm from '@/components/product/ProductReviewForm.vue'
+import OrderSummarySheet from '~/components/cart/OrderSummarySheet.vue'
 import {useProductStore} from '@/stores/product/';
 import {useCartStore} from '@/stores/cart';
 import {useGeoStore} from '@/stores/geo';
@@ -466,7 +510,11 @@ const route = useRoute();
 const productStore = useProductStore();
 const cartStore = useCartStore();
 const geoStore = useGeoStore();
+const cartToast = useCartToast();
 const adding = ref(false);
+const added = ref(false);
+const buySheetOpen = ref(false);
+let addedTimer: ReturnType<typeof setTimeout> | undefined;
 const config = useRuntimeConfig();
 const requestURL = useRequestURL();
 
@@ -716,6 +764,14 @@ async function addToCart() {
       variant_id: variantId,
       quantity: current.minimum && current.minimum > 0 ? current.minimum : 1,
     });
+    added.value = true;
+    cartToast.added();
+    if (addedTimer) clearTimeout(addedTimer);
+    addedTimer = setTimeout(() => {
+      added.value = false;
+    }, 1800);
+  } catch {
+    cartToast.failed();
   } finally {
     adding.value = false;
   }

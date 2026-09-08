@@ -2,33 +2,31 @@
   <div>
     <Header/>
     <main class="relative">
-      <div class="mx-auto flex max-w-[1552px]">
-        <div class="w-76 min-w-76 mr-6 flex-shrink-0 border-r-1 border-dashed border-zinc-600/15 min-h-screen">
-          <SidebarAccount class="border-b-1 border-dashed border-zinc-600/15"/>
-          <div class="border-b-1 border-dashed border-zinc-600/15 px-4 py-6">
-            <h3 class="h-10 flex items-center text-orange-500 font-semibold">Чат с 3D ELECTRONICS</h3>
+      <div class="mx-auto flex max-w-[1552px] flex-col lg:flex-row">
+        <div class="lg:mr-6 lg:min-h-screen lg:w-76 lg:min-w-76 lg:shrink-0 lg:border-r lg:border-dashed lg:border-zinc-600/15">
+          <SidebarAccount class="border-b border-dashed border-zinc-600/15"/>
+          <div class="hidden border-b border-dashed border-zinc-600/15 px-4 py-6 lg:block">
+            <h3 class="flex h-10 items-center font-semibold text-orange-500">Чат с 3D ELECTRONICS</h3>
             <Geo/>
             <WorkingHours/>
           </div>
-          <div class="border-b-1 border-dashed border-zinc-600/15">
+          <div class="hidden border-b border-dashed border-zinc-600/15 lg:block">
             <InfoCompany/>
           </div>
         </div>
 
-        <div class="flex-1 py-6 w-full min-w-0 max-w-full">
+        <div class="min-w-0 w-full max-w-full flex-1 px-4 py-4 lg:px-0 lg:py-6">
           <slot/>
         </div>
       </div>
     </main>
 
-    <Footer/>
     <GeoModal/>
   </div>
 </template>
 
 <script setup lang="ts">
 import Header from '~/components/layouts/header/Header.vue';
-import Footer from '~/components/layouts/footer/Footer.vue';
 import SidebarAccount from '~/components/account/SidebarAccount.vue';
 import WorkingHours from '~/components/layouts/sidebar/WorkingHours.vue';
 import InfoCompany from '~/components/company/InfoCompany.vue';

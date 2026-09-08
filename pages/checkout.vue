@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full min-h-[calc(100vh-5rem)]">
-    <div class="min-w-0 flex-1 pt-6 pr-6 pb-24">
+    <div class="min-w-0 flex-1 px-4 pt-4 pb-36 lg:px-0 lg:pt-6 lg:pr-6 lg:pb-24">
       <div class="flex items-center gap-6">
         <h1 class="min-w-0 flex-1 text-[28px] font-normal leading-[45px] text-zinc-950">
           Оформление заказа
@@ -18,21 +18,21 @@
 
       <div
           v-if="!authStore.isAuthenticated && !createdOrder"
-          class="mt-6 flex h-12 items-center justify-between rounded-full bg-blue-600/5 pl-4 pr-1"
+          class="mt-6 flex min-h-12 flex-col items-stretch gap-2 rounded-3xl bg-blue-600/5 px-4 py-2 sm:h-12 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:py-0 sm:pr-1"
       >
         <p class="text-[15px] leading-6 text-blue-700">
           Войдите, чтобы быстрее оформить заказ
         </p>
         <button
             type="button"
-            class="h-10 rounded-full bg-blue-600 px-6 text-[15px] font-medium text-white hover:bg-blue-700"
+            class="h-10 shrink-0 rounded-full bg-blue-600 px-6 text-[15px] font-medium text-white hover:bg-blue-700"
             @click="authStore.openModal()"
         >
           Войти
         </button>
       </div>
 
-      <div class="mt-6 flex h-12 items-center justify-between rounded-full bg-orange-500/5 pl-4 pr-1">
+      <div class="mt-4 flex min-h-12 flex-col items-stretch gap-2 rounded-3xl bg-orange-500/5 px-4 py-2 sm:mt-6 sm:h-12 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:py-0 sm:pr-1">
         <p class="text-[15px] leading-6 text-orange-600">
           Хотите заполнить форму по шаблону?
         </p>
@@ -178,6 +178,7 @@
                   </p>
                   <CheckoutPickupMap v-if="shippingMethod === 'pickup'"/>
                   <CheckoutCdekMap v-else-if="shippingMethod === 'cdek'" v-model="selectedCdek"/>
+                  <CheckoutYandexMap v-else-if="shippingMethod === 'yandex'" v-model="selectedYandex"/>
                   <CheckoutField
                       v-else
                       v-model="shipAddress"
@@ -220,54 +221,87 @@
       </div>
     </div>
 
-    <aside class="flex w-[304px] shrink-0 flex-col border-l border-dashed border-zinc-600/15 bg-[#eff6ff] min-h-[calc(100vh-5rem)]">
-      <h3 class="px-4 pt-8 pb-4 text-[22px] font-normal leading-9 text-zinc-950">Итого</h3>
+    <aside class="hidden min-h-[calc(100vh-5rem)] w-[304px] shrink-0 flex-col border-l border-dashed border-zinc-600/15 bg-[#eff6ff] lg:flex">
+      <OrderSummary
+          layout="desktop"
+          :item-count="cartStore.itemCount"
+          :total="cartStore.totalPrice"
+          :delivery-label="deliveryLabel"
+      >
+        <template #actions>
+          <button
+              type="button"
+              class="h-12 w-full rounded-full bg-blue-600 text-[15px] font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              :disabled="submitting || Boolean(createdOrder)"
+              @click="submitOrder"
+          >
+            {{ submitting ? 'Отправка…' : 'Заказ подтверждаю' }}
+          </button>
+          <p v-if="submitError" class="text-[13px] leading-4 text-orange-600">
+            {{ submitError }}
+          </p>
+        </template>
+        <template #legal>
+          <div class="space-y-2 text-[13px] leading-[21px] text-zinc-950">
+            <p>Подтверждая заказ, я принимаю условия:</p>
+            <NuxtLink to="/privacy" class="block underline underline-offset-2">
+              положения о сборе и защите персональных данных
+            </NuxtLink>
+            <NuxtLink to="/terms" class="block underline underline-offset-2">
+              пользовательского соглашения
+            </NuxtLink>
+          </div>
+        </template>
+      </OrderSummary>
+    </aside>
 
-      <dl class="border-y border-dashed border-zinc-600/15 px-4 py-6 text-[15px] leading-6 text-zinc-950">
-        <div class="flex items-center justify-between gap-4 py-2">
-          <dt>Кол-во товара</dt>
-          <dd>{{ cartStore.itemCount }}</dd>
-        </div>
-        <div class="flex items-center justify-between gap-4 py-2">
-          <dt>Доставка</dt>
-          <dd>{{ deliveryLabel }}</dd>
-        </div>
-        <div class="flex items-center justify-between gap-4 py-2">
-          <dt>Всего</dt>
-          <dd>{{ formatMoney(cartStore.totalPrice) }}</dd>
-        </div>
-      </dl>
-
-      <div class="border-b border-dashed border-zinc-600/15 px-4 py-6">
-        <p class="text-[22px] leading-9 text-zinc-950">К оплате</p>
-        <p class="mt-4 text-[22px] font-normal leading-9 text-zinc-950">
-          {{ formatMoney(cartStore.totalPrice) }}
-        </p>
-      </div>
-
-      <div class="flex flex-col gap-4 px-4 pt-6">
+    <OrderSummarySheet
+        v-model:expanded="sheetOpen"
+        :total="cartStore.totalPrice"
+        panel-class="bg-[#eff6ff]"
+    >
+      <template #collapsed-action>
         <button
             type="button"
-            class="h-12 w-full rounded-full bg-blue-600 text-[15px] font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            class="flex h-12 shrink-0 items-center justify-center rounded-full bg-blue-600 px-5 text-[15px] font-medium text-white disabled:opacity-50"
             :disabled="submitting || Boolean(createdOrder)"
             @click="submitOrder"
         >
-          {{ submitting ? 'Отправка…' : 'Заказ подтверждаю' }}
+          {{ submitting ? 'Отправка…' : 'Подтвердить' }}
         </button>
-        <p v-if="submitError" class="text-[13px] leading-4 text-orange-600">
-          {{ submitError }}
-        </p>
-        <div class="space-y-2 text-[13px] leading-[21px] text-zinc-950">
-          <p>Подтверждая заказ, я принимаю условия:</p>
-          <NuxtLink to="/privacy" class="block underline underline-offset-2">
-            положения о сборе и защите персональных данных
-          </NuxtLink>
-          <NuxtLink to="/terms" class="block underline underline-offset-2">
-            пользовательского соглашения
-          </NuxtLink>
-        </div>
-      </div>
-    </aside>
+      </template>
+      <OrderSummary
+          layout="sheet"
+          :item-count="cartStore.itemCount"
+          :total="cartStore.totalPrice"
+          :delivery-label="deliveryLabel"
+      >
+        <template #actions>
+          <button
+              type="button"
+              class="h-12 w-full rounded-full bg-blue-600 text-[15px] font-medium text-white disabled:opacity-50"
+              :disabled="submitting || Boolean(createdOrder)"
+              @click="submitOrder"
+          >
+            {{ submitting ? 'Отправка…' : 'Заказ подтверждаю' }}
+          </button>
+          <p v-if="submitError" class="text-[13px] leading-4 text-orange-600">
+            {{ submitError }}
+          </p>
+        </template>
+        <template #legal>
+          <div class="space-y-2 pb-2 text-[13px] leading-[21px] text-zinc-950">
+            <p>Подтверждая заказ, я принимаю условия:</p>
+            <NuxtLink to="/privacy" class="block underline underline-offset-2">
+              положения о сборе и защите персональных данных
+            </NuxtLink>
+            <NuxtLink to="/terms" class="block underline underline-offset-2">
+              пользовательского соглашения
+            </NuxtLink>
+          </div>
+        </template>
+      </OrderSummary>
+    </OrderSummarySheet>
   </div>
 </template>
 
@@ -276,8 +310,16 @@ import IconEdit from '~/components/icons/IconEdit.vue';
 import CheckoutField from '~/components/checkout/CheckoutField.vue';
 import CheckoutPickupMap from '~/components/checkout/CheckoutPickupMap.vue';
 import CheckoutCdekMap from '~/components/checkout/CheckoutCdekMap.vue';
+import CheckoutYandexMap from '~/components/checkout/CheckoutYandexMap.vue';
+import OrderSummary from '~/components/cart/OrderSummary.vue';
+import OrderSummarySheet from '~/components/cart/OrderSummarySheet.vue';
 import { STORE_PICKUP } from '~/utils/constants/pickup';
-import type { CDEKDeliveryPointResponse, CreateOrderRequest, OrderResponse } from '~/repository/types/api/generatedApiGo';
+import type {
+  CDEKDeliveryPointResponse,
+  CreateOrderRequest,
+  OrderResponse,
+  YandexDeliveryPointResponse,
+} from '~/repository/types/api/generatedApiGo';
 import { useAuthStore } from '~/stores/auth';
 import { useCartStore } from '~/stores/cart';
 import { useGeoStore } from '~/stores/geo';
@@ -321,10 +363,12 @@ const recipientName = ref('');
 const shippingMethod = ref<(typeof shippingMethods)[number]['id']>('pickup');
 const shipAddress = ref(STORE_PICKUP.address);
 const selectedCdek = ref<CDEKDeliveryPointResponse | null>(null);
+const selectedYandex = ref<YandexDeliveryPointResponse | null>(null);
 const paymentMethod = ref('');
 const submitting = ref(false);
 const submitError = ref('');
 const createdOrder = ref<OrderResponse | null>(null);
+const sheetOpen = ref(false);
 
 await useAsyncData('checkout-cart', async () => {
   await cartStore.loadCart();
@@ -345,6 +389,12 @@ watch(() => authStore.user?.email, (value) => {
 watch(selectedCdek, (point) => {
   if (shippingMethod.value !== 'cdek') return;
   shipAddress.value = (point?.address_full || point?.address || '').trim();
+});
+
+watch(selectedYandex, (point) => {
+  if (shippingMethod.value !== 'yandex') return;
+  const address = point?.full_address || [point?.street, point?.house].filter(Boolean).join(', ');
+  shipAddress.value = (address || '').trim();
 });
 
 const deliveryLabel = computed(() =>
@@ -371,6 +421,7 @@ function submitBlockReason() {
   }
   if (!sameRecipient.value && !recipientName.value.trim()) return 'Укажите ФИО грузополучателя';
   if (shippingMethod.value === 'cdek' && !selectedCdek.value?.code) return 'Выберите пункт СДЭК';
+  if (shippingMethod.value === 'yandex' && !selectedYandex.value?.code) return 'Выберите пункт Яндекс Доставки';
   if (!shipAddress.value.trim()) return 'Укажите адрес';
   if (!geoStore.geo.city.trim()) return 'Выберите город';
   if (!paymentMethod.value) return 'Выберите способ оплаты';
@@ -384,6 +435,7 @@ useSeoMeta({
 function selectShipping(id: (typeof shippingMethods)[number]['id']) {
   shippingMethod.value = id;
   selectedCdek.value = null;
+  selectedYandex.value = null;
   if (id === 'pickup') {
     shipAddress.value = STORE_PICKUP.address;
   } else {
@@ -407,6 +459,9 @@ function orderComment() {
   }
   if (shippingMethod.value === 'cdek' && selectedCdek.value?.code) {
     parts.push(`СДЭК ПВЗ ${selectedCdek.value.code}`);
+  }
+  if (shippingMethod.value === 'yandex' && selectedYandex.value?.code) {
+    parts.push(`Яндекс ПВЗ ${selectedYandex.value.code}`);
   }
   return parts.length ? parts.join('. ') : undefined;
 }
@@ -437,7 +492,11 @@ async function submitOrder() {
   const body: CreateOrderRequest = {
     payment_method: paymentMethod.value,
     ship_address: shipAddress.value.trim(),
-    ship_city_name: (selectedCdek.value?.city || geoStore.geo.city).trim(),
+    ship_city_name: (
+      selectedCdek.value?.city
+      || selectedYandex.value?.locality
+      || geoStore.geo.city
+    ).trim(),
     ship_recipient: shipRecipient.value,
     email: email.value.trim(),
     phone: phone.value.trim(),
@@ -445,8 +504,9 @@ async function submitOrder() {
     expected_total: formatExpectedTotal(cartStore.totalPrice),
   };
 
-  if (selectedCdek.value?.postal_code) {
-    body.ship_postcode = selectedCdek.value.postal_code;
+  const postcode = selectedCdek.value?.postal_code || selectedYandex.value?.postal_code;
+  if (postcode) {
+    body.ship_postcode = postcode;
   }
 
   const comment = orderComment();

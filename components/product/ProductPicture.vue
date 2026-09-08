@@ -6,6 +6,7 @@
         :alt="altText"
         :width="image?.width"
         :height="image?.height"
+        class="max-h-full max-w-full object-contain object-center"
         v-bind="$attrs"
     >
   </picture>

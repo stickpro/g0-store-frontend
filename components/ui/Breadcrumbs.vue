@@ -1,5 +1,5 @@
 <template>
-  <nav class="flex items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
+  <nav class="flex flex-wrap items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
     <NuxtLink to="/" class="flex size-6 items-center justify-center rounded-full p-1">
       <img src="@/assets/icons/home.svg" alt="Главная" class="size-4">
     </NuxtLink>

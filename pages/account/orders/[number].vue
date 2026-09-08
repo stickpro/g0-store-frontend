@@ -19,7 +19,7 @@
         </span>
       </nav>
 
-      <h1 class="text-[28px] font-normal leading-[45px] text-zinc-950">
+      <h1 class="text-[24px] font-normal leading-9 text-zinc-950 lg:text-[28px] lg:leading-[45px]">
         Заказ №{{ headingNumber }}
       </h1>
     </div>
@@ -40,7 +40,7 @@
 
     <div v-else class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div class="flex flex-col gap-6">
-        <section class="rounded-3xl border border-dashed border-zinc-600/15 px-6 py-5">
+        <section class="rounded-3xl border border-dashed border-zinc-600/15 px-4 py-5 lg:px-6">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p class="text-[13px] leading-4 text-zinc-500">Оформлен</p>
@@ -64,19 +64,19 @@
         </section>
 
         <section class="rounded-3xl border border-dashed border-zinc-600/15">
-          <h2 class="px-6 py-4 text-[17px] leading-6 text-zinc-950">Состав заказа</h2>
+          <h2 class="px-4 py-4 text-[17px] leading-6 text-zinc-950 lg:px-6">Состав заказа</h2>
           <ul class="divide-y divide-dashed divide-zinc-600/15 border-t border-dashed border-zinc-600/15">
             <li
                 v-for="item in order.items || []"
                 :key="item.variant_id || item.product_id || item.name"
-                class="flex items-start gap-4 px-6 py-4"
+                class="flex items-start gap-3 px-4 py-4 lg:gap-4 lg:px-6"
             >
-              <div class="size-16 shrink-0 overflow-hidden rounded-2xl bg-zinc-100">
+              <div class="size-14 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 lg:size-16">
                 <img
                     v-if="imageUrl(item.image_path)"
                     :src="imageUrl(item.image_path)"
                     :alt="item.name"
-                    class="size-16 object-contain"
+                    class="size-14 object-contain lg:size-16"
                 >
               </div>
               <div class="min-w-0 flex-1">
@@ -94,8 +94,11 @@
                 <p class="mt-2 text-[13px] leading-4 text-zinc-500">
                   {{ item.quantity || 1 }} × {{ formatOrderMoney(item.unit_price) }}
                 </p>
+                <p class="mt-2 text-[15px] font-medium leading-6 text-zinc-950 lg:hidden">
+                  {{ formatOrderMoney(item.line_total ?? (item.unit_price || 0) * (item.quantity || 1)) }}
+                </p>
               </div>
-              <p class="shrink-0 text-[15px] font-medium leading-6 text-zinc-950">
+              <p class="hidden shrink-0 text-[15px] font-medium leading-6 text-zinc-950 lg:block">
                 {{ formatOrderMoney(item.line_total ?? (item.unit_price || 0) * (item.quantity || 1)) }}
               </p>
             </li>
@@ -104,7 +107,7 @@
       </div>
 
       <aside class="flex flex-col gap-6">
-        <section class="rounded-3xl border border-dashed border-zinc-600/15 px-6 py-5">
+        <section class="rounded-3xl border border-dashed border-zinc-600/15 px-4 py-5 lg:px-6">
           <h2 class="text-[17px] leading-6 text-zinc-950">Доставка</h2>
           <p v-if="shippingMethodLabel(order.shipping?.method)" class="mt-3 text-[15px] leading-6 text-zinc-950">
             {{ shippingMethodLabel(order.shipping?.method) }}
@@ -117,7 +120,7 @@
           </p>
         </section>
 
-        <section class="rounded-3xl border border-dashed border-zinc-600/15 px-6 py-5">
+        <section class="rounded-3xl border border-dashed border-zinc-600/15 px-4 py-5 lg:px-6">
           <h2 class="text-[17px] leading-6 text-zinc-950">Оплата</h2>
           <p v-if="paymentMethodLabel(order.payment_method)" class="mt-3 text-[15px] leading-6 text-zinc-950">
             {{ paymentMethodLabel(order.payment_method) }}
@@ -129,12 +132,12 @@
           <p v-if="order.phone" class="mt-1 text-[15px] leading-6 text-zinc-600">{{ order.phone }}</p>
         </section>
 
-        <section v-if="order.comment" class="rounded-3xl border border-dashed border-zinc-600/15 px-6 py-5">
+        <section v-if="order.comment" class="rounded-3xl border border-dashed border-zinc-600/15 px-4 py-5 lg:px-6">
           <h2 class="text-[17px] leading-6 text-zinc-950">Комментарий</h2>
           <p class="mt-3 text-[15px] leading-6 text-zinc-600">{{ order.comment }}</p>
         </section>
 
-        <section class="rounded-3xl bg-orange-50 px-6 py-5">
+        <section class="rounded-3xl bg-orange-50 px-4 py-5 lg:px-6">
           <dl class="space-y-2 text-[15px] leading-6 text-zinc-950">
             <div class="flex justify-between gap-4">
               <dt class="text-zinc-600">Товары</dt>

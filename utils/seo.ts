@@ -126,3 +126,61 @@ export function buildBreadcrumbJsonLd(
         })),
     };
 }
+
+export function buildWebSiteJsonLd(input: {
+    name: string;
+    url: string;
+    description?: string;
+    searchUrlTemplate: string;
+}): Record<string, unknown> {
+    const data: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: input.name,
+        url: input.url,
+        inLanguage: 'ru-RU',
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+                '@type': 'EntryPoint',
+                urlTemplate: input.searchUrlTemplate,
+            },
+            'query-input': 'required name=search_term_string',
+        },
+    };
+
+    if (input.description) data.description = input.description;
+
+    return data;
+}
+
+export function buildOrganizationJsonLd(input: {
+    name: string;
+    url: string;
+    telephone?: string;
+    email?: string;
+    address?: {
+        streetAddress: string;
+        addressLocality: string;
+        postalCode?: string;
+        addressCountry: string;
+    };
+}): Record<string, unknown> {
+    const data: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'ElectronicsStore',
+        name: input.name,
+        url: input.url,
+    };
+
+    if (input.telephone) data.telephone = input.telephone;
+    if (input.email) data.email = input.email;
+    if (input.address) {
+        data.address = {
+            '@type': 'PostalAddress',
+            ...input.address,
+        };
+    }
+
+    return data;
+}

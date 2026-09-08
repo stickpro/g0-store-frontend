@@ -40,6 +40,29 @@ export interface AddCartItemRequest {
   variant_id: string;
 }
 
+export interface AdminOrderResponse {
+  cancelled_at?: string;
+  comment?: string;
+  created_at?: string;
+  currency?: string;
+  discount_total?: number;
+  email?: string;
+  grand_total?: number;
+  id?: string;
+  items?: OrderItemResponse[];
+  number?: number;
+  paid_at?: string;
+  payment_method?: string;
+  payment_status?: string;
+  phone?: string;
+  shipping?: OrderShippingResponse;
+  shipping_total?: number;
+  status?: string;
+  subtotal?: number;
+  tax_total?: number;
+  user_id?: string;
+}
+
 export interface Attribute {
   attribute_group_id?: UuidNullUUID;
   created_at?: PgtypeTimestamp;
@@ -466,6 +489,65 @@ export interface CreateProductVariantRequest {
   sort_order?: number;
 }
 
+export interface DashboardCatalog {
+  categories?: number;
+  collections?: number;
+  products?: number;
+  products_without_variants?: number;
+  variants?: number;
+  variants_out_of_stock?: number;
+}
+
+export interface DashboardCustomers {
+  new_today?: number;
+  total?: number;
+}
+
+export interface DashboardOrders {
+  by_payment_status?: DashboardOrdersByPaymentStatus;
+  by_status?: DashboardOrdersByStatus;
+  today?: number;
+  total?: number;
+}
+
+export interface DashboardOrdersByPaymentStatus {
+  failed?: number;
+  paid?: number;
+  refunded?: number;
+  unpaid?: number;
+}
+
+export interface DashboardOrdersByStatus {
+  cancelled?: number;
+  delivered?: number;
+  paid?: number;
+  pending?: number;
+  processing?: number;
+  refunded?: number;
+  shipped?: number;
+}
+
+export interface DashboardPeriod {
+  from?: string;
+  to?: string;
+}
+
+export interface DashboardResponse {
+  average_order_value?: string;
+  catalog?: DashboardCatalog;
+  customers?: DashboardCustomers;
+  orders?: DashboardOrders;
+  period?: DashboardPeriod;
+  revenue?: DashboardRevenue;
+}
+
+export interface DashboardRevenue {
+  currency?: string;
+  paid_only?: boolean;
+  period?: string;
+  today?: string;
+}
+
 export interface FullPagingData {
   last_page?: number;
   page?: number;
@@ -483,6 +565,12 @@ export interface ImageDTO {
   id?: string;
   presets?: Record<string, Record<string, string>>;
   width?: number;
+}
+
+export interface JSONResponseAdminOrderResponse {
+  code?: number;
+  data?: AdminOrderResponse;
+  message?: string;
 }
 
 export interface JSONResponseAttributeGroupResponse {
@@ -551,6 +639,12 @@ export interface JSONResponseCollectionWithProductResponse {
   message?: string;
 }
 
+export interface JSONResponseDashboardResponse {
+  code?: number;
+  data?: DashboardResponse;
+  message?: string;
+}
+
 export interface JSONResponseManufacturerResponse {
   code?: number;
   data?: ManufacturerResponse;
@@ -593,6 +687,12 @@ export interface JSONResponseProductWithMediumResponse {
   message?: string;
 }
 
+export interface JSONResponseResponseWithFullPaginationAdminOrderResponse {
+  code?: number;
+  data?: ResponseWithFullPaginationAdminOrderResponse;
+  message?: string;
+}
+
 export interface JSONResponseResponseWithFullPaginationAttribute {
   code?: number;
   data?: ResponseWithFullPaginationAttribute;
@@ -614,6 +714,12 @@ export interface JSONResponseResponseWithFullPaginationCategoryResponse {
 export interface JSONResponseResponseWithFullPaginationCollection {
   code?: number;
   data?: ResponseWithFullPaginationCollection;
+  message?: string;
+}
+
+export interface JSONResponseResponseWithFullPaginationManufacturerResponse {
+  code?: number;
+  data?: ResponseWithFullPaginationManufacturerResponse;
   message?: string;
 }
 
@@ -731,6 +837,12 @@ export interface JSONResponseArrayProductVariantResponse {
   message?: string;
 }
 
+export interface JSONResponseArraySitemapEntry {
+  code?: number;
+  data?: SitemapEntry[];
+  message?: string;
+}
+
 export interface JSONResponseArrayVariantCardResponse {
   code?: number;
   data?: VariantCardResponse[];
@@ -740,6 +852,12 @@ export interface JSONResponseArrayVariantCardResponse {
 export interface JSONResponseArrayVariantCategoryResponse {
   code?: number;
   data?: VariantCategoryResponse[];
+  message?: string;
+}
+
+export interface JSONResponseArrayYandexDeliveryPointResponse {
+  code?: number;
+  data?: YandexDeliveryPointResponse[];
   message?: string;
 }
 
@@ -909,6 +1027,11 @@ export interface ProductWithMediumResponse {
   product?: ProductResponse;
 }
 
+export interface ResponseWithFullPaginationAdminOrderResponse {
+  items?: AdminOrderResponse[];
+  pagination?: FullPagingData;
+}
+
 export interface ResponseWithFullPaginationAttribute {
   items?: Attribute[];
   pagination?: FullPagingData;
@@ -926,6 +1049,11 @@ export interface ResponseWithFullPaginationCategoryResponse {
 
 export interface ResponseWithFullPaginationCollection {
   items?: Collection[];
+  pagination?: FullPagingData;
+}
+
+export interface ResponseWithFullPaginationManufacturerResponse {
+  items?: ManufacturerResponse[];
   pagination?: FullPagingData;
 }
 
@@ -965,6 +1093,11 @@ export interface SendCodeRequest {
 
 export interface SendCodeResponse {
   sent?: boolean;
+}
+
+export interface SitemapEntry {
+  slug?: string;
+  updated_at?: string;
 }
 
 export interface SyncRelatedProductRequest {
@@ -1068,6 +1201,23 @@ export interface UpdateManufacturerRequest {
   slug?: string;
 }
 
+export interface UpdateOrderStatusRequest {
+  /** @maxLength 1000 */
+  comment?: string;
+  /**
+   * PaymentMethod is only used when Status is "paid"; ignored otherwise.
+   * @maxLength 32
+   */
+  payment_method?: string;
+  status:
+    | "paid"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | "refunded";
+}
+
 export interface UpdateProductRequest {
   ean?: string;
   height?: number;
@@ -1092,6 +1242,10 @@ export interface UpdateProductRequest {
   upc?: string;
   weight?: number;
   width?: number;
+}
+
+export interface UpdateProductReviewStatusRequest {
+  status: "PENDING" | "APPROVED" | "REJECTED";
 }
 
 export interface UpdateProductVariantRequest {
@@ -1176,6 +1330,42 @@ export interface ViewedItemResponse {
 
 export interface ViewedResponse {
   items?: ViewedItemResponse[];
+}
+
+export interface YandexDeliveryPointResponse {
+  available_for_dropoff?: boolean;
+  code?: string;
+  country?: string;
+  deactivation_date?: string;
+  email?: string;
+  full_address?: string;
+  geo_id?: number;
+  house?: string;
+  instruction?: string;
+  is_market_partner?: boolean;
+  is_post_office?: boolean;
+  is_yandex_branded?: boolean;
+  latitude?: number;
+  locality?: string;
+  longitude?: number;
+  name?: string;
+  operator_id?: string;
+  operator_station_id?: string;
+  payment_methods?: string[];
+  phone?: string;
+  postal_code?: string;
+  region?: string;
+  schedule?: YandexDeliveryScheduleResponse[];
+  street?: string;
+  sub_region?: string;
+  time_zone?: number;
+  type?: string;
+}
+
+export interface YandexDeliveryScheduleResponse {
+  days?: number[];
+  time_from?: string;
+  time_to?: string;
 }
 
 export interface DecimalNullDecimal {

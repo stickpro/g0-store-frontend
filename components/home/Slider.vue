@@ -1,8 +1,7 @@
 <script setup lang="ts">
-// Create 10 slides
 const containerRef = ref(null)
 
-const swiper = useSwiper(containerRef, {
+useSwiper(containerRef, {
   loop: true,
   autoplay: {
     delay: 1,
@@ -10,44 +9,45 @@ const swiper = useSwiper(containerRef, {
   },
 })
 
-onMounted(() => {
-  // Access Swiper instance
-  // Read more about Swiper instance: https://swiperjs.com/swiper-api#methods--properties
-  console.log(swiper.instance)
-})
+const slides = [
+  {
+    title: 'Удобная доставка',
+    items: [
+      'Надежная многослойная упаковка',
+      'Отслеживание по трек номеру',
+      'Передаём ТК в день заказа',
+      'Курьеры по СПб',
+    ],
+  },
+  {
+    title: 'Удобная доставка',
+    items: [
+      'Надежная многослойная упаковка',
+      'Отслеживание по трек номеру',
+      'Передаём ТК в день заказа',
+      'Курьеры по СПб',
+    ],
+  },
+]
 </script>
 
 <template>
   <ClientOnly>
-    <swiper-container ref="containerRef" :loop="true" class="w-full max-w-full">
-      <swiper-slide key="slide-1">
-        <div class="relative w-full h-full rounded-3xl overflow-hidden">
+    <swiper-container ref="containerRef" :loop="true" class="w-full max-w-full overflow-hidden">
+      <swiper-slide v-for="(slide, index) in slides" :key="index">
+        <div class="relative overflow-hidden rounded-2xl lg:rounded-3xl">
           <div class="slider-bg-shape absolute inset-0 z-20"/>
-          <div class="bg-orange-700 opacity-80 absolute inset-0 z-10"/>
-          <div class="text-[43px] font-bold ml-10 text-zinc-50 absolute top-25 z-40">Удобная доставка</div>
-          <div class="absolute space-y-4 top-25 right-12 text-right text-zinc-50 z-40 font-bold text-2xl">
-            <div class="">Надежная многослойная упаковка</div>
-            <div class="">Отслеживание по трек номеру</div>
-            <div class="">Передаём ТК в день заказа</div>
-            <div class="">Курьеры по СПб</div>
+          <div class="absolute inset-0 z-10 bg-orange-700 opacity-80"/>
+          <div class="relative z-40 flex min-h-[220px] flex-col justify-center gap-3 p-5 lg:min-h-[360px] lg:p-0">
+            <p class="text-[22px] font-bold text-zinc-50 lg:absolute lg:top-25 lg:ml-10 lg:text-[43px]">
+              {{ slide.title }}
+            </p>
+            <ul class="space-y-1 text-sm font-semibold text-zinc-50 lg:absolute lg:top-25 lg:right-12 lg:space-y-4 lg:text-right lg:text-2xl">
+              <li v-for="item in slide.items" :key="item">{{ item }}</li>
+            </ul>
           </div>
-          <img src="/images/slider/decor.svg" class="absolute top-35 z-40" alt="decor">
-          <img src="/images/slider/box.png" alt="slider-box" class="relative z-0   object-cover">
-        </div>
-      </swiper-slide>
-      <swiper-slide key="slide-2">
-        <div class="relative w-full h-full rounded-3xl overflow-hidden">
-          <div class="slider-bg-shape absolute inset-0 z-20"/>
-          <div class="bg-orange-700 opacity-80 absolute inset-0 z-10"/>
-          <div class="text-[43px] font-bold ml-10 text-zinc-50 absolute top-25 z-40">Удобная доставка</div>
-          <div class="absolute space-y-4 top-25 right-12 text-right text-zinc-50 z-40 font-bold text-2xl">
-            <div class="">Надежная многослойная упаковка</div>
-            <div class="">Отслеживание по трек номеру</div>
-            <div class="">Передаём ТК в день заказа</div>
-            <div class="">Курьеры по СПб</div>
-          </div>
-          <img src="/images/slider/decor.svg" class="absolute top-35 z-40" alt="decor">
-          <img src="/images/slider/box.png" alt="slider-box" class="relative z-0   object-cover">
+          <img src="/images/slider/decor.svg" class="pointer-events-none absolute top-24 left-4 z-30 hidden w-40 lg:left-auto lg:top-35 lg:block lg:w-auto" alt="">
+          <img src="/images/slider/box.png" alt="" class="pointer-events-none absolute right-0 bottom-0 z-0 hidden h-full max-h-[360px] object-contain object-right lg:block">
         </div>
       </swiper-slide>
     </swiper-container>
@@ -55,7 +55,6 @@ onMounted(() => {
 </template>
 
 <style lang="css">
-
 .slider-bg-shape {
   opacity: 0.5;
   background: url('/images/slider/shape.png') lightgray repeat;

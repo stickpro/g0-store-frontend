@@ -5,6 +5,9 @@ export default defineNuxtConfig({
     app: {
         pageTransition: {name: 'page', mode: 'out-in'},
         layoutTransition: {name: 'layout', mode: 'out-in'},
+        head: {
+            htmlAttrs: {lang: 'ru'},
+        },
     },
     compatibilityDate: '2025-01-30',
     future: {
@@ -17,6 +20,7 @@ export default defineNuxtConfig({
             apiUrl: process.env.API_BASE_URL || 'https://api.example.com',
             storageUrl: process.env.STORAGE_URL || 'https://api.example.com',
             yandexMapsApiKey: process.env.NUXT_PUBLIC_YANDEX_MAPS_API_KEY || '',
+            siteUrl: process.env.NUXT_PUBLIC_SITE_URL || '',
         }
     },
     fonts: {

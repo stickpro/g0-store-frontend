@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <div class="flex flex-col gap-3">
-      <nav class="flex items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
+      <nav class="flex flex-wrap items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
         <NuxtLink to="/" class="flex size-6 items-center justify-center rounded-full p-1">
           <img src="@/assets/icons/home.svg" alt="Главная" class="size-4">
         </NuxtLink>
@@ -11,12 +11,12 @@
         </span>
       </nav>
 
-      <h1 class="text-[28px] font-normal leading-[45px] text-zinc-950">
+      <h1 class="text-[24px] font-normal leading-9 text-zinc-950 lg:text-[28px] lg:leading-[45px]">
         Аккаунт
       </h1>
     </div>
 
-    <div class="mt-8 max-w-[560px] rounded-3xl border border-dashed border-zinc-600/15 p-6">
+    <div class="mt-6 max-w-[560px] rounded-3xl border border-dashed border-zinc-600/15 p-5 lg:mt-8 lg:p-6">
       <p class="text-[13px] leading-4 text-zinc-500">Почта</p>
       <p class="mt-2 text-[17px] text-zinc-950">{{ user.email }}</p>
 
@@ -33,7 +33,7 @@
 
       <button
           type="button"
-          class="mt-8 h-12 rounded-full border border-zinc-600/20 px-6 text-[15px] text-zinc-950 hover:bg-zinc-600/5"
+          class="mt-8 h-12 w-full rounded-full border border-zinc-600/20 px-6 text-[15px] text-zinc-950 hover:bg-zinc-600/5 sm:w-auto"
           @click="logout"
       >
         Выйти

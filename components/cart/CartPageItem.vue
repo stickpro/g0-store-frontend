@@ -1,5 +1,5 @@
 <template>
-  <article class="flex flex-col gap-3 border-b border-r border-dashed border-zinc-600/15 p-3">
+  <article class="flex flex-col gap-3 border-b border-dashed border-zinc-600/15 p-3 lg:border-r">
     <div class="flex items-start gap-3">
       <NuxtLink
           v-if="item.slug"

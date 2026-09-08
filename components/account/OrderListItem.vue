@@ -1,7 +1,7 @@
 <template>
   <NuxtLink
       :to="orderDetailPath(order)"
-      class="block rounded-3xl border border-dashed border-zinc-600/15 px-6 py-5 transition-colors hover:bg-zinc-600/5"
+      class="block rounded-3xl border border-dashed border-zinc-600/15 px-4 py-4 transition-colors hover:bg-zinc-600/5 lg:px-6 lg:py-5"
   >
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>

@@ -8,7 +8,9 @@ import SearchModule from "~/repository/modules/search";
 import AuthModule from "~/repository/modules/auth";
 import OrderModule from "~/repository/modules/order";
 import CdekModule from "~/repository/modules/cdek";
+import YandexDeliveryModule from "~/repository/modules/yandexDelivery";
 import ViewedModule from "~/repository/modules/viewed";
+import SitemapModule from "~/repository/modules/sitemap";
 import type { FetchOptions, FetchContext } from "ofetch";
 
 interface IApiInstance {
@@ -21,7 +23,9 @@ interface IApiInstance {
     auth: AuthModule;
     order: OrderModule;
     cdek: CdekModule;
+    yandexDelivery: YandexDeliveryModule;
     viewed: ViewedModule;
+    sitemap: SitemapModule;
 }
 
 declare module "#app" {
@@ -75,7 +79,9 @@ export default defineNuxtPlugin({
         auth: new AuthModule(fetchOptions),
         order: new OrderModule(fetchOptions),
         cdek: new CdekModule(fetchOptions),
+        yandexDelivery: new YandexDeliveryModule(fetchOptions),
         viewed: new ViewedModule(fetchOptions),
+        sitemap: new SitemapModule(fetchOptions),
     };
 
     return {

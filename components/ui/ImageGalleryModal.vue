@@ -20,7 +20,7 @@
           {{ currentIndex + 1 }} / {{ images.length }}
         </div>
 
-        <div class="relative w-full h-full flex items-center justify-center p-16" @click.stop>
+        <div class="relative flex h-full w-full items-center justify-center p-4 lg:p-16" @click.stop>
           <ProductPicture
               v-if="currentImage"
               :image="currentImage"

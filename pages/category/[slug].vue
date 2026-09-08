@@ -3,64 +3,79 @@
     <div class="flex flex-col gap-3">
       <Breadcrumbs :items="breadcrumbItems" />
 
+      <h1 class="text-[28px] font-normal leading-[45px] text-zinc-950">
+        {{ categoryHeading }}
+      </h1>
+
       <div class="flex items-center justify-between gap-4">
-        <h1 class="min-w-0 flex-1 text-[28px] font-normal leading-[45px] text-zinc-950">
-          {{ categoryHeading }}
-        </h1>
-        <div class="flex shrink-0 items-center gap-4">
+        <p v-if="totalCount !== null" class="text-[13px] leading-[21px] text-zinc-950">
+          Найдено {{ totalCount }} товаров
+        </p>
+        <div class="ml-auto hidden items-center gap-4 lg:flex">
           <CategorySort />
-          <p v-if="totalCount !== null" class="text-[13px] leading-[21px] text-zinc-950">
-            Найдено {{ totalCount }} товаров
-          </p>
         </div>
+        <button
+            type="button"
+            class="flex size-10 shrink-0 items-center justify-center rounded-full border border-zinc-600/20 text-zinc-950 hover:bg-zinc-600/5 lg:hidden"
+            aria-label="Фильтры"
+            @click="openFilters"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 5h16l-5.8 7.2v5.3L9.8 20v-7.8L4 5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
     </div>
 
     <nav
         v-if="popularChildCategories.length || groupedChildCategories.length"
-        class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+        class="mt-6"
         aria-label="Подкатегории"
     >
-      <div
-          v-if="popularChildCategories.length"
-          class="flex flex-col gap-0.5 border-r border-b border-dashed border-zinc-600/15 py-4"
-      >
-        <p class="flex h-8 items-center px-3 text-[15px] font-bold leading-6 text-zinc-950">
-          Популярные подкатегории
-        </p>
-        <ul class="flex flex-col gap-0.5">
-          <li v-for="child in popularChildCategories" :key="child.id || child.slug">
-            <NuxtLink
-                :to="`/category/${child.slug}`"
-                class="flex h-8 items-center px-3 text-[15px] leading-4 text-blue-600 hover:bg-zinc-600/5"
-            >
-              {{ child.name }}
-            </NuxtLink>
-          </li>
-        </ul>
-      </div>
+      <div class="-mx-4 overflow-x-auto overscroll-x-contain lg:mx-0 lg:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div class="flex min-w-max px-4 lg:grid lg:min-w-0 lg:grid-cols-4 lg:px-0">
+          <div
+              v-if="popularChildCategories.length"
+              class="flex w-[240px] shrink-0 flex-col gap-0.5 border-r border-b border-dashed border-zinc-600/15 py-4 lg:w-auto"
+          >
+            <p class="flex h-8 items-center px-3 text-[15px] font-bold leading-6 text-zinc-950">
+              Популярные подкатегории
+            </p>
+            <ul class="flex flex-col gap-0.5">
+              <li v-for="child in popularChildCategories" :key="child.id || child.slug">
+                <NuxtLink
+                    :to="`/category/${child.slug}`"
+                    class="flex h-8 items-center px-3 text-[15px] leading-4 text-blue-600 hover:bg-zinc-600/5"
+                >
+                  {{ child.name }}
+                </NuxtLink>
+              </li>
+            </ul>
+          </div>
 
-      <div
-          v-for="group in groupedChildCategories"
-          :key="group.id || group.slug"
-          class="flex flex-col gap-0.5 border-r border-b border-dashed border-zinc-600/15 py-4"
-      >
-        <NuxtLink
-            :to="`/category/${group.slug}`"
-            class="flex h-8 items-center px-3 text-[15px] font-bold leading-6 text-zinc-950 hover:bg-zinc-600/5"
-        >
-          {{ group.name }}
-        </NuxtLink>
-        <ul class="flex flex-col gap-0.5">
-          <li v-for="child in group.children" :key="child.id || child.slug">
+          <div
+              v-for="group in groupedChildCategories"
+              :key="group.id || group.slug"
+              class="flex w-[240px] shrink-0 flex-col gap-0.5 border-r border-b border-dashed border-zinc-600/15 py-4 lg:w-auto"
+          >
             <NuxtLink
-                :to="`/category/${child.slug}`"
-                class="flex h-8 items-center px-3 text-[15px] leading-4 text-blue-600 hover:bg-zinc-600/5"
+                :to="`/category/${group.slug}`"
+                class="flex h-8 items-center px-3 text-[15px] font-bold leading-6 text-zinc-950 hover:bg-zinc-600/5"
             >
-              {{ child.name }}
+              {{ group.name }}
             </NuxtLink>
-          </li>
-        </ul>
+            <ul class="flex flex-col gap-0.5">
+              <li v-for="child in group.children" :key="child.id || child.slug">
+                <NuxtLink
+                    :to="`/category/${child.slug}`"
+                    class="flex h-8 items-center px-3 text-[15px] leading-4 text-blue-600 hover:bg-zinc-600/5"
+                >
+                  {{ child.name }}
+                </NuxtLink>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </nav>
 
@@ -82,7 +97,7 @@
             v-for="product in products"
             :key="product.id"
             :product="product"
-            class="border-b border-dashed border-zinc-600/15"
+            class="border-b border-dashed border-zinc-600/15 max-md:[&:nth-child(2n)]:border-r-0"
         />
       </div>
 
@@ -123,6 +138,7 @@ definePageMeta({
 
 const PAGE_SIZE = 15;
 const route = useRoute();
+const { openFilters } = useCategoryFiltersDrawer();
 const categoryStore = useCategoryStore();
 const config = useRuntimeConfig();
 const requestURL = useRequestURL();

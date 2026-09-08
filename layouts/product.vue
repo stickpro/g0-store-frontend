@@ -2,7 +2,7 @@
   <div>
     <Header/>
     <main class="relative">
-      <div class="mx-auto py-6 flex max-w-[1552px]">
+      <div class="mx-auto flex max-w-[1552px] px-4 py-4 lg:px-0 lg:py-6">
         <slot/>
       </div>
     </main>
