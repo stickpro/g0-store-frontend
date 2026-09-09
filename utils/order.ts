@@ -34,7 +34,9 @@ const SHIPPING_METHOD_LABELS: Record<string, string> = {
   pickup: 'Самовывоз',
   cdek: 'СДЭК',
   post: 'Почта России',
+  pochta: 'Почта России',
   yandex: 'Яндекс Доставка',
+  yandex_delivery: 'Яндекс Доставка',
 };
 
 export function formatOrderMoney(price?: number | string) {

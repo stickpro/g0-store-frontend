@@ -3,6 +3,14 @@ import type {CityResponse} from "~/repository/types/api/generatedApiGo";
 
 const GEO_CITY_STORAGE_KEY = 'geoCity';
 const DEFAULT_CITY_LABEL = 'г. Санкт-Петербург';
+/** [longitude, latitude] — fallback when city has no geo fields yet */
+const DEFAULT_CITY_COORDINATES: [number, number] = [30.347328, 59.929316];
+
+function hasCityCoordinates(city?: CityResponse | null) {
+    const lat = Number(city?.geo_lat);
+    const lon = Number(city?.geo_lon);
+    return Number.isFinite(lat) && Number.isFinite(lon);
+}
 
 export function cityLabel(city?: CityResponse | null): string {
     if (!city) return DEFAULT_CITY_LABEL;
@@ -50,11 +58,13 @@ export const useGeoStore = defineStore('Geo', {
     },
 
     getters: {
-        cityCoordinates(): [number, number] | null {
+        cityCoordinates(): [number, number] {
             const lat = Number(this.geo.cityData?.geo_lat);
             const lon = Number(this.geo.cityData?.geo_lon);
-            if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-            return [lon, lat];
+            if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                return [lon, lat];
+            }
+            return DEFAULT_CITY_COORDINATES;
         },
     },
 
@@ -73,12 +83,13 @@ export const useGeoStore = defineStore('Geo', {
             try {
                 const storedCity = parseStoredCity(localStorage.getItem(GEO_CITY_STORAGE_KEY));
 
-                if (storedCity && (storedCity.id || storedCity.fias_id || Number.isFinite(Number(storedCity.geo_lat)))) {
+                if (storedCity && hasCityCoordinates(storedCity)) {
                     this.persistCity(storedCity);
-                } else {
-                    const data = await $api.geo.getCityByIP();
-                    this.persistCity(data);
+                    return;
                 }
+
+                const data = await $api.geo.getCityByIP();
+                this.persistCity(data);
             } catch (error) {
                 console.error('Ошибка загрузки геоданных:', error);
             }

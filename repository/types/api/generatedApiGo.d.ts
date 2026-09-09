@@ -157,35 +157,6 @@ export interface BreadcrumbResponse {
   slug?: string;
 }
 
-export interface CDEKDeliveryPointResponse {
-  address?: string;
-  address_full?: string;
-  allowed_cod?: boolean;
-  city?: string;
-  city_code?: number;
-  code?: string;
-  country_code?: string;
-  email?: string;
-  have_cash?: boolean;
-  have_cashless?: boolean;
-  is_dressing_room?: boolean;
-  is_handout?: boolean;
-  is_reception?: boolean;
-  latitude?: number;
-  longitude?: number;
-  name?: string;
-  note?: string;
-  phones?: string[];
-  postal_code?: string;
-  region?: string;
-  region_code?: number;
-  take_only?: boolean;
-  type?: string;
-  weight_max?: number;
-  weight_min?: number;
-  work_time?: string;
-}
-
 export interface CartItemResponse {
   available?: boolean;
   image?: ImageDTO;
@@ -548,6 +519,31 @@ export interface DashboardRevenue {
   today?: string;
 }
 
+export interface DeliveryPointResponse {
+  address?: string;
+  card_payment?: boolean;
+  cash_payment?: boolean;
+  code?: string;
+  country?: string;
+  details?: Record<string, any>;
+  email?: string;
+  latitude?: number;
+  locality?: string;
+  longitude?: number;
+  name?: string;
+  phones?: string[];
+  postal_code?: string;
+  provider?: string;
+  region?: string;
+  type?: string;
+  work_time?: string[];
+}
+
+export interface DeliveryProviderResponse {
+  code?: string;
+  enabled?: boolean;
+}
+
 export interface FullPagingData {
   last_page?: number;
   page?: number;
@@ -813,12 +809,6 @@ export interface JSONResponseArrayBreadcrumbResponse {
   message?: string;
 }
 
-export interface JSONResponseArrayCDEKDeliveryPointResponse {
-  code?: number;
-  data?: CDEKDeliveryPointResponse[];
-  message?: string;
-}
-
 export interface JSONResponseArrayCategoryTreeResponse {
   code?: number;
   data?: CategoryTreeResponse[];
@@ -828,6 +818,18 @@ export interface JSONResponseArrayCategoryTreeResponse {
 export interface JSONResponseArrayCityResponse {
   code?: number;
   data?: CityResponse[];
+  message?: string;
+}
+
+export interface JSONResponseArrayDeliveryPointResponse {
+  code?: number;
+  data?: DeliveryPointResponse[];
+  message?: string;
+}
+
+export interface JSONResponseArrayDeliveryProviderResponse {
+  code?: number;
+  data?: DeliveryProviderResponse[];
   message?: string;
 }
 
@@ -852,12 +854,6 @@ export interface JSONResponseArrayVariantCardResponse {
 export interface JSONResponseArrayVariantCategoryResponse {
   code?: number;
   data?: VariantCategoryResponse[];
-  message?: string;
-}
-
-export interface JSONResponseArrayYandexDeliveryPointResponse {
-  code?: number;
-  data?: YandexDeliveryPointResponse[];
   message?: string;
 }
 
@@ -1330,42 +1326,6 @@ export interface ViewedItemResponse {
 
 export interface ViewedResponse {
   items?: ViewedItemResponse[];
-}
-
-export interface YandexDeliveryPointResponse {
-  available_for_dropoff?: boolean;
-  code?: string;
-  country?: string;
-  deactivation_date?: string;
-  email?: string;
-  full_address?: string;
-  geo_id?: number;
-  house?: string;
-  instruction?: string;
-  is_market_partner?: boolean;
-  is_post_office?: boolean;
-  is_yandex_branded?: boolean;
-  latitude?: number;
-  locality?: string;
-  longitude?: number;
-  name?: string;
-  operator_id?: string;
-  operator_station_id?: string;
-  payment_methods?: string[];
-  phone?: string;
-  postal_code?: string;
-  region?: string;
-  schedule?: YandexDeliveryScheduleResponse[];
-  street?: string;
-  sub_region?: string;
-  time_zone?: number;
-  type?: string;
-}
-
-export interface YandexDeliveryScheduleResponse {
-  days?: number[];
-  time_from?: string;
-  time_to?: string;
 }
 
 export interface DecimalNullDecimal {

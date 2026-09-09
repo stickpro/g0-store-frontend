@@ -7,8 +7,7 @@ import CartModule from "~/repository/modules/cart";
 import SearchModule from "~/repository/modules/search";
 import AuthModule from "~/repository/modules/auth";
 import OrderModule from "~/repository/modules/order";
-import CdekModule from "~/repository/modules/cdek";
-import YandexDeliveryModule from "~/repository/modules/yandexDelivery";
+import DeliveryModule from "~/repository/modules/delivery";
 import ViewedModule from "~/repository/modules/viewed";
 import SitemapModule from "~/repository/modules/sitemap";
 import type { FetchOptions, FetchContext } from "ofetch";
@@ -22,8 +21,7 @@ interface IApiInstance {
     search: SearchModule;
     auth: AuthModule;
     order: OrderModule;
-    cdek: CdekModule;
-    yandexDelivery: YandexDeliveryModule;
+    delivery: DeliveryModule;
     viewed: ViewedModule;
     sitemap: SitemapModule;
 }
@@ -78,8 +76,7 @@ export default defineNuxtPlugin({
         search: new SearchModule(fetchOptions),
         auth: new AuthModule(fetchOptions),
         order: new OrderModule(fetchOptions),
-        cdek: new CdekModule(fetchOptions),
-        yandexDelivery: new YandexDeliveryModule(fetchOptions),
+        delivery: new DeliveryModule(fetchOptions),
         viewed: new ViewedModule(fetchOptions),
         sitemap: new SitemapModule(fetchOptions),
     };

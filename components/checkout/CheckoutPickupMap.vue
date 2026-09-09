@@ -18,7 +18,7 @@
         </yandex-map-popup-marker>
       </yandex-map>
       <template #fallback>
-          <div class="flex h-[420px] items-center justify-center bg-zinc-600/5 text-[15px] text-zinc-500">
+        <div class="flex h-[420px] items-center justify-center bg-zinc-600/5 text-[15px] text-zinc-500">
           Карта загружается…
         </div>
       </template>

@@ -177,12 +177,14 @@
                     {{ STORE_PICKUP.address }}
                   </p>
                   <CheckoutPickupMap v-if="shippingMethod === 'pickup'"/>
-                  <CheckoutCdekMap v-else-if="shippingMethod === 'cdek'" v-model="selectedCdek"/>
-                  <CheckoutYandexMap v-else-if="shippingMethod === 'yandex'" v-model="selectedYandex"/>
-                  <CheckoutField
-                      v-else
-                      v-model="shipAddress"
-                      label="*Адрес"
+                  <CheckoutDeliveryMap
+                      v-else-if="activeDeliveryMap"
+                      :key="activeDeliveryMap.provider"
+                      v-model="selectedPoint"
+                      :provider="activeDeliveryMap.provider"
+                      :provider-label="activeDeliveryMap.label"
+                      :icon-src="activeDeliveryMap.iconSrc"
+                      :cluster-class="activeDeliveryMap.clusterClass"
                   />
                 </div>
               </div>
@@ -309,38 +311,72 @@
 import IconEdit from '~/components/icons/IconEdit.vue';
 import CheckoutField from '~/components/checkout/CheckoutField.vue';
 import CheckoutPickupMap from '~/components/checkout/CheckoutPickupMap.vue';
-import CheckoutCdekMap from '~/components/checkout/CheckoutCdekMap.vue';
-import CheckoutYandexMap from '~/components/checkout/CheckoutYandexMap.vue';
+import CheckoutDeliveryMap from '~/components/checkout/CheckoutDeliveryMap.vue';
 import OrderSummary from '~/components/cart/OrderSummary.vue';
 import OrderSummarySheet from '~/components/cart/OrderSummarySheet.vue';
-import { STORE_PICKUP } from '~/utils/constants/pickup';
+import { STORE_PICKUP, isStorePickupCity } from '~/utils/constants/pickup';
 import type {
-  CDEKDeliveryPointResponse,
   CreateOrderRequest,
+  DeliveryPointResponse,
   OrderResponse,
-  YandexDeliveryPointResponse,
 } from '~/repository/types/api/generatedApiGo';
+import type { DeliveryProviderCode } from '~/repository/modules/delivery';
 import { useAuthStore } from '~/stores/auth';
 import { useCartStore } from '~/stores/cart';
 import { useGeoStore } from '~/stores/geo';
 import { CURRENCY_CODE } from '~/utils/constants/currency';
+import { deliveryPointAddress } from '~/utils/deliveryPoint';
 import { isCompletePhoneRu } from '~/utils/phoneMask';
 
 definePageMeta({
   layout: 'cart',
 });
 
+type ShippingMethodId = 'pickup' | 'cdek' | 'post' | 'yandex';
+
+type DeliveryMapConfig = {
+  provider: DeliveryProviderCode;
+  label: string;
+  iconSrc: string;
+  clusterClass: string;
+  commentPrefix: string;
+};
+
 const buyerTypes = [
   { id: 'person' as const, label: 'Физическое лицо' },
   { id: 'legal' as const, label: 'Юридическое лицо' },
 ];
 
-const shippingMethods = [
-  { id: 'pickup' as const, label: 'Самовывоз' },
-  { id: 'cdek' as const, label: 'СДЭК' },
-  { id: 'post' as const, label: 'Почта России' },
-  { id: 'yandex' as const, label: 'Яндекс Доставка' },
+const shippingMethods: { id: ShippingMethodId; label: string }[] = [
+  { id: 'pickup', label: 'Самовывоз' },
+  { id: 'cdek', label: 'СДЭК' },
+  { id: 'post', label: 'Почта России' },
+  { id: 'yandex', label: 'Яндекс Доставка' },
 ];
+
+const deliveryMaps: Record<Exclude<ShippingMethodId, 'pickup'>, DeliveryMapConfig> = {
+  cdek: {
+    provider: 'cdek',
+    label: 'СДЭК',
+    iconSrc: '/icons/cdek_point.svg',
+    clusterClass: 'bg-[#1AB248]',
+    commentPrefix: 'СДЭК ПВЗ',
+  },
+  post: {
+    provider: 'pochta',
+    label: 'Почты России',
+    iconSrc: '/icons/pochta_point.svg',
+    clusterClass: 'bg-[#1928DC]',
+    commentPrefix: 'Почта России ПВЗ',
+  },
+  yandex: {
+    provider: 'yandex_delivery',
+    label: 'Яндекс Доставки',
+    iconSrc: '/icons/yandex_point.svg',
+    clusterClass: 'bg-[#FC3F1D]',
+    commentPrefix: 'Яндекс ПВЗ',
+  },
+};
 
 const paymentMethods = [
   { id: 'card' as const, label: 'Банковская карта' },
@@ -360,41 +396,69 @@ const phone = ref('');
 const email = ref('');
 const sameRecipient = ref(true);
 const recipientName = ref('');
-const shippingMethod = ref<(typeof shippingMethods)[number]['id']>('pickup');
-const shipAddress = ref(STORE_PICKUP.address);
-const selectedCdek = ref<CDEKDeliveryPointResponse | null>(null);
-const selectedYandex = ref<YandexDeliveryPointResponse | null>(null);
+const shippingMethod = ref<ShippingMethodId>(
+    isStorePickupCity(geoStore.geo.cityData) || !geoStore.geo.cityData ? 'pickup' : 'cdek',
+);
+const shipAddress = ref(
+    shippingMethod.value === 'pickup' ? STORE_PICKUP.address : '',
+);
+const selectedPoint = ref<DeliveryPointResponse | null>(null);
 const paymentMethod = ref('');
 const submitting = ref(false);
 const submitError = ref('');
 const createdOrder = ref<OrderResponse | null>(null);
 const sheetOpen = ref(false);
 
+const activeDeliveryMap = computed(() => {
+  if (shippingMethod.value === 'pickup') return null;
+  return deliveryMaps[shippingMethod.value];
+});
+
 await useAsyncData('checkout-cart', async () => {
   await cartStore.loadCart();
   return cartStore.items;
 });
 
-onMounted(() => {
-  geoStore.loadGeo();
+function applyDefaultShippingForCity() {
+  const pickupCity = isStorePickupCity(geoStore.geo.cityData)
+      || (!geoStore.geo.cityData && /петербург/i.test(geoStore.geo.city));
+  if (pickupCity) {
+    if (shippingMethod.value !== 'pickup') selectShipping('pickup');
+    return;
+  }
+  if (shippingMethod.value === 'pickup') selectShipping('cdek');
+}
+
+onMounted(async () => {
+  await geoStore.loadGeo();
+  applyDefaultShippingForCity();
   if (authStore.user?.email) {
     email.value = authStore.user.email;
   }
+});
+
+function citySelectionKey() {
+  const city = geoStore.geo.cityData;
+  return city?.id || city?.fias_id || city?.kladr_id || geoStore.geo.city;
+}
+
+watch(citySelectionKey, (key, prev) => {
+  if (!key || key === prev) return;
+  applyDefaultShippingForCity();
 });
 
 watch(() => authStore.user?.email, (value) => {
   if (value && !email.value) email.value = value;
 });
 
-watch(selectedCdek, (point) => {
-  if (shippingMethod.value !== 'cdek') return;
-  shipAddress.value = (point?.address_full || point?.address || '').trim();
-});
+function pointShipAddress(point: DeliveryPointResponse | null | undefined) {
+  if (!point) return '';
+  return deliveryPointAddress(point);
+}
 
-watch(selectedYandex, (point) => {
-  if (shippingMethod.value !== 'yandex') return;
-  const address = point?.full_address || [point?.street, point?.house].filter(Boolean).join(', ');
-  shipAddress.value = (address || '').trim();
+watch(selectedPoint, (point) => {
+  if (!activeDeliveryMap.value) return;
+  shipAddress.value = pointShipAddress(point);
 });
 
 const deliveryLabel = computed(() =>
@@ -420,8 +484,9 @@ function submitBlockReason() {
     return 'Укажите организацию и ИНН';
   }
   if (!sameRecipient.value && !recipientName.value.trim()) return 'Укажите ФИО грузополучателя';
-  if (shippingMethod.value === 'cdek' && !selectedCdek.value?.code) return 'Выберите пункт СДЭК';
-  if (shippingMethod.value === 'yandex' && !selectedYandex.value?.code) return 'Выберите пункт Яндекс Доставки';
+  if (activeDeliveryMap.value && !selectedPoint.value?.code) {
+    return `Выберите пункт ${activeDeliveryMap.value.label}`;
+  }
   if (!shipAddress.value.trim()) return 'Укажите адрес';
   if (!geoStore.geo.city.trim()) return 'Выберите город';
   if (!paymentMethod.value) return 'Выберите способ оплаты';
@@ -432,10 +497,9 @@ useSeoMeta({
   title: 'Оформление заказа',
 });
 
-function selectShipping(id: (typeof shippingMethods)[number]['id']) {
+function selectShipping(id: ShippingMethodId) {
   shippingMethod.value = id;
-  selectedCdek.value = null;
-  selectedYandex.value = null;
+  selectedPoint.value = null;
   if (id === 'pickup') {
     shipAddress.value = STORE_PICKUP.address;
   } else {
@@ -457,11 +521,8 @@ function orderComment() {
   if (buyerType.value === 'legal') {
     parts.push(`Юридическое лицо: ${orgName.value.trim()}, ИНН ${inn.value.trim()}`);
   }
-  if (shippingMethod.value === 'cdek' && selectedCdek.value?.code) {
-    parts.push(`СДЭК ПВЗ ${selectedCdek.value.code}`);
-  }
-  if (shippingMethod.value === 'yandex' && selectedYandex.value?.code) {
-    parts.push(`Яндекс ПВЗ ${selectedYandex.value.code}`);
+  if (activeDeliveryMap.value && selectedPoint.value?.code) {
+    parts.push(`${activeDeliveryMap.value.commentPrefix} ${selectedPoint.value.code}`);
   }
   return parts.length ? parts.join('. ') : undefined;
 }
@@ -493,8 +554,7 @@ async function submitOrder() {
     payment_method: paymentMethod.value,
     ship_address: shipAddress.value.trim(),
     ship_city_name: (
-      selectedCdek.value?.city
-      || selectedYandex.value?.locality
+      selectedPoint.value?.locality
       || geoStore.geo.city
     ).trim(),
     ship_recipient: shipRecipient.value,
@@ -504,7 +564,7 @@ async function submitOrder() {
     expected_total: formatExpectedTotal(cartStore.totalPrice),
   };
 
-  const postcode = selectedCdek.value?.postal_code || selectedYandex.value?.postal_code;
+  const postcode = selectedPoint.value?.postal_code;
   if (postcode) {
     body.ship_postcode = postcode;
   }

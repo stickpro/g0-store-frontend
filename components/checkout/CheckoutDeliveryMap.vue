@@ -19,8 +19,8 @@
           <yandex-map-listener :settings="listenerSettings"/>
           <CheckoutDeliveryCluster
               :points="points"
-              icon-src="/icons/cdek_point.svg"
-              cluster-class="bg-[#1AB248]"
+              :icon-src="iconSrc"
+              :cluster-class="clusterClass"
               @select="selectPoint"
               @updated-bounds="loadFromViewport"
           />
@@ -31,7 +31,7 @@
               :zero-sizes="false"
           >
             <img
-                src="/icons/cdek_point.svg"
+                :src="iconSrc"
                 width="28"
                 height="36"
                 alt=""
@@ -48,20 +48,20 @@
     </div>
 
     <p v-if="loading" class="px-1 text-[13px] leading-4 text-zinc-500">
-      Загрузка пунктов СДЭК…
+      Загрузка пунктов {{ providerLabel }}…
     </p>
     <p v-else-if="loadError" class="px-1 text-[13px] leading-4 text-orange-600">
       {{ loadError }}
     </p>
     <p v-else-if="!points.length" class="px-1 text-[13px] leading-4 text-zinc-500">
-      Пункты СДЭК не найдены.
+      Пункты {{ providerLabel }} не найдены.
     </p>
 
     <div v-if="modelValue" class="rounded-3xl bg-zinc-600/5 px-4 py-3 text-[15px] leading-6 text-zinc-950">
       <p class="font-medium">{{ modelValue.name || modelValue.code }}</p>
-      <p class="mt-1 text-zinc-600">{{ modelValue.address_full || modelValue.address }}</p>
-      <p v-if="modelValue.work_time" class="mt-1 text-[13px] leading-4 text-zinc-500">
-        {{ modelValue.work_time }}
+      <p v-if="selectedAddress" class="mt-1 text-zinc-600">{{ selectedAddress }}</p>
+      <p v-if="workTimeLabel" class="mt-1 text-[13px] leading-4 text-zinc-500">
+        {{ workTimeLabel }}
       </p>
     </div>
   </div>
@@ -79,18 +79,31 @@ import {
 } from 'vue-yandex-maps';
 import type { YandexMapListenerSettings } from 'vue-yandex-maps';
 import { useDebounceFn } from '@vueuse/core';
-import type { CDEKDeliveryPointResponse } from '~/repository/types/api/generatedApiGo';
+import type { DeliveryPointResponse } from '~/repository/types/api/generatedApiGo';
+import type { DeliveryPointsQuery, DeliveryProviderCode } from '~/repository/modules/delivery';
 import { useGeoStore } from '~/stores/geo';
-import type { CdekDeliveryPointsQuery } from '~/repository/modules/cdek';
 import CheckoutDeliveryCluster from '~/components/checkout/CheckoutDeliveryCluster.vue';
+import {
+  deliveryPointAddress,
+  deliveryPointLat,
+  deliveryPointLon,
+} from '~/utils/deliveryPoint';
 
 const CITY_ZOOM = 11;
+const CENTER_PAD = 0.35;
 
-const modelValue = defineModel<CDEKDeliveryPointResponse | null>({ default: null });
+const props = defineProps<{
+  provider: DeliveryProviderCode;
+  providerLabel: string;
+  iconSrc: string;
+  clusterClass: string;
+}>();
+
+const modelValue = defineModel<DeliveryPointResponse | null>({ default: null });
 const geoStore = useGeoStore();
 
 const map = ref<any>(null);
-const points = shallowRef<CDEKDeliveryPointResponse[]>([]);
+const points = shallowRef<DeliveryPointResponse[]>([]);
 const loading = ref(false);
 const loadError = ref('');
 const ready = ref(false);
@@ -106,20 +119,20 @@ const mapSettings = computed(() => ({
   },
 }));
 
-function pointLat(point: CDEKDeliveryPointResponse) {
-  return Number(point.latitude);
-}
+const workTimeLabel = computed(() =>
+    (modelValue.value?.work_time || []).filter(Boolean).join('; '),
+);
 
-function pointLon(point: CDEKDeliveryPointResponse) {
-  return Number(point.longitude);
-}
+const selectedAddress = computed(() =>
+    modelValue.value ? deliveryPointAddress(modelValue.value) : '',
+);
 
 function boundsQuery(
     minLon: number,
     minLat: number,
     maxLon: number,
     maxLat: number,
-): CdekDeliveryPointsQuery {
+): DeliveryPointsQuery {
   return {
     min_lat: Math.min(minLat, maxLat),
     max_lat: Math.max(minLat, maxLat),
@@ -128,7 +141,7 @@ function boundsQuery(
   };
 }
 
-function isUsableQuery(query: CdekDeliveryPointsQuery | null): query is CdekDeliveryPointsQuery {
+function isUsableQuery(query: DeliveryPointsQuery | null): query is DeliveryPointsQuery {
   if (!query) return false;
   if (query.min_lat == null || query.max_lat == null || query.min_lon == null || query.max_lon == null) {
     return false;
@@ -140,7 +153,7 @@ function isUsableQuery(query: CdekDeliveryPointsQuery | null): query is CdekDeli
   return query.min_lat >= -90 && query.max_lat <= 90 && query.min_lon >= -180 && query.max_lon <= 180;
 }
 
-function queryFromBounds(bounds: unknown): CdekDeliveryPointsQuery | null {
+function queryFromBounds(bounds: unknown): DeliveryPointsQuery | null {
   if (!Array.isArray(bounds) || !Array.isArray(bounds[0]) || !Array.isArray(bounds[1])) return null;
   const lon1 = Number(bounds[0][0]);
   const lat1 = Number(bounds[0][1]);
@@ -152,8 +165,9 @@ function queryFromBounds(bounds: unknown): CdekDeliveryPointsQuery | null {
   return boundsQuery(lon1 - padLon, lat1 - padLat, lon2 + padLon, lat2 + padLat);
 }
 
-function queryKey(query: CdekDeliveryPointsQuery) {
+function queryKey(query: DeliveryPointsQuery) {
   return [
+    props.provider,
     query.min_lat?.toFixed(4),
     query.max_lat?.toFixed(4),
     query.min_lon?.toFixed(4),
@@ -161,7 +175,7 @@ function queryKey(query: CdekDeliveryPointsQuery) {
   ].join(':');
 }
 
-async function loadPoints(query: CdekDeliveryPointsQuery | null, force = false) {
+async function loadPoints(query: DeliveryPointsQuery | null, force = false) {
   if (!isUsableQuery(query)) return;
 
   const key = queryKey(query);
@@ -173,30 +187,30 @@ async function loadPoints(query: CdekDeliveryPointsQuery | null, force = false) 
   loadError.value = '';
 
   try {
-    const data = await $api.cdek.getDeliveryPoints(query);
+    const data = await $api.delivery.getDeliveryPoints(props.provider, query);
     if (seq !== loadSeq) return;
     lastQueryKey = key;
-    points.value = data.filter((point) =>
-        Number.isFinite(pointLat(point)) && Number.isFinite(pointLon(point)),
+    const usable = data.filter((point) =>
+        Number.isFinite(deliveryPointLat(point)) && Number.isFinite(deliveryPointLon(point)),
     );
+    points.value = usable;
   } catch {
     if (seq !== loadSeq) return;
-    loadError.value = 'Не удалось загрузить пункты СДЭК';
+    loadError.value = `Не удалось загрузить пункты ${props.providerLabel}`;
     points.value = [];
   } finally {
     if (seq === loadSeq) loading.value = false;
   }
 }
 
-function queryFromCenter(): CdekDeliveryPointsQuery | null {
+function queryFromCenter(): DeliveryPointsQuery | null {
   const coords = mapCenter.value;
   if (!coords) return null;
   const [lon, lat] = coords;
-  const pad = 0.35;
-  return boundsQuery(lon - pad, lat - pad, lon + pad, lat + pad);
+  return boundsQuery(lon - CENTER_PAD, lat - CENTER_PAD, lon + CENTER_PAD, lat + CENTER_PAD);
 }
 
-function currentQuery(): CdekDeliveryPointsQuery | null {
+function currentQuery(): DeliveryPointsQuery | null {
   const fromMap = queryFromBounds(map.value?.bounds);
   if (isUsableQuery(fromMap)) return fromMap;
   return queryFromCenter();
@@ -227,15 +241,25 @@ const loadFromViewport = useDebounceFn((bounds?: unknown) => {
   loadPoints(query);
 }, 300);
 
-function selectPoint(point: CDEKDeliveryPointResponse) {
-  modelValue.value = point;
+function selectPoint(point: DeliveryClusterPointLike) {
+  const code = point.code;
+  const found = code
+      ? points.value.find((item) => item.code === code)
+      : null;
+  modelValue.value = found || null;
 }
+
+type DeliveryClusterPointLike = {
+  code?: string;
+  latitude?: number;
+  longitude?: number;
+};
 
 const selectedMarkerSettings = computed(() => {
   const point = modelValue.value;
   if (!point) return null;
-  const lat = pointLat(point);
-  const lon = pointLon(point);
+  const lat = deliveryPointLat(point);
+  const lon = deliveryPointLon(point);
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   return {
     id: `selected-${point.code || `${lat}-${lon}`}`,
@@ -254,11 +278,17 @@ const listenerSettings: YandexMapListenerSettings = {
 };
 
 onMounted(async () => {
-  if (!geoStore.cityCoordinates) {
-    await geoStore.loadGeo();
-  }
+  await geoStore.loadGeo();
   ready.value = true;
   await loadFromMap();
+});
+
+watch(() => props.provider, () => {
+  if (!ready.value) return;
+  modelValue.value = null;
+  lastQueryKey = '';
+  points.value = [];
+  loadFromMap();
 });
 
 watch(cityFilterKey, () => {
