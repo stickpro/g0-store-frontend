@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { CURRENCY_CODE } from '~/utils/constants/currency';
+import { formatOrderMoney } from '~/utils/order';
 
 defineProps<{
   itemCount: number;
@@ -71,7 +71,6 @@ defineProps<{
 }>();
 
 function formatMoney(price?: number) {
-  if (price == null || !Number.isFinite(price)) return `0 ${CURRENCY_CODE}`;
-  return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ${CURRENCY_CODE}`;
+  return formatOrderMoney(price);
 }
 </script>

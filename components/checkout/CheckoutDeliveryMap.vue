@@ -80,7 +80,7 @@ import {
 import type { YandexMapListenerSettings } from 'vue-yandex-maps';
 import { useDebounceFn } from '@vueuse/core';
 import type { DeliveryPointResponse } from '~/repository/types/api/generatedApiGo';
-import type { DeliveryPointsQuery, DeliveryProviderCode } from '~/repository/modules/delivery';
+import type { DeliveryPointsQuery } from '~/repository/modules/delivery';
 import { useGeoStore } from '~/stores/geo';
 import CheckoutDeliveryCluster from '~/components/checkout/CheckoutDeliveryCluster.vue';
 import {
@@ -93,7 +93,7 @@ const CITY_ZOOM = 11;
 const CENTER_PAD = 0.35;
 
 const props = defineProps<{
-  provider: DeliveryProviderCode;
+  provider: string;
   providerLabel: string;
   iconSrc: string;
   clusterClass: string;

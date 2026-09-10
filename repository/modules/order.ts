@@ -1,7 +1,11 @@
 import HttpFactory from "../factory";
 import type {
+    CheckoutPreviewRequest,
+    CheckoutPreviewResponse,
     CreateOrderRequest,
+    CreateQuickOrderRequest,
     FullPagingData,
+    JSONResponseCheckoutPreviewResponse,
     JSONResponseOrderResponse,
     JSONResponseResponseWithFullPaginationOrderResponse,
     OrderResponse,
@@ -31,9 +35,27 @@ class OrderModule extends HttpFactory {
         return response.data || {};
     }
 
+    async preview(body: CheckoutPreviewRequest = {}): Promise<CheckoutPreviewResponse> {
+        const response = await this.post<JSONResponseCheckoutPreviewResponse>(
+            `${this.RESOURCE}/preview`,
+            body,
+        );
+        return response.data || {};
+    }
+
     async create(body: CreateOrderRequest, idempotencyKey: string): Promise<OrderResponse> {
         const response = await this.post<JSONResponseOrderResponse>(
             this.RESOURCE,
+            body,
+            undefined,
+            { headers: { 'Idempotency-Key': idempotencyKey } },
+        );
+        return response.data || {};
+    }
+
+    async createQuick(body: CreateQuickOrderRequest, idempotencyKey: string): Promise<OrderResponse> {
+        const response = await this.post<JSONResponseOrderResponse>(
+            `${this.RESOURCE}/quick`,
             body,
             undefined,
             { headers: { 'Idempotency-Key': idempotencyKey } },

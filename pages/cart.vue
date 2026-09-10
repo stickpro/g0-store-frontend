@@ -44,7 +44,9 @@
           </NuxtLink>
           <button
               type="button"
-              class="h-12 w-full rounded-full border-2 border-orange-500 bg-transparent text-[15px] font-medium text-orange-500 hover:bg-orange-500/10"
+              class="h-12 w-full rounded-full border-2 border-orange-500 bg-transparent text-[15px] font-medium text-orange-500 hover:bg-orange-500/10 disabled:opacity-50"
+              :disabled="cartStore.isEmpty"
+              @click="openQuickOrder"
           >
             Быстрый заказ
           </button>
@@ -85,7 +87,9 @@
           </NuxtLink>
           <button
               type="button"
-              class="h-12 w-full rounded-full border-2 border-orange-500 bg-transparent text-[15px] font-medium text-orange-500"
+              class="h-12 w-full rounded-full border-2 border-orange-500 bg-transparent text-[15px] font-medium text-orange-500 disabled:opacity-50"
+              :disabled="cartStore.isEmpty"
+              @click="openQuickOrder"
           >
             Быстрый заказ
           </button>
@@ -95,12 +99,15 @@
         </template>
       </OrderSummary>
     </OrderSummarySheet>
+
+    <CartQuickOrderModal v-model:open="quickOrderOpen"/>
   </div>
 </template>
 
 <script setup lang="ts">
 import CartPageItem from '~/components/cart/CartPageItem.vue';
 import CartLegalNotes from '~/components/cart/CartLegalNotes.vue';
+import CartQuickOrderModal from '~/components/cart/CartQuickOrderModal.vue';
 import OrderSummary from '~/components/cart/OrderSummary.vue';
 import OrderSummarySheet from '~/components/cart/OrderSummarySheet.vue';
 import { useCartStore } from '~/stores/cart';
@@ -113,6 +120,13 @@ definePageMeta({
 const cartStore = useCartStore();
 const { increase, decrease } = useCartQuantity();
 const sheetOpen = ref(false);
+const quickOrderOpen = ref(false);
+
+function openQuickOrder() {
+  if (cartStore.isEmpty) return;
+  sheetOpen.value = false;
+  quickOrderOpen.value = true;
+}
 
 const { pending } = await useAsyncData('cart-page', async () => {
   await cartStore.loadCart();

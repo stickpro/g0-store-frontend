@@ -1,12 +1,12 @@
 import HttpFactory from "../factory";
 import type {
+    DeliveryMethodResponse,
     DeliveryPointResponse,
     DeliveryProviderResponse,
+    JSONResponseArrayDeliveryMethodResponse,
     JSONResponseArrayDeliveryPointResponse,
     JSONResponseArrayDeliveryProviderResponse,
 } from "~/repository/types/api/generatedApiGo";
-
-export type DeliveryProviderCode = 'cdek' | 'yandex_delivery' | 'pochta';
 
 export type DeliveryPointsQuery = {
     index?: string;
@@ -23,7 +23,13 @@ export type DeliveryPointsQuery = {
 };
 
 class DeliveryModule extends HttpFactory {
+    private METHODS = '/delivery/methods';
     private PROVIDERS = '/delivery/providers';
+
+    async getMethods(): Promise<DeliveryMethodResponse[]> {
+        const response = await this.get<JSONResponseArrayDeliveryMethodResponse>(this.METHODS);
+        return response.data || [];
+    }
 
     async getProviders(): Promise<DeliveryProviderResponse[]> {
         const response = await this.get<JSONResponseArrayDeliveryProviderResponse>(this.PROVIDERS);
@@ -31,7 +37,7 @@ class DeliveryModule extends HttpFactory {
     }
 
     async getDeliveryPoints(
-        provider: DeliveryProviderCode,
+        provider: string,
         query: DeliveryPointsQuery = {},
     ): Promise<DeliveryPointResponse[]> {
         const response = await this.get<JSONResponseArrayDeliveryPointResponse>(

@@ -6,6 +6,7 @@ export default defineEventHandler((event) => {
         'Disallow: /account',
         'Disallow: /cart',
         'Disallow: /checkout',
+        'Disallow: /order',
         '',
         `Sitemap: ${origin}/sitemap.xml`,
         '',

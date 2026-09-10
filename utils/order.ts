@@ -33,16 +33,35 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 const SHIPPING_METHOD_LABELS: Record<string, string> = {
   pickup: 'Самовывоз',
   cdek: 'СДЭК',
+  cdek_courier: 'СДЭК курьер',
   post: 'Почта России',
   pochta: 'Почта России',
   yandex: 'Яндекс Доставка',
   yandex_delivery: 'Яндекс Доставка',
 };
 
+export function formatShippingEta(minDays?: number | null, maxDays?: number | null) {
+  if (minDays == null && maxDays == null) return '';
+  if (minDays != null && maxDays != null && minDays !== maxDays) {
+    return `Доставка ${minDays}–${maxDays} дня`;
+  }
+  const days = maxDays ?? minDays;
+  if (days == null) return '';
+  return `Доставка ${days} дн.`;
+}
+
+/** Round to kopecks; avoids float artifacts like 254204.63999999998. */
+export function roundMoney(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
 export function formatOrderMoney(price?: number | string) {
   const amount = parseVariantPrice(price);
   if (amount == null) return `0 ${CURRENCY_CODE}`;
-  return `${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ${CURRENCY_CODE}`;
+  const [intPart, fracPart] = roundMoney(amount).toFixed(2).split('.');
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const display = fracPart === '00' ? grouped : `${grouped}.${fracPart}`;
+  return `${display} ${CURRENCY_CODE}`;
 }
 
 export function hasOrderMoney(price?: number | string) {
@@ -91,6 +110,14 @@ export function orderNumber(order: { number?: number; id?: string }) {
 export function orderDetailPath(order: { number?: number }) {
   if (order.number == null) return '/account/orders';
   return `/account/orders/${order.number}`;
+}
+
+export function orderSuccessPath(order: { number?: number }, options?: { paid?: boolean }) {
+  const query = new URLSearchParams();
+  if (order.number != null) query.set('number', String(order.number));
+  if (options?.paid) query.set('paid', '1');
+  const qs = query.toString();
+  return qs ? `/order/success?${qs}` : '/order/success';
 }
 
 export function isCancelledOrder(status?: string) {

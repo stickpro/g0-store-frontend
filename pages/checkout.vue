@@ -1,5 +1,86 @@
 <template>
-  <div class="flex w-full min-h-[calc(100vh-5rem)]">
+  <div
+      v-if="cartPending && cartStore.isEmpty"
+      class="relative flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-10"
+  >
+    <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#eff6ff_0%,_#ffffff_55%,_#fff7ed_100%)]"/>
+    </div>
+    <p class="text-[15px] leading-6 text-zinc-500">Загрузка корзины…</p>
+  </div>
+
+  <div
+      v-else-if="cartStore.isEmpty"
+      class="relative min-h-[calc(100vh-5rem)] overflow-hidden px-4 py-10 lg:px-6 lg:py-16"
+  >
+    <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#eff6ff_0%,_#ffffff_55%,_#fff7ed_100%)]"/>
+      <div class="empty-orb empty-orb--blue absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/15 blur-3xl"/>
+      <div class="empty-orb empty-orb--orange absolute bottom-0 right-0 h-64 w-64 rounded-full bg-orange-400/20 blur-3xl"/>
+    </div>
+
+    <div class="mx-auto flex w-full max-w-xl flex-col items-center text-center">
+      <div class="empty-mark relative mb-8 flex size-24 items-center justify-center">
+        <span class="absolute inset-0 rounded-full bg-orange-500/10"/>
+        <span class="absolute inset-2 rounded-full bg-orange-500/15"/>
+        <span class="relative flex size-16 items-center justify-center rounded-full bg-orange-500 text-white shadow-[0_12px_40px_rgba(249,115,22,0.35)]">
+          <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              class="size-8"
+              aria-hidden="true"
+          >
+            <path
+                d="M6.5 8h11l-.8 9.2a2 2 0 0 1-2 1.8H9.3a2 2 0 0 1-2-1.8L6.5 8Z"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+            />
+            <path
+                d="M9 8V6.8A3 3 0 0 1 12 3.8v0a3 3 0 0 1 3 3V8"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+            />
+            <path
+                d="M9.5 12.5h5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+            />
+          </svg>
+        </span>
+      </div>
+
+      <p class="text-[13px] uppercase tracking-[0.18em] text-orange-600/80">
+        Корзина пуста
+      </p>
+      <h1 class="mt-3 text-[32px] font-normal leading-10 text-zinc-950 lg:text-[40px] lg:leading-[48px]">
+        Нечего оформлять
+      </h1>
+      <p class="mt-4 max-w-md text-[15px] leading-6 text-zinc-600">
+        В корзине нет товаров для оформления заказа. Добавьте что‑нибудь из каталога — и можно будет перейти к доставке и оплате.
+      </p>
+
+      <div class="mt-10 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
+        <NuxtLink
+            to="/"
+            class="inline-flex h-12 items-center justify-center rounded-full bg-blue-600 px-6 text-[15px] font-medium text-white hover:bg-blue-700"
+        >
+          К покупкам
+        </NuxtLink>
+        <NuxtLink
+            to="/cart"
+            class="inline-flex h-12 items-center justify-center rounded-full border border-zinc-600/20 bg-white/70 px-6 text-[15px] font-medium text-zinc-950 hover:bg-white"
+        >
+          Открыть корзину
+        </NuxtLink>
+      </div>
+    </div>
+  </div>
+
+  <div v-else class="flex w-full min-h-[calc(100vh-5rem)]">
     <div class="min-w-0 flex-1 px-4 pt-4 pb-36 lg:px-0 lg:pt-6 lg:pr-6 lg:pb-24">
       <div class="flex items-center gap-6">
         <h1 class="min-w-0 flex-1 text-[28px] font-normal leading-[45px] text-zinc-950">
@@ -17,7 +98,7 @@
       </div>
 
       <div
-          v-if="!authStore.isAuthenticated && !createdOrder"
+          v-if="!authStore.isAuthenticated"
           class="mt-6 flex min-h-12 flex-col items-stretch gap-2 rounded-3xl bg-blue-600/5 px-4 py-2 sm:h-12 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:py-0 sm:pr-1"
       >
         <p class="text-[15px] leading-6 text-blue-700">
@@ -45,21 +126,7 @@
         </button>
       </div>
 
-      <div v-if="createdOrder" class="mt-6 rounded-3xl bg-white px-6 py-10">
-        <p class="text-[22px] leading-9 text-zinc-950">Заказ оформлен</p>
-        <p class="mt-2 text-[15px] leading-6 text-zinc-600">
-          Номер заказа
-          <span class="font-medium text-zinc-950">{{ createdOrder.number ?? createdOrder.id }}</span>
-        </p>
-        <NuxtLink
-            :to="createdOrder.number != null ? `/account/orders/${createdOrder.number}` : '/account/orders'"
-            class="mt-6 inline-flex h-12 items-center rounded-full bg-blue-600 px-6 text-[15px] font-medium text-white hover:bg-blue-700"
-        >
-          Мои заказы
-        </NuxtLink>
-      </div>
-
-      <div v-else class="mt-6">
+      <div class="mt-6">
         <p class="flex h-12 items-center px-3 text-[15px] leading-6 text-zinc-950">
           Контактная информация
         </p>
@@ -153,39 +220,63 @@
                 </h2>
                 <div class="col-start-2 flex flex-wrap gap-2 lg:col-start-3">
                   <button
-                      v-for="method in shippingMethods"
-                      :key="method.id"
+                      v-for="method in deliveryMethods"
+                      :key="method.code"
                       type="button"
                       class="h-10 rounded-full px-4 text-[15px]"
-                      :class="shippingMethod === method.id
+                      :class="shippingMethod === method.code
                         ? 'bg-zinc-950 text-zinc-50'
                         : 'border border-zinc-600/15 text-zinc-950'"
-                      @click="selectShipping(method.id)"
+                      @click="selectShipping(method.code!)"
                   >
-                    {{ method.label }}
+                    {{ methodTitle(method) }}
                   </button>
                 </div>
+                <p
+                    v-if="methodsError"
+                    class="col-span-full mt-2 px-1 text-[13px] leading-4 text-orange-600 lg:col-start-2"
+                >
+                  {{ methodsError }}
+                </p>
               </div>
 
               <div class="grid grid-cols-[40px_minmax(0,1fr)] gap-x-3 lg:gap-x-6">
                 <div aria-hidden="true"/>
                 <div class="min-w-0">
-                  <p
-                      v-if="shippingMethod === 'pickup'"
-                      class="mb-3 px-1 text-[15px] leading-6 text-zinc-950"
-                  >
-                    {{ STORE_PICKUP.address }}
-                  </p>
-                  <CheckoutPickupMap v-if="shippingMethod === 'pickup'"/>
+                  <template v-if="isSelfPickup">
+                    <p class="mb-3 px-1 text-[15px] leading-6 text-zinc-950">
+                      {{ STORE_PICKUP.address }}
+                    </p>
+                    <CheckoutPickupMap/>
+                  </template>
+
                   <CheckoutDeliveryMap
-                      v-else-if="activeDeliveryMap"
-                      :key="activeDeliveryMap.provider"
+                      v-else-if="pointsMapUi"
+                      :key="pointsMapUi.provider"
                       v-model="selectedPoint"
-                      :provider="activeDeliveryMap.provider"
-                      :provider-label="activeDeliveryMap.label"
-                      :icon-src="activeDeliveryMap.iconSrc"
-                      :cluster-class="activeDeliveryMap.clusterClass"
+                      :provider="pointsMapUi.provider"
+                      :provider-label="pointsMapUi.label"
+                      :icon-src="pointsMapUi.iconSrc"
+                      :cluster-class="pointsMapUi.clusterClass"
                   />
+
+                  <div v-else-if="isCourier" class="flex flex-col gap-3">
+                    <CheckoutCitySelect/>
+                    <CheckoutAddressSuggest v-model="courierAddress"/>
+                  </div>
+
+                  <p
+                      v-if="deliveryEta"
+                      class="mt-3 px-1 text-[15px] leading-6 text-zinc-600"
+                  >
+                    {{ deliveryEta }}
+                  </p>
+                  <p
+                      v-if="quoteError"
+                      class="mt-2 px-1 text-[13px] leading-4 text-orange-600"
+                  >
+                    {{ quoteError }}
+                  </p>
                 </div>
               </div>
             </section>
@@ -223,18 +314,20 @@
       </div>
     </div>
 
-    <aside class="hidden min-h-[calc(100vh-5rem)] w-[304px] shrink-0 flex-col border-l border-dashed border-zinc-600/15 bg-[#eff6ff] lg:flex">
+    <aside
+        class="hidden min-h-[calc(100vh-5rem)] w-[304px] shrink-0 flex-col border-l border-dashed border-zinc-600/15 bg-[#eff6ff] lg:flex"
+    >
       <OrderSummary
           layout="desktop"
-          :item-count="cartStore.itemCount"
-          :total="cartStore.totalPrice"
+          :item-count="summaryItemCount"
+          :total="orderTotal"
           :delivery-label="deliveryLabel"
       >
         <template #actions>
           <button
               type="button"
               class="h-12 w-full rounded-full bg-blue-600 text-[15px] font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              :disabled="submitting || Boolean(createdOrder)"
+              :disabled="submitting"
               @click="submitOrder"
           >
             {{ submitting ? 'Отправка…' : 'Заказ подтверждаю' }}
@@ -259,14 +352,14 @@
 
     <OrderSummarySheet
         v-model:expanded="sheetOpen"
-        :total="cartStore.totalPrice"
+        :total="orderTotal"
         panel-class="bg-[#eff6ff]"
     >
       <template #collapsed-action>
         <button
             type="button"
             class="flex h-12 shrink-0 items-center justify-center rounded-full bg-blue-600 px-5 text-[15px] font-medium text-white disabled:opacity-50"
-            :disabled="submitting || Boolean(createdOrder)"
+            :disabled="submitting"
             @click="submitOrder"
         >
           {{ submitting ? 'Отправка…' : 'Подтвердить' }}
@@ -274,15 +367,15 @@
       </template>
       <OrderSummary
           layout="sheet"
-          :item-count="cartStore.itemCount"
-          :total="cartStore.totalPrice"
+          :item-count="summaryItemCount"
+          :total="orderTotal"
           :delivery-label="deliveryLabel"
       >
         <template #actions>
           <button
               type="button"
               class="h-12 w-full rounded-full bg-blue-600 text-[15px] font-medium text-white disabled:opacity-50"
-              :disabled="submitting || Boolean(createdOrder)"
+              :disabled="submitting"
               @click="submitOrder"
           >
             {{ submitting ? 'Отправка…' : 'Заказ подтверждаю' }}
@@ -310,73 +403,68 @@
 <script setup lang="ts">
 import IconEdit from '~/components/icons/IconEdit.vue';
 import CheckoutField from '~/components/checkout/CheckoutField.vue';
+import CheckoutCitySelect from '~/components/checkout/CheckoutCitySelect.vue';
+import CheckoutAddressSuggest from '~/components/checkout/CheckoutAddressSuggest.vue';
 import CheckoutPickupMap from '~/components/checkout/CheckoutPickupMap.vue';
 import CheckoutDeliveryMap from '~/components/checkout/CheckoutDeliveryMap.vue';
 import OrderSummary from '~/components/cart/OrderSummary.vue';
 import OrderSummarySheet from '~/components/cart/OrderSummarySheet.vue';
 import { STORE_PICKUP, isStorePickupCity } from '~/utils/constants/pickup';
+import { useDebounceFn } from '@vueuse/core';
 import type {
+  CheckoutPreviewRequest,
+  CheckoutPreviewResponse,
   CreateOrderRequest,
+  DeliveryMethodResponse,
   DeliveryPointResponse,
   OrderResponse,
 } from '~/repository/types/api/generatedApiGo';
-import type { DeliveryProviderCode } from '~/repository/modules/delivery';
 import { useAuthStore } from '~/stores/auth';
 import { useCartStore } from '~/stores/cart';
 import { useGeoStore } from '~/stores/geo';
-import { CURRENCY_CODE } from '~/utils/constants/currency';
 import { deliveryPointAddress } from '~/utils/deliveryPoint';
+import { parseVariantPrice } from '~/utils/mappers/shortProduct';
+import { formatOrderMoney, formatShippingEta, orderSuccessPath, shippingMethodLabel } from '~/utils/order';
 import { isCompletePhoneRu } from '~/utils/phoneMask';
+import { formatMoneyAmount } from '~/utils/shippingRate';
 
 definePageMeta({
   layout: 'cart',
 });
 
-type ShippingMethodId = 'pickup' | 'cdek' | 'post' | 'yandex';
-
-type DeliveryMapConfig = {
-  provider: DeliveryProviderCode;
+type ProviderMapUi = {
+  provider: string;
   label: string;
   iconSrc: string;
   clusterClass: string;
   commentPrefix: string;
 };
 
-const buyerTypes = [
-  { id: 'person' as const, label: 'Физическое лицо' },
-  { id: 'legal' as const, label: 'Юридическое лицо' },
-];
-
-const shippingMethods: { id: ShippingMethodId; label: string }[] = [
-  { id: 'pickup', label: 'Самовывоз' },
-  { id: 'cdek', label: 'СДЭК' },
-  { id: 'post', label: 'Почта России' },
-  { id: 'yandex', label: 'Яндекс Доставка' },
-];
-
-const deliveryMaps: Record<Exclude<ShippingMethodId, 'pickup'>, DeliveryMapConfig> = {
+const PROVIDER_MAP_UI: Record<string, Omit<ProviderMapUi, 'provider'>> = {
   cdek: {
-    provider: 'cdek',
     label: 'СДЭК',
     iconSrc: '/icons/cdek_point.svg',
     clusterClass: 'bg-[#1AB248]',
     commentPrefix: 'СДЭК ПВЗ',
   },
-  post: {
-    provider: 'pochta',
+  pochta: {
     label: 'Почты России',
     iconSrc: '/icons/pochta_point.svg',
     clusterClass: 'bg-[#1928DC]',
     commentPrefix: 'Почта России ПВЗ',
   },
-  yandex: {
-    provider: 'yandex_delivery',
+  yandex_delivery: {
     label: 'Яндекс Доставки',
     iconSrc: '/icons/yandex_point.svg',
     clusterClass: 'bg-[#FC3F1D]',
     commentPrefix: 'Яндекс ПВЗ',
   },
 };
+
+const buyerTypes = [
+  { id: 'person' as const, label: 'Физическое лицо' },
+  { id: 'legal' as const, label: 'Юридическое лицо' },
+];
 
 const paymentMethods = [
   { id: 'card' as const, label: 'Банковская карта' },
@@ -396,37 +484,118 @@ const phone = ref('');
 const email = ref('');
 const sameRecipient = ref(true);
 const recipientName = ref('');
-const shippingMethod = ref<ShippingMethodId>(
-    isStorePickupCity(geoStore.geo.cityData) || !geoStore.geo.cityData ? 'pickup' : 'cdek',
-);
-const shipAddress = ref(
-    shippingMethod.value === 'pickup' ? STORE_PICKUP.address : '',
-);
+const shippingMethod = ref('');
+const courierAddress = ref('');
 const selectedPoint = ref<DeliveryPointResponse | null>(null);
 const paymentMethod = ref('');
 const submitting = ref(false);
 const submitError = ref('');
-const createdOrder = ref<OrderResponse | null>(null);
 const sheetOpen = ref(false);
+const preview = ref<CheckoutPreviewResponse | null>(null);
+const quoteLoading = ref(false);
+const quoteError = ref('');
+let quoteRequestId = 0;
 
-const activeDeliveryMap = computed(() => {
-  if (shippingMethod.value === 'pickup') return null;
-  return deliveryMaps[shippingMethod.value];
-});
-
-await useAsyncData('checkout-cart', async () => {
+const { data: checkoutInit, pending: cartPending } = await useAsyncData('checkout-init', async () => {
+  const { $api } = useNuxtApp();
   await cartStore.loadCart();
-  return cartStore.items;
+  if (cartStore.isEmpty) {
+    return {
+      methods: [] as DeliveryMethodResponse[],
+      methodsError: '',
+    };
+  }
+  try {
+    const methods = await $api.delivery.getMethods();
+    return {
+      methods: methods.filter((method) => Boolean(method.code) && method.enabled !== false),
+      methodsError: '',
+    };
+  } catch {
+    return {
+      methods: [] as DeliveryMethodResponse[],
+      methodsError: 'Не удалось загрузить способы доставки',
+    };
+  }
 });
 
-function applyDefaultShippingForCity() {
+const deliveryMethods = computed(() => checkoutInit.value?.methods ?? []);
+const methodsError = computed(() => checkoutInit.value?.methodsError || '');
+
+const activeMethod = computed(() =>
+    deliveryMethods.value.find((method) => method.code === shippingMethod.value) || null,
+);
+
+const isSelfPickup = computed(() => activeMethod.value?.kind === 'self_pickup');
+const isCourier = computed(() => activeMethod.value?.kind === 'courier');
+const needsPoints = computed(() => Boolean(activeMethod.value?.has_points));
+
+const pointsMapUi = computed((): ProviderMapUi | null => {
+  const method = activeMethod.value;
+  if (!method?.has_points || !method.provider) return null;
+  const ui = PROVIDER_MAP_UI[method.provider] || {
+    label: methodTitle(method),
+    iconSrc: '/icons/cdek_point.svg',
+    clusterClass: 'bg-zinc-600',
+    commentPrefix: 'ПВЗ',
+  };
+  return { provider: method.provider, ...ui };
+});
+
+const shipAddress = computed(() => {
+  if (isSelfPickup.value) return STORE_PICKUP.address;
+  if (isCourier.value) return courierAddress.value.trim();
+  if (needsPoints.value) return pointShipAddress(selectedPoint.value);
+  return '';
+});
+
+const shippingCost = computed(() => parseVariantPrice(preview.value?.shipping_total));
+
+const orderTotal = computed(() => {
+  return parseVariantPrice(preview.value?.grand_total) ?? cartStore.totalPrice;
+});
+
+const summaryItemCount = computed(() => {
+  return preview.value?.item_count ?? cartStore.itemCount;
+});
+
+const deliveryEta = computed(() => {
+  const shipping = preview.value?.shipping;
+  return formatShippingEta(shipping?.min_days, shipping?.max_days);
+});
+
+if (!shippingMethod.value || !deliveryMethods.value.some((method) => method.code === shippingMethod.value)) {
+  shippingMethod.value = pickDefaultMethod(deliveryMethods.value) || '';
+}
+
+function methodTitle(method: DeliveryMethodResponse) {
+  return method.title?.trim() || shippingMethodLabel(method.code) || method.code || '';
+}
+
+function pickDefaultMethod(methods: DeliveryMethodResponse[]) {
   const pickupCity = isStorePickupCity(geoStore.geo.cityData)
       || (!geoStore.geo.cityData && /петербург/i.test(geoStore.geo.city));
   if (pickupCity) {
-    if (shippingMethod.value !== 'pickup') selectShipping('pickup');
+    const pickup = methods.find((method) => method.kind === 'self_pickup');
+    if (pickup?.code) return pickup.code;
+  }
+  const withPoints = methods.find((method) => method.has_points);
+  if (withPoints?.code) return withPoints.code;
+  return methods[0]?.code || '';
+}
+
+function applyDefaultShippingForCity() {
+  const next = pickDefaultMethod(deliveryMethods.value);
+  if (!next) return;
+  if (shippingMethod.value === next) return;
+  const current = activeMethod.value;
+  const pickupCity = isStorePickupCity(geoStore.geo.cityData)
+      || (!geoStore.geo.cityData && /петербург/i.test(geoStore.geo.city));
+  if (current?.kind === 'self_pickup' && !pickupCity) {
+    selectShipping(next);
     return;
   }
-  if (shippingMethod.value === 'pickup') selectShipping('cdek');
+  if (!current && next) selectShipping(next);
 }
 
 onMounted(async () => {
@@ -456,14 +625,171 @@ function pointShipAddress(point: DeliveryPointResponse | null | undefined) {
   return deliveryPointAddress(point);
 }
 
-watch(selectedPoint, (point) => {
-  if (!activeDeliveryMap.value) return;
-  shipAddress.value = pointShipAddress(point);
-});
+function clearQuote() {
+  quoteRequestId += 1;
+  preview.value = null;
+  quoteLoading.value = false;
+  quoteError.value = '';
+}
 
-const deliveryLabel = computed(() =>
-    shippingMethod.value === 'pickup' ? 'Бесплатно' : 'Рассчитывается',
+function deliveryChoiceBody(): CheckoutPreviewRequest | null {
+  const method = activeMethod.value;
+  const code = method?.code?.trim();
+  if (!code) return null;
+
+  if (method.kind === 'self_pickup') {
+    return { delivery_method_code: code };
+  }
+
+  if (method.kind === 'courier') {
+    const body: CheckoutPreviewRequest = { delivery_method_code: code };
+    const postcode = geoStore.geo.cityData?.postal_code?.trim();
+    if (postcode) body.ship_postcode = postcode;
+    return body;
+  }
+
+  if (method.has_points) {
+    const pointCode = selectedPoint.value?.code?.trim();
+    if (!pointCode) return null;
+    return {
+      delivery_method_code: code,
+      ship_point_code: pointCode,
+    };
+  }
+
+  return { delivery_method_code: code };
+}
+
+function httpStatus(error: unknown) {
+  const err = error as { status?: number; statusCode?: number };
+  return err.status ?? err.statusCode;
+}
+
+function errorMessages(error: unknown) {
+  const err = error as {
+    data?: {
+      message?: string;
+      errors?: { message?: string; code?: string }[];
+      data?: { message?: string; errors?: { message?: string; code?: string }[] };
+    };
+    message?: string;
+    statusMessage?: string;
+  };
+  const payload = err.data;
+  return [
+    payload?.message,
+    payload?.data?.message,
+    ...(payload?.errors || []).map((item) => item.message || item.code),
+    ...(payload?.data?.errors || []).map((item) => item.message || item.code),
+    err.message,
+    err.statusMessage,
+  ]
+      .filter((item): item is string => Boolean(item))
+      .map((item) => item.toLowerCase());
+}
+
+function isUnavailableError(error: unknown) {
+  if (httpStatus(error) !== 422) return false;
+  return errorMessages(error).some((message) =>
+      message.includes('unavailable') || message.includes('недоступ'),
+  );
+}
+
+function isPriceChangedError(error: unknown) {
+  if (httpStatus(error) === 409) return true;
+  return errorMessages(error).some((message) =>
+      message.includes('price changed') || message.includes('цена измен'),
+  );
+}
+
+function extractError(error: unknown, fallback = 'Не удалось оформить заказ') {
+  if (isUnavailableError(error)) {
+    return 'Выберите другой пункт или способ доставки';
+  }
+  if (isPriceChangedError(error)) {
+    return 'Сумма заказа изменилась, пересчитайте доставку';
+  }
+  const err = error as {
+    data?: { message?: string; errors?: { message?: string }[] };
+    message?: string;
+    statusMessage?: string;
+  };
+  const field = err.data?.errors?.map((item) => item.message).filter(Boolean).join('. ');
+  return field || err.data?.message || err.statusMessage || err.message || fallback;
+}
+
+async function refreshQuote() {
+  if (cartStore.isEmpty) {
+    clearQuote();
+    return;
+  }
+
+  const previewBody = deliveryChoiceBody();
+  if (!previewBody) {
+    clearQuote();
+    return;
+  }
+
+  const requestId = ++quoteRequestId;
+  quoteLoading.value = true;
+  quoteError.value = '';
+  preview.value = null;
+
+  const { $api } = useNuxtApp();
+
+  try {
+    const nextPreview = await $api.order.preview(previewBody);
+    if (requestId !== quoteRequestId) return;
+
+    if (parseVariantPrice(nextPreview.grand_total) == null) {
+      quoteError.value = 'Не удалось рассчитать заказ';
+      return;
+    }
+    preview.value = nextPreview;
+  } catch (error) {
+    if (requestId !== quoteRequestId) return;
+    if (isPriceChangedError(error)) {
+      await cartStore.loadCart();
+      if (requestId !== quoteRequestId) return;
+      quoteError.value = extractError(error, 'Сумма заказа изменилась');
+      return;
+    }
+    quoteError.value = extractError(error, 'Не удалось рассчитать заказ');
+  } finally {
+    if (requestId === quoteRequestId) {
+      quoteLoading.value = false;
+    }
+  }
+}
+
+const scheduleQuoteRefresh = useDebounceFn(() => {
+  void refreshQuote();
+}, 250);
+
+watch(
+    [
+      shippingMethod,
+      () => selectedPoint.value?.code,
+      citySelectionKey,
+      () => cartStore.totalPrice,
+      () => cartStore.itemCount,
+    ],
+    () => {
+      scheduleQuoteRefresh();
+    },
+    { immediate: true },
 );
+
+const deliveryLabel = computed(() => {
+  if (needsPoints.value && !selectedPoint.value?.code) return 'Выберите пункт';
+  if (quoteLoading.value) return 'Считаем…';
+  if (quoteError.value) return 'Не рассчитана';
+  if (activeMethod.value?.free) return 'Бесплатно';
+  if (activeMethod.value && activeMethod.value.has_rates === false) return 'Стоимость уточним';
+  if (shippingCost.value == null) return 'Рассчитывается';
+  if (shippingCost.value === 0) return 'Бесплатно';
+  return formatMoney(shippingCost.value);
+});
 
 const shipRecipient = computed(() => {
   if (!sameRecipient.value && recipientName.value.trim()) {
@@ -484,8 +810,16 @@ function submitBlockReason() {
     return 'Укажите организацию и ИНН';
   }
   if (!sameRecipient.value && !recipientName.value.trim()) return 'Укажите ФИО грузополучателя';
-  if (activeDeliveryMap.value && !selectedPoint.value?.code) {
-    return `Выберите пункт ${activeDeliveryMap.value.label}`;
+  if (!activeMethod.value?.code) return 'Выберите способ доставки';
+  if (needsPoints.value && !selectedPoint.value?.code) {
+    return `Выберите пункт ${pointsMapUi.value?.label || 'доставки'}`;
+  }
+  if (isCourier.value) {
+    if (!courierAddress.value.trim()) return 'Укажите улицу и дом';
+  }
+  if (quoteLoading.value) return 'Дождитесь расчёта заказа';
+  if (quoteError.value || !preview.value || parseVariantPrice(preview.value.grand_total) == null) {
+    return quoteError.value || 'Не удалось рассчитать заказ';
   }
   if (!shipAddress.value.trim()) return 'Укажите адрес';
   if (!geoStore.geo.city.trim()) return 'Выберите город';
@@ -497,23 +831,15 @@ useSeoMeta({
   title: 'Оформление заказа',
 });
 
-function selectShipping(id: ShippingMethodId) {
-  shippingMethod.value = id;
+function selectShipping(code: string) {
+  shippingMethod.value = code;
   selectedPoint.value = null;
-  if (id === 'pickup') {
-    shipAddress.value = STORE_PICKUP.address;
-  } else {
-    shipAddress.value = '';
-  }
+  courierAddress.value = '';
+  clearQuote();
 }
 
-function formatMoney(price?: number) {
-  if (price == null || !Number.isFinite(price)) return `0 ${CURRENCY_CODE}`;
-  return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ${CURRENCY_CODE}`;
-}
-
-function formatExpectedTotal(price: number) {
-  return price.toFixed(2);
+function formatMoney(price?: number | string) {
+  return formatOrderMoney(price);
 }
 
 function orderComment() {
@@ -521,28 +847,25 @@ function orderComment() {
   if (buyerType.value === 'legal') {
     parts.push(`Юридическое лицо: ${orgName.value.trim()}, ИНН ${inn.value.trim()}`);
   }
-  if (activeDeliveryMap.value && selectedPoint.value?.code) {
-    parts.push(`${activeDeliveryMap.value.commentPrefix} ${selectedPoint.value.code}`);
+  if (pointsMapUi.value && selectedPoint.value?.code) {
+    parts.push(`${pointsMapUi.value.commentPrefix} ${selectedPoint.value.code}`);
   }
   return parts.length ? parts.join('. ') : undefined;
 }
 
-function extractError(error: unknown) {
-  const err = error as {
-    data?: { message?: string; errors?: { message?: string }[] };
-    message?: string;
-    statusMessage?: string;
-  };
-  const field = err.data?.errors?.map((item) => item.message).filter(Boolean).join('. ');
-  return field || err.data?.message || err.statusMessage || 'Не удалось оформить заказ';
-}
-
 async function submitOrder() {
-  if (submitting.value || createdOrder.value) return;
+  if (submitting.value) return;
 
   const blocked = submitBlockReason();
   if (blocked) {
     submitError.value = blocked;
+    return;
+  }
+
+  const methodCode = activeMethod.value?.code;
+  const grandTotal = formatMoneyAmount(preview.value?.grand_total);
+  if (!preview.value || !methodCode) {
+    submitError.value = 'Не удалось рассчитать заказ';
     return;
   }
 
@@ -560,11 +883,17 @@ async function submitOrder() {
     ship_recipient: shipRecipient.value,
     email: email.value.trim(),
     phone: phone.value.trim(),
-    shipping_method: shippingMethod.value,
-    expected_total: formatExpectedTotal(cartStore.totalPrice),
+    delivery_method_code: methodCode,
+    expected_total: grandTotal,
   };
 
-  const postcode = selectedPoint.value?.postal_code;
+  if (needsPoints.value && selectedPoint.value?.code) {
+    body.ship_point_code = selectedPoint.value.code;
+  }
+
+  const postcode = isCourier.value
+      ? geoStore.geo.cityData?.postal_code?.trim()
+      : selectedPoint.value?.postal_code?.trim();
   if (postcode) {
     body.ship_postcode = postcode;
   }
@@ -573,12 +902,75 @@ async function submitOrder() {
   if (comment) body.comment = comment;
 
   try {
-    createdOrder.value = await $api.order.create(body, crypto.randomUUID());
+    const order = await $api.order.create(body, crypto.randomUUID());
+    rememberOrderSuccess(order);
     await cartStore.loadCart();
+
+    // Card/invoice payment gateway redirect will plug in here later.
+    // Cash (and current non-gateway methods) go straight to the success page.
+    await navigateTo(orderSuccessPath(order, {
+      paid: order.payment_status === 'paid',
+    }));
   } catch (error) {
+    if (isPriceChangedError(error)) {
+      await cartStore.loadCart();
+      await refreshQuote();
+      submitError.value = 'Сумма заказа изменилась, проверьте итог и подтвердите снова';
+      return;
+    }
     submitError.value = extractError(error);
   } finally {
     submitting.value = false;
   }
 }
+
+const ORDER_SUCCESS_STORAGE_KEY = 'orderSuccess';
+
+function rememberOrderSuccess(order: OrderResponse) {
+  if (!import.meta.client) return;
+  sessionStorage.setItem(ORDER_SUCCESS_STORAGE_KEY, JSON.stringify({
+    number: order.number,
+    id: order.id,
+    grand_total: order.grand_total,
+    payment_method: order.payment_method || paymentMethod.value,
+    payment_status: order.payment_status,
+    status: order.status,
+    source: order.source || 'checkout',
+  }));
+}
+
 </script>
+
+<style scoped>
+.empty-mark {
+  animation: empty-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.empty-orb--blue {
+  animation: empty-orb-drift 8s ease-in-out infinite alternate;
+}
+
+.empty-orb--orange {
+  animation: empty-orb-drift 10s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes empty-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes empty-orb-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(24px, -18px, 0);
+  }
+}
+</style>
