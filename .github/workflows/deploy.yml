@@ -1,8 +1,9 @@
 name: Deploy
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       tag:
@@ -16,22 +17,27 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      actions: read
     steps:
       - name: Resolve tag
         id: tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_TAG: ${{ inputs.tag }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
-          if [ -n "${INPUT_TAG}" ]; then
+          if [ -n "${INPUT_TAG:-}" ]; then
             TAG="${INPUT_TAG}"
-          elif [ -n "${RELEASE_TAG}" ]; then
-            TAG="${RELEASE_TAG}"
+          elif [ -n "${WORKFLOW_BRANCH:-}" ]; then
+            # For tag pushes, head_branch is the tag name (e.g. v1.0.0)
+            TAG="${WORKFLOW_BRANCH}"
           else
-            TAG="$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name)"
+            TAG="$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name)"
           fi
           echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
           echo "Deploying ${TAG}"
@@ -42,9 +48,17 @@ jobs:
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
           ARCHIVE="g0-store-frontend-${TAG}.tar.gz"
-          gh release download "${TAG}" \
-            --repo "${{ github.repository }}" \
-            --pattern "${ARCHIVE}"
+          # Brief retry: GitHub asset index can lag a second after Release finishes
+          for i in 1 2 3 4 5; do
+            if gh release download "${TAG}" \
+              --repo "${{ github.repository }}" \
+              --pattern "${ARCHIVE}"; then
+              break
+            fi
+            echo "Asset not ready, retry ${i}/5..."
+            sleep 5
+          done
+          test -f "${ARCHIVE}"
           ls -lh "${ARCHIVE}"
           echo "ARCHIVE=${ARCHIVE}" >> "${GITHUB_ENV}"
 
