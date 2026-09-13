@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          STORAGE_URL: ${{ secrets.STORAGE_URL }}
+          NUXT_PUBLIC_YANDEX_MAPS_API_KEY: ${{ secrets.NUXT_PUBLIC_YANDEX_MAPS_API_KEY }}
+          NUXT_PUBLIC_SITE_URL: ${{ secrets.NUXT_PUBLIC_SITE_URL }}
+        run: pnpm build
+
+      - name: Pack artifact
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          ARCHIVE="g0-store-frontend-${TAG}.tar.gz"
+          tar -czf "${ARCHIVE}" -C .output .
+          echo "ARCHIVE=${ARCHIVE}" >> "${GITHUB_ENV}"
+          ls -lh "${ARCHIVE}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: ${{ env.ARCHIVE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

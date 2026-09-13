@@ -1,0 +1,94 @@
+name: Deploy
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g. v1.0.0). Empty = latest release.'
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Resolve tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -n "${INPUT_TAG}" ]; then
+            TAG="${INPUT_TAG}"
+          elif [ -n "${RELEASE_TAG}" ]; then
+            TAG="${RELEASE_TAG}"
+          else
+            TAG="$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name)"
+          fi
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
+          echo "Deploying ${TAG}"
+
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          ARCHIVE="g0-store-frontend-${TAG}.tar.gz"
+          gh release download "${TAG}" \
+            --repo "${{ github.repository }}" \
+            --pattern "${ARCHIVE}"
+          ls -lh "${ARCHIVE}"
+          echo "ARCHIVE=${ARCHIVE}" >> "${GITHUB_ENV}"
+
+      - name: Upload artifact to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: ${{ env.ARCHIVE }}
+          target: /tmp
+
+      - name: Unpack and switch release
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -euo pipefail
+
+            APP_DIR="${{ secrets.VPS_APP_DIR }}"
+            SERVICE="${{ secrets.VPS_SERVICE_NAME }}"
+            TAG="${{ steps.tag.outputs.tag }}"
+            ARCHIVE="/tmp/g0-store-frontend-${TAG}.tar.gz"
+            RELEASE_DIR="${APP_DIR}/releases/${TAG}"
+
+            if [ -z "${APP_DIR}" ] || [ -z "${SERVICE}" ]; then
+              echo "VPS_APP_DIR and VPS_SERVICE_NAME secrets are required"
+              exit 1
+            fi
+
+            mkdir -p "${APP_DIR}/releases"
+            rm -rf "${RELEASE_DIR}"
+            mkdir -p "${RELEASE_DIR}"
+            tar -xzf "${ARCHIVE}" -C "${RELEASE_DIR}"
+            rm -f "${ARCHIVE}"
+
+            ln -sfn "${RELEASE_DIR}" "${APP_DIR}/current"
+
+            # Keep last 5 releases
+            ls -1dt "${APP_DIR}/releases"/* | tail -n +6 | xargs -r rm -rf
+
+            sudo systemctl restart "${SERVICE}"
+            sudo systemctl --no-pager --full status "${SERVICE}" || true
