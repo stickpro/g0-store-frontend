@@ -2,58 +2,58 @@
   <!-- Sidebar -->
   <div
       :class="[
-        'z-30 fixed inset-y-0 left-0 w-[384px] bg-white transform transition-transform duration-300 ease-in-out z-20 border-r-1 border-zinc-600/15 ',
+        'fixed inset-y-0 left-0 z-30 flex w-[384px] max-w-full flex-col border-r border-zinc-600/15 bg-white transform transition-transform duration-300 ease-in-out',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       ]"
   >
-    <div class="max-w-md mx-auto bg-white rounded-lg">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex justify-between">
-          <button class="p-3" @click="closeSidebar">
-            <IconXmark/>
-          </button>
-          <button class="p-3">
-            <IconSearch/>
-          </button>
-        </div>
-        <div class="flex items-center ml-auto">
-          <button
-              class="text-gray-600 hover:text-gray-800 p-3"
-              type="button"
-              aria-label="Корзина"
-              @click="openCartFromSidebar"
-          >
-            <IconCart/>
-          </button>
-          <button class="text-gray-600 hover:text-gray-800 p-3">
-            <IconPhone/>
-          </button>
-          <NuxtLink
-              v-if="authStore.isAuthenticated"
-              to="/account"
-              class="inline-flex text-blue-600 hover:text-blue-700 p-3"
-              aria-label="Личный кабинет"
-              @click="closeSidebar"
-          >
-            <IconPerson/>
-          </NuxtLink>
-          <button
-              v-else
-              class="text-gray-600 hover:text-gray-800 p-3"
-              type="button"
-              aria-label="Войти"
-              @click="openAuth"
-          >
-            <IconPerson/>
-          </button>
-        </div>
+    <!-- Header -->
+    <div class="flex shrink-0 items-center justify-between">
+      <div class="flex justify-between">
+        <button class="p-3" type="button" aria-label="Закрыть меню" @click="closeSidebar">
+          <IconXmark/>
+        </button>
+        <button class="p-3" type="button" aria-label="Поиск">
+          <IconSearch/>
+        </button>
       </div>
+      <div class="ml-auto flex items-center">
+        <button
+            class="p-3 text-gray-600 hover:text-gray-800"
+            type="button"
+            aria-label="Корзина"
+            @click="openCartFromSidebar"
+        >
+          <IconCart/>
+        </button>
+        <button class="p-3 text-gray-600 hover:text-gray-800" type="button" aria-label="Позвонить">
+          <IconPhone/>
+        </button>
+        <NuxtLink
+            v-if="authStore.isAuthenticated"
+            to="/account"
+            class="inline-flex p-3 text-blue-600 hover:text-blue-700"
+            aria-label="Личный кабинет"
+            @click="closeSidebar"
+        >
+          <IconPerson/>
+        </NuxtLink>
+        <button
+            v-else
+            class="p-3 text-gray-600 hover:text-gray-800"
+            type="button"
+            aria-label="Войти"
+            @click="openAuth"
+        >
+          <IconPerson/>
+        </button>
+      </div>
+    </div>
 
-      <div class="flex px-4 mt-6">
+    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <div class="mt-6 flex px-4">
         <NuxtLink
             to="/category"
-            class="flex justify-center space-x-4 rounded-full border border-zinc-600 bg-transparent px-4 py-2 w-full hover:bg-gray-50"
+            class="flex w-full justify-center space-x-4 rounded-full border border-zinc-600 bg-transparent px-4 py-2 hover:bg-gray-50"
             @click="closeSidebar"
         >
           <IconCatalog/>
@@ -61,15 +61,12 @@
         </NuxtLink>
       </div>
 
-      <!-- Action Button -->
       <Login/>
-      <!-- Store Sections -->
-      <div class="space-x-1/2 px-4 pt-6 border-t border-dashed border-zinc-200">
-        <!-- 3D Electronics -->
-        <h3 class="h-10 flex items-center text-orange-500 font-semibold">Чат с 3D ELECTRONICS</h3>
+
+      <div class="space-x-1/2 border-t border-dashed border-zinc-200 px-4 pt-6">
+        <h3 class="flex h-10 items-center font-semibold text-orange-500">Чат с 3D ELECTRONICS</h3>
         <Geo/>
         <WorkingHours/>
-        <!-- Company Info -->
         <InfoCompany/>
       </div>
     </div>
@@ -78,10 +75,9 @@
   <!-- Overlay -->
   <div
       v-if="isOpen"
-      class="fixed inset-0 backdrop-blur-sm bg-black/20 z-20"
+      class="fixed inset-0 z-20 bg-black/20 backdrop-blur-sm"
       @click="closeSidebar"
   />
-
 </template>
 
 <script setup lang="ts">
@@ -114,4 +110,12 @@ watch(() => route.fullPath, () => {
   if (isOpen.value) closeSidebar()
 })
 
+watch(isOpen, (open) => {
+  if (!import.meta.client) return
+  document.body.style.overflow = open ? 'hidden' : ''
+})
+
+onBeforeUnmount(() => {
+  if (import.meta.client) document.body.style.overflow = ''
+})
 </script>

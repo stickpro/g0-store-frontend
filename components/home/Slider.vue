@@ -4,7 +4,7 @@ const containerRef = ref(null)
 useSwiper(containerRef, {
   loop: true,
   autoplay: {
-    delay: 1,
+    delay: 5000,
     disableOnInteraction: true,
   },
 })
