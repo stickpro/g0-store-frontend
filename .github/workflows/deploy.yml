@@ -91,4 +91,4 @@ jobs:
             ls -1dt "${APP_DIR}/releases"/* | tail -n +6 | xargs -r rm -rf
 
             sudo systemctl restart "${SERVICE}"
-            sudo systemctl --no-pager --full status "${SERVICE}" || true
+            sudo systemctl is-active --quiet "${SERVICE}"
