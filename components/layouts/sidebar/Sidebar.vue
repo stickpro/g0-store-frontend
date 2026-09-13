@@ -107,7 +107,6 @@ function openAuth() {
 }
 
 function openCartFromSidebar() {
-  closeSidebar()
   openCart()
 }
 

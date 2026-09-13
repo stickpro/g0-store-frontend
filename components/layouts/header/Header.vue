@@ -3,7 +3,7 @@
     <header class="relative overflow-hidden border-b border-dashed border-zinc-600/15 bg-blue-50">
       <div class="mx-auto flex max-w-[1552px] items-center justify-between px-1 py-2 lg:justify-start lg:space-x-4 lg:px-0 lg:py-4">
         <div class="flex items-center">
-          <button class="p-3 text-gray-600 hover:text-gray-800" type="button" aria-label="Меню" @click="toggleSidebar">
+          <button class="p-3 text-gray-600 hover:text-gray-800" type="button" aria-label="Меню" @click="onToggleSidebar">
             <IconNav/>
           </button>
           <button
@@ -127,7 +127,7 @@ import { useAuthStore } from "~/stores/auth";
 import { useCartStore } from "~/stores/cart";
 
 const route = useRoute();
-const { toggleSidebar } = useSidebar();
+const { isOpen: sidebarOpen, toggleSidebar } = useSidebar();
 const { isOpen: cartOpen, closeCart, toggleCart } = useCartDrawer();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
@@ -163,6 +163,14 @@ function toggleCatalog() {
   if (catalogOpen.value) {
     searchOpen.value = false;
     cartOpen.value = false;
+  }
+}
+
+function onToggleSidebar() {
+  toggleSidebar();
+  if (sidebarOpen.value) {
+    catalogOpen.value = false;
+    searchOpen.value = false;
   }
 }
 

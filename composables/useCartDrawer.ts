@@ -1,16 +1,22 @@
 export const useCartDrawer = () => {
   const isOpen = useState('cart-drawer-open', () => false)
 
-  const openCart = () => {
-    isOpen.value = true
-  }
-
   const closeCart = () => {
     isOpen.value = false
   }
 
+  const openCart = () => {
+    const { closeSidebar } = useSidebar()
+    closeSidebar()
+    isOpen.value = true
+  }
+
   const toggleCart = () => {
-    isOpen.value = !isOpen.value
+    if (isOpen.value) {
+      closeCart()
+    } else {
+      openCart()
+    }
   }
 
   return {

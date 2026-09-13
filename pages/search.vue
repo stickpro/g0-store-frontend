@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="w-full px-4 lg:px-0">
     <div class="flex flex-col gap-3">
       <nav class="flex items-center gap-0 text-[13px] leading-4 text-zinc-950" aria-label="Навигация">
         <NuxtLink to="/" class="flex size-6 items-center justify-center rounded-full p-1">
@@ -19,6 +19,21 @@
           Найдено {{ totalCount }} товаров
         </p>
       </div>
+
+      <form class="relative w-full lg:hidden" @submit.prevent="submitPageSearch">
+        <input
+            v-model="searchInput"
+            type="text"
+            placeholder="Я ищу..."
+            class="h-10 w-full rounded-full bg-zinc-600/5 py-0 pr-28 pl-4 text-[17px] leading-6 text-zinc-950 placeholder:text-zinc-950/50 focus:outline-none"
+        >
+        <button
+            type="submit"
+            class="absolute top-0 right-0 h-10 rounded-full bg-blue-600 px-4 text-[17px] leading-6 text-zinc-50 hover:bg-blue-700"
+        >
+          Искать
+        </button>
+      </form>
     </div>
 
     <div class="mt-6 flex gap-6">
@@ -79,6 +94,10 @@ import type { VariantCardResponse } from '~/repository/types/api/generatedApiGo'
 import { stockFlagsFromParam, stockStatusParam } from '~/utils/searchFilters';
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd } from '~/utils/seo';
 
+definePageMeta({
+  layout: 'empty',
+});
+
 const PAGE_SIZE = 15;
 const route = useRoute();
 const requestURL = useRequestURL();
@@ -86,6 +105,7 @@ const { $api } = useNuxtApp();
 
 const query = computed(() => String(route.query.q || '').trim());
 const heading = computed(() => query.value ? `Поиск: ${query.value}` : 'Поиск');
+const searchInput = ref(query.value);
 const error = ref('');
 const page = ref(1);
 const items = ref<VariantCardResponse[]>([]);
@@ -97,6 +117,18 @@ const categorySlugs = ref<string[]>(queryList('category'));
 const initialFlags = stockFlagsFromParam(queryString('stock_status'));
 const hideOutOfStock = ref(initialFlags.hideOutOfStock);
 const inStore = ref(initialFlags.inStore);
+
+watch(query, (q) => {
+  searchInput.value = q;
+});
+
+async function submitPageSearch() {
+  const q = searchInput.value.trim();
+  if (q.length < 2) return;
+
+  const nextQuery = { ...route.query, q };
+  await navigateTo({ path: '/search', query: nextQuery });
+}
 
 const categoryParam = computed(() => categorySlugs.value.join(',') || undefined);
 const stockStatus = computed(() => stockStatusParam(hideOutOfStock.value, inStore.value));
