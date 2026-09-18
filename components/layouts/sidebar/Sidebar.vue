@@ -2,7 +2,7 @@
   <!-- Sidebar -->
   <div
       :class="[
-        'fixed inset-y-0 left-0 z-30 flex w-[384px] max-w-full flex-col border-r border-zinc-600/15 bg-white transform transition-transform duration-300 ease-in-out',
+        'fixed inset-y-0 left-0 z-30 flex w-[384px] max-w-full flex-col border-r border-zinc-600/15 bg-white transform transition-transform duration-300 ease-in-out overscroll-none',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       ]"
   >
@@ -75,8 +75,10 @@
   <!-- Overlay -->
   <div
       v-if="isOpen"
-      class="fixed inset-0 z-20 bg-black/20 backdrop-blur-sm"
+      class="fixed inset-0 z-20 bg-black/20 backdrop-blur-sm overscroll-none"
       @click="closeSidebar"
+      @wheel.prevent
+      @touchmove.prevent
   />
 </template>
 
@@ -95,6 +97,7 @@ import { useAuthStore } from "~/stores/auth";
 const route = useRoute()
 const {isOpen, closeSidebar} = useSidebar()
 const { openCart } = useCartDrawer()
+const { setBodyScrollLocked } = useBodyScrollLock()
 const authStore = useAuthStore()
 
 function openAuth() {
@@ -111,11 +114,10 @@ watch(() => route.fullPath, () => {
 })
 
 watch(isOpen, (open) => {
-  if (!import.meta.client) return
-  document.body.style.overflow = open ? 'hidden' : ''
-})
+  setBodyScrollLocked(open)
+}, { immediate: true })
 
 onBeforeUnmount(() => {
-  if (import.meta.client) document.body.style.overflow = ''
+  setBodyScrollLocked(false)
 })
 </script>

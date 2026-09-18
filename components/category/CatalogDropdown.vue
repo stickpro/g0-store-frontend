@@ -148,15 +148,12 @@ function close() {
   emit('close');
 }
 
-function lockBodyScroll(lock: boolean) {
-  if (!import.meta.client) return;
-  document.body.style.overflow = lock ? 'hidden' : '';
-}
+const { setBodyScrollLocked } = useBodyScrollLock();
 
 watch(
     () => props.open,
     (isOpen) => {
-      lockBodyScroll(isOpen);
+      setBodyScrollLocked(isOpen);
       if (isOpen) {
         clearHoverTimer();
         selectedIndex.value = 0;
@@ -168,7 +165,7 @@ watch(
 
 onUnmounted(() => {
   clearHoverTimer();
-  lockBodyScroll(false);
+  setBodyScrollLocked(false);
 });
 </script>
 
