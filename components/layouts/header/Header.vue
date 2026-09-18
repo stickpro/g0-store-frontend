@@ -1,5 +1,8 @@
 <template>
-  <div class="sticky top-0 z-50">
+  <div
+    class="top-0 z-50"
+    :class="catalogOpen || sidebarOpen ? 'fixed inset-x-0 pr-[var(--scrollbar-compensation,0px)]' : 'sticky'"
+  >
     <header class="relative overflow-hidden border-b border-dashed border-zinc-600/15 bg-blue-50">
       <div class="mx-auto flex max-w-[1552px] items-center justify-between px-1 py-2 lg:justify-start lg:space-x-4 lg:px-0 lg:py-4">
         <div class="flex items-center">

@@ -2,7 +2,7 @@
   <Transition name="fade">
     <div
         v-if="open"
-        class="fixed inset-x-0 bottom-0 top-20 z-40 border-t border-zinc-600/15 bg-white"
+        class="fixed inset-x-0 bottom-0 top-20 z-40 border-t border-zinc-600/15 bg-white pr-[var(--scrollbar-compensation,0px)]"
     >
       <div class="mx-auto flex h-full min-h-0 max-w-[1552px]">
         <div v-if="isLoading" class="flex flex-1 items-center justify-center">
