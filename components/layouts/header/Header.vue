@@ -14,10 +14,10 @@
           >
             <IconSearch/>
           </button>
-          <NuxtLink to="/" class="p-3 lg:hidden" aria-label="Главная">
+          <NuxtLink to="/" class="p-3 lg:hidden" aria-label="Главная" @click="closeCart">
             <img src="@/assets/icons/home.svg" alt="" class="size-6">
           </NuxtLink>
-          <NuxtLink to="/" class="z-20 hidden lg:block">
+          <NuxtLink to="/" class="z-20 hidden lg:block" @click="closeCart">
             <img src="~/assets/images/logo.svg" alt="3delectronics">
           </NuxtLink>
           <div class="relative hidden lg:block">
@@ -147,6 +147,7 @@ function openSearch() {
 }
 
 function onSearchFocus() {
+  closeCart();
   openSearch();
 }
 
