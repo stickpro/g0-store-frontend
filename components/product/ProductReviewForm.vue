@@ -1,10 +1,11 @@
 <template>
-  <div class="rounded-2xl border border-zinc-200 p-4 lg:p-6">
-    <h3 class="text-lg font-medium text-zinc-950">Написать отзыв</h3>
+  <div :class="embedded ? '' : 'rounded-2xl border border-zinc-200 p-4 lg:p-6'">
+    <h3 v-if="!embedded" class="text-lg font-medium text-zinc-950">Написать отзыв</h3>
 
     <div
         v-if="!authStore.isAuthenticated"
-        class="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between"
+        class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between"
+        :class="embedded ? '' : 'mt-4'"
     >
       <p class="text-sm leading-6 text-zinc-600">
         Войдите, чтобы оставить отзыв о товаре
@@ -18,11 +19,16 @@
       </button>
     </div>
 
-    <p v-else-if="submitted" class="mt-4 text-sm leading-6 text-zinc-600">
+    <p v-else-if="submitted" class="text-sm leading-6 text-zinc-600" :class="embedded ? '' : 'mt-4'">
       {{ successMessage }}
     </p>
 
-    <form v-else class="mt-4 flex flex-col gap-4" @submit.prevent="submit">
+    <form
+        v-else
+        class="flex flex-col gap-4"
+        :class="embedded ? '' : 'mt-4'"
+        @submit.prevent="submit"
+    >
       <fieldset>
         <legend class="mb-2 text-[13px] leading-4 text-zinc-500">Оценка</legend>
         <div class="flex items-center gap-1">
@@ -75,7 +81,7 @@
 
       <button
           type="submit"
-          class="h-12 w-full rounded-full bg-orange-500 px-6 text-[15px] font-medium text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          class="h-12 w-full rounded-full bg-orange-500 px-6 text-[15px] font-medium text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
           :disabled="submitting || !canSubmit"
       >
         {{ submitting ? 'Отправка...' : 'Отправить отзыв' }}
@@ -88,9 +94,16 @@
 import { useAuthStore } from '~/stores/auth';
 import { useProductStore } from '~/stores/product';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   slug: string;
   variantId?: string;
+  embedded?: boolean;
+}>(), {
+  embedded: false,
+});
+
+const emit = defineEmits<{
+  submitted: [];
 }>();
 
 const authStore = useAuthStore();
@@ -138,6 +151,19 @@ function extractError(caught: unknown) {
   return message || 'Не удалось отправить отзыв';
 }
 
+function resetForm() {
+  rating.value = 0;
+  hoveredRating.value = 0;
+  title.value = '';
+  body.value = '';
+  submitting.value = false;
+  submitted.value = false;
+  error.value = '';
+  successMessage.value = '';
+}
+
+defineExpose({ resetForm });
+
 async function submit() {
   if (!authStore.isAuthenticated) {
     authStore.openModal();
@@ -160,6 +186,7 @@ async function submit() {
     successMessage.value = review.status === 'APPROVED'
       ? 'Спасибо, ваш отзыв опубликован'
       : 'Спасибо, отзыв отправлен на модерацию';
+    emit('submitted');
   } catch (caught) {
     const status = (caught as { status?: number; statusCode?: number }).status
       || (caught as { statusCode?: number }).statusCode;

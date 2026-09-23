@@ -293,7 +293,7 @@
               <button
                   type="button"
                   class="text-sm text-orange-500 hover:text-orange-600"
-                  @click="activeTab = 'reviews'"
+                  @click="openReviewModal"
               >
                 Написать отзыв
               </button>
@@ -303,31 +303,33 @@
               <div
                   v-for="review in reviews.slice(0, 3)"
                   :key="review.id"
-                  class="border border-zinc-200 rounded-2xl p-4"
+                  class="rounded-xl border border-zinc-200 bg-white p-4"
               >
-                <div class="flex items-center gap-2 mb-2">
-                  <div class="flex">
-                    <svg
-                        v-for="star in 5"
-                        :key="star"
-                        class="w-4 h-4"
-                        :class="star <= (review.rating || 0) ? 'text-orange-500' : 'text-zinc-300'"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                    </svg>
+                <div class="mb-2 flex items-center justify-between gap-3">
+                  <div class="flex min-w-0 items-center gap-2">
+                    <div class="flex shrink-0">
+                      <svg
+                          v-for="star in 5"
+                          :key="star"
+                          class="h-4 w-4"
+                          :class="star <= (review.rating || 0) ? 'text-orange-500' : 'text-zinc-300'"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                    </div>
                   </div>
-                  <span v-if="review.created_at" class="text-sm text-zinc-500">
-                    {{ new Date(review.created_at).toLocaleDateString('ru-RU') }}
+                  <span v-if="review.created_at" class="shrink-0 text-sm text-zinc-400">
+                    {{ formatReviewDate(review.created_at) }}
                   </span>
                 </div>
-                <h3 v-if="review.title" class="font-medium text-zinc-950 mb-1">{{ review.title }}</h3>
-                <p v-if="review.body" class="text-zinc-700 text-sm">{{ review.body }}</p>
+                <h3 v-if="review.title" class="mb-1 font-medium text-zinc-950">{{ review.title }}</h3>
+                <p v-if="review.body" class="text-sm leading-6 text-zinc-700">{{ review.body }}</p>
               </div>
-              <div v-if="reviews.length > 3" class="flex justify-end mt-4">
+              <div v-if="reviews.length > 3" class="mt-4 flex justify-end">
                 <button
-                    class="px-6 py-2 border border-orange-500 text-orange-500 rounded-full hover:bg-orange-50 transition-colors"
+                    class="rounded-full border border-orange-500 px-6 py-2 text-orange-500 transition-colors hover:bg-orange-50"
                     @click="activeTab = 'reviews'"
                 >
                   Все отзывы ({{ reviews.length }})
@@ -389,37 +391,44 @@
     <!-- Контент таба "Отзывы" -->
     <Transition name="fade" mode="out-in">
       <div v-if="activeTab === 'reviews'" key="reviews" class="py-8">
-        <h2 class="text-2xl font-bold text-zinc-950 mb-6">Отзывы</h2>
-        <ProductReviewForm
-            class="mb-6"
-            :slug="slug"
-            :variant-id="product.variant?.id"
-        />
-        <div v-if="reviews.length > 0" class="space-y-4">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <h2 class="text-2xl font-bold text-zinc-950">Отзывы покупателей</h2>
+          <button
+              type="button"
+              class="h-11 shrink-0 rounded-full bg-orange-500 px-6 text-[15px] font-medium text-white hover:bg-orange-600"
+              @click="openReviewModal"
+          >
+            Написать отзыв
+          </button>
+        </div>
+
+        <div v-if="reviews.length > 0" class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div
               v-for="review in reviews"
               :key="review.id"
-              class="border border-zinc-200 rounded-2xl p-6"
+              class="rounded-xl border border-zinc-200 bg-white p-5 lg:p-6"
           >
-            <div class="flex items-center gap-2 mb-3">
-              <div class="flex">
-                <svg
-                    v-for="star in 5"
-                    :key="star"
-                    class="w-5 h-5"
-                    :class="star <= (review.rating || 0) ? 'text-orange-500' : 'text-zinc-300'"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                </svg>
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div class="flex min-w-0 items-center gap-2">
+                <div class="flex shrink-0">
+                  <svg
+                      v-for="star in 5"
+                      :key="star"
+                      class="h-5 w-5"
+                      :class="star <= (review.rating || 0) ? 'text-orange-500' : 'text-zinc-300'"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                </div>
               </div>
-              <span v-if="review.created_at" class="text-sm text-zinc-500">
-                {{ new Date(review.created_at).toLocaleDateString('ru-RU') }}
+              <span v-if="review.created_at" class="shrink-0 text-sm text-zinc-400">
+                {{ formatReviewDate(review.created_at) }}
               </span>
             </div>
-            <h3 v-if="review.title" class="text-lg font-medium text-zinc-950 mb-2">{{ review.title }}</h3>
-            <p v-if="review.body" class="text-zinc-700">{{ review.body }}</p>
+            <h3 v-if="review.title" class="mb-2 text-base font-medium text-zinc-950">{{ review.title }}</h3>
+            <p v-if="review.body" class="text-[15px] leading-6 text-zinc-700">{{ review.body }}</p>
           </div>
         </div>
         <div v-else-if="isReviewsLoading">
@@ -430,6 +439,12 @@
         </div>
       </div>
     </Transition>
+
+    <ProductReviewModal
+        v-model:open="isReviewModalOpen"
+        :slug="slug"
+        :variant-id="product?.variant?.id"
+    />
 
     <div v-if="isLoading" class="flex items-center justify-center py-20">
       <p class="text-zinc-500">Загрузка...</p>
@@ -485,7 +500,7 @@ import ImageGalleryModal from '@/components/ui/ImageGalleryModal.vue'
 import ProductPicture from '@/components/product/ProductPicture.vue'
 import AddToCartCtaLabel from '@/components/product/AddToCartCtaLabel.vue'
 import ProductList from '@/components/product/ProductList.vue'
-import ProductReviewForm from '@/components/product/ProductReviewForm.vue'
+import ProductReviewModal from '@/components/product/ProductReviewModal.vue'
 import OrderSummarySheet from '~/components/cart/OrderSummarySheet.vue'
 import {useProductStore} from '@/stores/product/';
 import {useCartStore} from '@/stores/cart';
@@ -701,7 +716,20 @@ function closeGallery() {
 }
 
 const activeTab = ref<'about' | 'specs' | 'reviews'>('about');
+const isReviewModalOpen = ref(false);
 const viewedProducts = ref<VariantCardResponse[]>([]);
+
+function openReviewModal() {
+  isReviewModalOpen.value = true;
+}
+
+function formatReviewDate(value: string) {
+  return new Date(value).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 
 async function loadViewedProducts() {
   if (!import.meta.client) return;
