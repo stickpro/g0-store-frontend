@@ -111,7 +111,7 @@
                 </svg>
               </div>
               <span class="text-sm text-zinc-600">Отзывов: {{ reviews.length }}</span>
-              <span v-if="product.sku" class="ml-auto text-sm text-blue-600">Код товара: {{ product.sku }}</span>
+              <span v-if="product.variant?.model" class="ml-auto text-sm text-blue-600">Код товара: {{ product.variant.model }}</span>
             </div>
 
             <!-- Статус наличия -->
@@ -452,7 +452,7 @@
       </template>
       <div class="px-4 pb-2">
         <p class="text-[13px] text-orange-500">{{ getStockStatusLabel(product?.stock_status) }}</p>
-        <p v-if="product?.sku" class="mt-1 text-[13px] text-zinc-500">Код товара: {{ product.sku }}</p>
+        <p v-if="product?.variant?.model" class="mt-1 text-[13px] text-zinc-500">Код товара: {{ product.variant.model }}</p>
         <p class="mt-3 text-[28px] font-bold leading-9 text-zinc-950">
           {{ formatPrice(product?.price_retail || 0) }}
         </p>

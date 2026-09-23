@@ -3,7 +3,7 @@
     <Transition name="fade">
       <div
           v-if="isOpen"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+          class="fixed inset-0 z-50 flex flex-col bg-black/95"
           @click="close"
       >
         <button
@@ -21,10 +21,10 @@
         </div>
 
         <div
-            class="relative flex h-full w-full items-center justify-center px-12 py-16 pb-28 sm:px-16 lg:px-24"
+            class="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-12 pb-4 pt-16 sm:px-16 lg:px-24"
             @click.stop
         >
-          <div class="flex max-h-[70vh] max-w-[min(90vw,56rem)] items-center justify-center">
+          <div class="flex h-full max-h-full max-w-[min(90vw,56rem)] items-center justify-center [&_img]:max-h-full [&_picture]:max-h-full">
             <ProductPicture
                 v-if="currentImage"
                 :image="currentImage"
@@ -59,7 +59,8 @@
 
         <div
             v-if="images.length > 1"
-            class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 max-w-4xl overflow-x-auto px-4"
+            class="relative z-10 flex shrink-0 justify-center gap-2 overflow-x-auto px-4 pb-4 pt-2"
+            @click.stop
         >
           <button
               v-for="(image, index) in images"

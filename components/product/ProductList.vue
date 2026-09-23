@@ -14,6 +14,7 @@
 
     <div
       v-else
+      ref="scrollRef"
       class="-mx-4 overflow-x-auto border-b border-dashed border-zinc-600/15 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mx-0"
     >
       <div class="flex min-w-max px-4 lg:px-0">
@@ -64,6 +65,8 @@ const emit = defineEmits<{
   loadMore: [];
 }>();
 
+const scrollRef = ref<HTMLElement | null>(null);
+
 const displayedProducts = computed(() => {
   if (props.limit && props.limit > 0) {
     return props.products.slice(0, props.limit);
@@ -79,6 +82,28 @@ const hasMore = computed(() => {
 function loadMore() {
   emit('loadMore');
 }
+
+/** While hovering a scrollable carousel, map wheel to horizontal and block page scroll. */
+function onWheel(e: WheelEvent) {
+  const el = scrollRef.value;
+  if (!el) return;
+
+  const maxScroll = el.scrollWidth - el.clientWidth;
+  if (maxScroll <= 0) return;
+
+  const delta = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  e.preventDefault();
+  el.scrollLeft = Math.max(0, Math.min(maxScroll, el.scrollLeft + delta));
+}
+
+watch(scrollRef, (el, prev) => {
+  prev?.removeEventListener('wheel', onWheel);
+  el?.addEventListener('wheel', onWheel, { passive: false });
+});
+
+onBeforeUnmount(() => {
+  scrollRef.value?.removeEventListener('wheel', onWheel);
+});
 </script>
 
 <style scoped>
