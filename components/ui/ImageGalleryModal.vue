@@ -20,14 +20,19 @@
           {{ currentIndex + 1 }} / {{ images.length }}
         </div>
 
-        <div class="relative flex h-full w-full items-center justify-center p-4 lg:p-16" @click.stop>
-          <ProductPicture
-              v-if="currentImage"
-              :image="currentImage"
-              preset="zoom"
-              :alt="currentImage.alt || `Изображение ${currentIndex + 1}`"
-              class="max-w-full max-h-full object-contain"
-          />
+        <div
+            class="relative flex h-full w-full items-center justify-center px-12 py-16 pb-28 sm:px-16 lg:px-24"
+            @click.stop
+        >
+          <div class="flex max-h-[70vh] max-w-[min(90vw,56rem)] items-center justify-center">
+            <ProductPicture
+                v-if="currentImage"
+                :image="currentImage"
+                preset="zoom"
+                :alt="currentImage.alt || `Изображение ${currentIndex + 1}`"
+                class="max-h-full max-w-full object-contain"
+            />
+          </div>
         </div>
 
         <button
@@ -48,7 +53,7 @@
             @click.stop="nextImage"
         >
           <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7 7-7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </button>
 
