@@ -193,17 +193,21 @@ import type {
 
 const route = useRoute();
 const categoryStore = useCategoryStore();
+const catalogEntity = useCatalogEntity();
 
 const slug = computed(() => String(route.params.slug || ''));
 const filters = computed(() => categoryStore.getFilters(slug.value));
+const isCategoryPage = computed(() =>
+    catalogEntity.value?.type === 'category' && catalogEntity.value.slug === slug.value,
+);
 
 await useAsyncData(
     () => `category-filters-${slug.value}`,
     async () => {
-      if (!slug.value) return null;
+      if (!slug.value || !isCategoryPage.value) return null;
       return categoryStore.loadFilters(slug.value);
     },
-    { watch: [slug] },
+    { watch: [slug, isCategoryPage] },
 );
 
 const manufacturers = computed(() => filters.value?.manufacturers || []);

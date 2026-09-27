@@ -242,9 +242,9 @@
           <!-- Левая колонка: Описание и Характеристики -->
           <div>
             <!-- Описание товара -->
-            <div v-if="product.variant?.description" class="prose max-w-none mb-12">
+            <div v-if="product.variant?.description" class="mb-12">
               <h2 class="text-2xl font-medium text-zinc-950 mb-4">Описание</h2>
-              <div class="text-zinc-700 leading-relaxed whitespace-pre-line break-words">{{ product.variant?.description }}</div>
+              <MarkdownContent :source="product.variant?.description" />
             </div>
 
             <!-- Характеристики товара -->
@@ -502,6 +502,7 @@ import AddToCartCtaLabel from '@/components/product/AddToCartCtaLabel.vue'
 import ProductList from '@/components/product/ProductList.vue'
 import ProductReviewModal from '@/components/product/ProductReviewModal.vue'
 import OrderSummarySheet from '~/components/cart/OrderSummarySheet.vue'
+import MarkdownContent from '~/components/ui/MarkdownContent.vue'
 import {useProductStore} from '@/stores/product/';
 import {useCartStore} from '@/stores/cart';
 import {useGeoStore} from '@/stores/geo';

@@ -154,15 +154,6 @@ const categoryTitle = computed(() => category.value?.meta_title || category.valu
 const categoryDescription = computed(() =>
     seoPlainText(category.value?.meta_description || category.value?.description || categoryHeading.value, 160),
 );
-const variantItems = computed(() => categoryStore.getProducts(slug.value));
-const pagination = computed(() => categoryStore.getProductsPagination(slug.value));
-const totalCount = computed(() => pagination.value?.total ?? null);
-const hasMore = computed(() => {
-  const lastPage = pagination.value?.last_page || 1;
-  return page.value < lastPage;
-});
-
-const products = computed(() => variantItems.value);
 
 const { pending, data: categoryPageData } = await useAsyncData(
     () => `category-page-${slug.value}-${filterQueryKey.value}`,
@@ -201,11 +192,14 @@ const { pending, data: categoryPageData } = await useAsyncData(
         }).catch(() => null),
       ]);
 
+      const items = productsResult?.items || [];
+      const productsPagination = productsResult?.pagination || null;
+
       categoryStore.breadcrumbs[currentSlug] = breadcrumbs || [];
       categoryStore.filters[currentSlug] = filters || {};
       categoryStore.products[currentSlug] = {
-        items: productsResult?.items || [],
-        pagination: productsResult?.pagination || null,
+        items,
+        pagination: productsPagination,
       };
 
       if (!productsResult) {
@@ -214,9 +208,27 @@ const { pending, data: categoryPageData } = await useAsyncData(
 
       return {
         breadcrumbs: breadcrumbs || [],
+        products: items,
+        pagination: productsPagination,
       };
     },
     { watch: [slug, filterQueryKey] },
+);
+
+const variantItems = computed(() => categoryStore.getProducts(slug.value));
+const pagination = computed(() =>
+    categoryStore.getProductsPagination(slug.value) || categoryPageData.value?.pagination || null,
+);
+const totalCount = computed(() => pagination.value?.total ?? null);
+const hasMore = computed(() => {
+  const lastPage = pagination.value?.last_page || 1;
+  return page.value < lastPage;
+});
+
+const products = computed(() =>
+    variantItems.value.length > 0
+      ? variantItems.value
+      : (categoryPageData.value?.products || []),
 );
 
 function findCategoryNode(nodes: CategoryTreeResponse[], targetSlug: string): CategoryTreeResponse | null {

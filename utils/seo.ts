@@ -3,7 +3,13 @@ import { CURRENCY_CODE } from '~/utils/constants/currency';
 
 export function seoPlainText(value?: string | null, max = 160): string {
     if (!value) return '';
-    const text = value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const text = value
+        .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+        .replace(/\[([^\]]*)]\([^)]*\)/g, '$1')
+        .replace(/[`*_~#>|-]/g, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
     if (text.length <= max) return text;
     return `${text.slice(0, max - 1).trimEnd()}…`;
 }

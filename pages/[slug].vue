@@ -1,6 +1,6 @@
 <template>
-  <CategorySlugPage v-if="resolved?.type === 'category'" />
-  <ProductSlugPage v-else-if="resolved?.type === 'product'" />
+  <CategorySlugPage v-if="showCategory" />
+  <ProductSlugPage v-else-if="showProduct" />
 </template>
 
 <script setup lang="ts">
@@ -13,10 +13,31 @@ const route = useRoute();
 const { $api } = useNuxtApp();
 const categoryStore = useCategoryStore();
 const productStore = useProductStore();
+const catalogEntity = useCatalogEntity();
 
 const slug = computed(() => String(route.params.slug || ''));
 
-const { data: resolved } = await useAsyncData(
+const showCategory = computed(() =>
+    catalogEntity.value?.type === 'category' && catalogEntity.value.slug === slug.value,
+);
+const showProduct = computed(() =>
+    catalogEntity.value?.type === 'product' && catalogEntity.value.slug === slug.value,
+);
+
+watch(slug, (next, prev) => {
+  if (next !== prev) catalogEntity.value = null;
+});
+
+watch(
+    catalogEntity,
+    (value) => {
+      if (value?.type === 'category') setPageLayout('category');
+      else if (value?.type === 'product') setPageLayout('product');
+    },
+    { immediate: true },
+);
+
+const { error: resolveError } = await useAsyncData(
     () => `resolve-${slug.value}`,
     async () => {
       if (!slug.value) {
@@ -28,16 +49,16 @@ const { data: resolved } = await useAsyncData(
         throw createError({ statusCode: 404, message: 'Страница не найдена', fatal: true });
       }
 
+      catalogEntity.value = { type: result.type, slug: slug.value };
+
       if (result.type === 'category') {
         categoryStore.details[slug.value] = result.data;
-        setPageLayout('category');
       } else {
         productStore.products[slug.value] = {
           data: result.data,
           timestamp: Date.now(),
         };
         productStore.updateAccessOrder(slug.value);
-        setPageLayout('product');
       }
 
       return result;
@@ -45,12 +66,7 @@ const { data: resolved } = await useAsyncData(
     { watch: [slug] },
 );
 
-watch(
-    resolved,
-    (value) => {
-      if (value?.type === 'category') setPageLayout('category');
-      else if (value?.type === 'product') setPageLayout('product');
-    },
-    { immediate: true },
-);
+if (resolveError.value) {
+  throw resolveError.value;
+}
 </script>
