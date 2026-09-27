@@ -1,6 +1,8 @@
 <template>
-  <CategorySlugPage v-if="showCategory" />
-  <ProductSlugPage v-else-if="showProduct" />
+  <NuxtLayout :name="layoutName">
+    <CategorySlugPage v-if="showCategory" />
+    <ProductSlugPage v-else-if="showProduct" />
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -8,6 +10,11 @@ import CategorySlugPage from '~/components/category/CategorySlugPage.vue';
 import ProductSlugPage from '~/components/product/ProductSlugPage.vue';
 import { useCategoryStore } from '~/stores/category';
 import { useProductStore } from '~/stores/product';
+import type { ResolvedSlug } from '~/repository/modules/resolve';
+
+definePageMeta({
+  layout: false,
+});
 
 const route = useRoute();
 const { $api } = useNuxtApp();
@@ -24,20 +31,32 @@ const showProduct = computed(() =>
     catalogEntity.value?.type === 'product' && catalogEntity.value.slug === slug.value,
 );
 
+const layoutName = computed(() => {
+  if (showProduct.value) return 'product';
+  if (showCategory.value) return 'category';
+  return 'default';
+});
+
 watch(slug, (next, prev) => {
   if (next !== prev) catalogEntity.value = null;
 });
 
-watch(
-    catalogEntity,
-    (value) => {
-      if (value?.type === 'category') setPageLayout('category');
-      else if (value?.type === 'product') setPageLayout('product');
-    },
-    { immediate: true },
-);
+function seedFromResolved(result: ResolvedSlug) {
+  catalogEntity.value = { type: result.type, slug: slug.value };
 
-const { error: resolveError } = await useAsyncData(
+  if (result.type === 'category') {
+    categoryStore.details[slug.value] = result.data;
+    return;
+  }
+
+  productStore.products[slug.value] = {
+    data: result.data,
+    timestamp: Date.now(),
+  };
+  productStore.updateAccessOrder(slug.value);
+}
+
+const { data: resolved, error: resolveError } = await useAsyncData(
     () => `resolve-${slug.value}`,
     async () => {
       if (!slug.value) {
@@ -49,18 +68,6 @@ const { error: resolveError } = await useAsyncData(
         throw createError({ statusCode: 404, message: 'Страница не найдена', fatal: true });
       }
 
-      catalogEntity.value = { type: result.type, slug: slug.value };
-
-      if (result.type === 'category') {
-        categoryStore.details[slug.value] = result.data;
-      } else {
-        productStore.products[slug.value] = {
-          data: result.data,
-          timestamp: Date.now(),
-        };
-        productStore.updateAccessOrder(slug.value);
-      }
-
       return result;
     },
     { watch: [slug] },
@@ -69,4 +76,12 @@ const { error: resolveError } = await useAsyncData(
 if (resolveError.value) {
   throw resolveError.value;
 }
+
+if (resolved.value) {
+  seedFromResolved(resolved.value);
+}
+
+watch(resolved, (value) => {
+  if (value) seedFromResolved(value);
+});
 </script>
