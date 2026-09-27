@@ -82,7 +82,7 @@
               <div class="min-w-0 flex-1">
                 <NuxtLink
                     v-if="item.slug"
-                    :to="`/product/${item.slug}`"
+                    :to="entityPath(item.slug)"
                     class="text-[15px] leading-6 text-zinc-950 hover:text-zinc-600"
                 >
                   {{ item.name }}

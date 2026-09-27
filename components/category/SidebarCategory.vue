@@ -7,7 +7,7 @@
     <ul v-else class="space-y-1/2">
       <li v-for="category in categories" :key="category.id || category.slug">
         <NuxtLink
-            :to="`/category/${category.slug}`"
+            :to="entityPath(category.slug)"
             class="flex h-8 items-center rounded-lg px-3 text-[15px] leading-4 hover:bg-gray-50"
             :class="{ 'bg-zinc-600/5': isActive(category.slug) }"
         >
@@ -55,6 +55,6 @@ const isCatalogIndex = computed(() => route.path === '/category');
 
 function isActive(slug?: string) {
   if (!slug) return false;
-  return route.path === `/category/${slug}`;
+  return route.path === entityPath(slug);
 }
 </script>

@@ -150,7 +150,7 @@ function onEscape(event: KeyboardEvent) {
               <NuxtLink
                   v-for="(item, index) in items"
                   :key="item.id || item.slug"
-                  :to="`/product/${item.slug}`"
+                  :to="entityPath(item.slug)"
                   class="flex items-start gap-4 border-b border-dashed border-zinc-600/15 py-4 hover:bg-zinc-600/5"
                   :class="index % 2 === 1 ? 'lg:border-l lg:pl-8' : 'lg:pr-8'"
                   @click="onResultClick"

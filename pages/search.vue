@@ -248,7 +248,7 @@ const jsonLd = computed(() => [
     numberOfItems: totalCount.value ?? products.value.length,
     items: products.value.slice(0, PAGE_SIZE).map((item) => ({
       name: item.name || item.slug || '',
-      url: `${requestURL.origin}/product/${item.slug}`,
+      url: `${requestURL.origin}${entityPath(item.slug)}`,
     })),
   }),
   buildBreadcrumbJsonLd(requestURL.origin, [

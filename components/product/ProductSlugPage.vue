@@ -515,11 +515,8 @@ import {
   seoPlainText,
 } from '~/utils/seo';
 import { imageSrc } from '~/utils/media';
+import { entityPath } from '~/utils/entityPath';
 import type { VariantCardResponse } from '~/repository/types/api/generatedApiGo';
-
-definePageMeta({
-  layout: 'product',
-})
 
 const route = useRoute();
 const productStore = useProductStore();
@@ -543,7 +540,10 @@ const { pending, data: productPageData } = await useAsyncData(
         throw createError({ statusCode: 404, message: 'Товар не найден', fatal: true });
       }
 
-      const data = await $api.product.getBySlug(slug.value).catch(() => null);
+      let data = productStore.getProductBySlug(slug.value);
+      if (!data?.product) {
+        data = await $api.product.getBySlug(slug.value).catch(() => null);
+      }
       if (!data?.product) {
         throw createError({ statusCode: 404, message: 'Товар не найден', fatal: true });
       }
@@ -623,7 +623,7 @@ watch(galleryImages, (images) => {
   if (selectedIndex.value >= images.length) selectedIndex.value = 0;
 }, { immediate: true });
 
-const pageUrl = computed(() => `${requestURL.origin}/product/${slug.value}`);
+const pageUrl = computed(() => `${requestURL.origin}${entityPath(slug.value)}`);
 const imageUrls = computed(() =>
     galleryImages.value
         .map((image) => imageSrc(String(config.public.storageUrl), image, 'pdp', 'jpeg'))
@@ -638,14 +638,14 @@ const breadcrumbItems = computed(() => {
     id: item.id,
     title: item.name || item.slug || '',
     slug: item.slug,
-    url: `/category/${item.slug}`,
+    url: entityPath(item.slug),
   }));
 
   items.push({
     id: product.value?.id,
     title: product.value?.variant?.name || productHeading.value,
     slug: slug.value,
-    url: `/product/${slug.value}`,
+    url: entityPath(slug.value),
   });
 
   return items;

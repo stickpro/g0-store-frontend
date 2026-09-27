@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3';
 import type { SitemapEntry } from '~/repository/types/api/generatedApiGo';
 import SitemapModule from '~/repository/modules/sitemap';
+import { entityPath } from '~/utils/entityPath';
 
 export const SITEMAP_STATIC_PATHS = [
     '/',
@@ -60,14 +61,14 @@ export function renderSitemapIndex(origin: string, paths: string[]): string {
 
 export function toCategoryPaths(entries: SitemapEntry[]): Array<{ path: string; updatedAt?: string }> {
     return entries.map((entry) => ({
-        path: `/category/${entry.slug}`,
+        path: entityPath(entry.slug),
         updatedAt: entry.updated_at,
     }));
 }
 
 export function toProductPaths(entries: SitemapEntry[]): Array<{ path: string; updatedAt?: string }> {
     return entries.map((entry) => ({
-        path: `/product/${entry.slug}`,
+        path: entityPath(entry.slug),
         updatedAt: entry.updated_at,
     }));
 }

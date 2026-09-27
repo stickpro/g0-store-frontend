@@ -1,6 +1,6 @@
 <template>
   <NuxtLink
-    :to="`/product/${product.slug}`"
+    :to="entityPath(product.slug)"
     class="product-card flex flex-col border-r border-dashed border-zinc-600/15 bg-white p-4 hover:shadow-md transition-shadow cursor-pointer lg:p-6"
   >
     <!-- Product Image -->

@@ -3,7 +3,7 @@
     <div class="flex items-start gap-3">
       <NuxtLink
           v-if="item.slug"
-          :to="`/product/${item.slug}`"
+          :to="entityPath(item.slug)"
           class="flex size-20 shrink-0 items-center justify-center"
       >
         <ProductPicture
@@ -30,7 +30,7 @@
         <div class="flex items-start justify-between gap-2">
           <NuxtLink
               v-if="item.slug"
-              :to="`/product/${item.slug}`"
+              :to="entityPath(item.slug)"
               class="text-[15px] leading-6 text-zinc-950 hover:text-zinc-600"
           >
             {{ item.name }}

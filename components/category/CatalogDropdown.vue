@@ -16,7 +16,7 @@
           >
             <li v-for="(category, index) in categories" :key="category.id">
               <NuxtLink
-                  :to="`/category/${category.slug}`"
+                  :to="entityPath(category.slug)"
                   class="flex h-8 items-center px-3 text-[15px] leading-4 text-zinc-950"
                   :class="selectedIndex === index ? 'bg-zinc-600/5' : 'hover:bg-zinc-600/5'"
                   @mouseenter="scheduleSelect(index)"
@@ -56,7 +56,7 @@
                   class="flex flex-col gap-0.5"
               >
                 <NuxtLink
-                    :to="`/category/${group.slug}`"
+                    :to="entityPath(group.slug)"
                     class="flex h-8 shrink-0 items-center px-3 text-[15px] font-bold leading-6 text-zinc-950 hover:bg-zinc-600/5"
                     @click="close"
                 >
@@ -66,7 +66,7 @@
                 <ul v-if="group.children?.length" class="flex flex-col gap-0.5">
                   <li v-for="child in group.children" :key="child.id">
                     <NuxtLink
-                        :to="`/category/${child.slug}`"
+                        :to="entityPath(child.slug)"
                         class="flex h-8 items-center px-3 text-[15px] leading-4 text-zinc-950 hover:bg-zinc-600/5"
                         @click="close"
                     >

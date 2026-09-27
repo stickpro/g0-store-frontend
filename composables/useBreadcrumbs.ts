@@ -58,7 +58,7 @@ export const useBreadcrumbs = () => {
     }
 
     // Строим URL из slug
-    return crumb.slug ? `/product/${crumb.slug}` : '#';
+    return entityPath(crumb.slug);
   };
 
   /**

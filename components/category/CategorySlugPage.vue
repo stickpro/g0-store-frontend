@@ -44,7 +44,7 @@
             <ul class="flex flex-col gap-0.5">
               <li v-for="child in popularChildCategories" :key="child.id || child.slug">
                 <NuxtLink
-                    :to="`/category/${child.slug}`"
+                    :to="entityPath(child.slug)"
                     class="flex h-8 items-center px-3 text-[15px] leading-4 text-blue-600 hover:bg-zinc-600/5"
                 >
                   {{ child.name }}
@@ -59,7 +59,7 @@
               class="flex w-[240px] shrink-0 flex-col gap-0.5 border-r border-b border-dashed border-zinc-600/15 py-4 lg:w-auto"
           >
             <NuxtLink
-                :to="`/category/${group.slug}`"
+                :to="entityPath(group.slug)"
                 class="flex h-8 items-center px-3 text-[15px] font-bold leading-6 text-zinc-950 hover:bg-zinc-600/5"
             >
               {{ group.name }}
@@ -67,7 +67,7 @@
             <ul class="flex flex-col gap-0.5">
               <li v-for="child in group.children" :key="child.id || child.slug">
                 <NuxtLink
-                    :to="`/category/${child.slug}`"
+                    :to="entityPath(child.slug)"
                     class="flex h-8 items-center px-3 text-[15px] leading-4 text-blue-600 hover:bg-zinc-600/5"
                 >
                   {{ child.name }}
@@ -131,10 +131,7 @@ import {
     seoAbsoluteUrl,
     seoPlainText,
 } from '~/utils/seo';
-
-definePageMeta({
-  layout: 'category',
-});
+import { entityPath } from '~/utils/entityPath';
 
 const PAGE_SIZE = 15;
 const route = useRoute();
@@ -178,7 +175,10 @@ const { pending, data: categoryPageData } = await useAsyncData(
       error.value = '';
       page.value = 1;
 
-      const details = await $api.category.getBySlug(currentSlug).catch(() => null);
+      let details = categoryStore.getBySlug(currentSlug);
+      if (!details?.id && !details?.slug && !details?.name) {
+        details = await $api.category.getBySlug(currentSlug).catch(() => null);
+      }
       if (!details?.id && !details?.slug && !details?.name) {
         throw createError({ statusCode: 404, message: 'Категория не найдена', fatal: true });
       }
@@ -251,7 +251,7 @@ const breadcrumbItems = computed(() => {
     id: item.id,
     title: item.name || item.meta_h1 || item.slug || '',
     slug: item.slug,
-    url: `/category/${item.slug}`,
+    url: entityPath(item.slug),
   }));
 });
 
@@ -285,7 +285,7 @@ const isLoading = computed(() =>
     || categoryStore.isProductsLoading(slug.value),
 );
 
-const pageUrl = computed(() => `${requestURL.origin}/category/${slug.value}`);
+const pageUrl = computed(() => `${requestURL.origin}${entityPath(slug.value)}`);
 const ogImage = computed(() =>
     seoAbsoluteUrl(String(config.public.storageUrl), category.value?.image_path) || undefined,
 );
@@ -300,7 +300,7 @@ const jsonLd = computed(() => {
     numberOfItems: totalCount.value ?? products.value.length,
     items: products.value.slice(0, PAGE_SIZE).map((item) => ({
       name: item.name || item.slug || '',
-      url: `${origin}/product/${item.slug}`,
+      url: `${origin}${entityPath(item.slug)}`,
     })),
   });
 

@@ -64,7 +64,7 @@ const jsonLd = computed(() => {
     image: ogImage.value,
     items: popularProducts.value.map((item) => ({
       name: item.name || item.slug || '',
-      url: `${origin}/product/${item.slug}`,
+      url: `${origin}${entityPath(item.slug)}`,
     })),
   });
   const breadcrumbs = buildBreadcrumbJsonLd(origin, [

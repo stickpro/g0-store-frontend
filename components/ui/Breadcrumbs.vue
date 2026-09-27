@@ -64,7 +64,7 @@ const transformBreadcrumb = (crumb: BreadcrumbResponse): BreadcrumbItem => {
     id: crumb.id,
     title: crumb.name || crumb.slug || '',
     slug: crumb.slug,
-    url: `/category/${crumb.slug}`
+    url: entityPath(crumb.slug)
   };
 };
 

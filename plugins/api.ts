@@ -10,6 +10,7 @@ import OrderModule from "~/repository/modules/order";
 import DeliveryModule from "~/repository/modules/delivery";
 import ViewedModule from "~/repository/modules/viewed";
 import SitemapModule from "~/repository/modules/sitemap";
+import ResolveModule from "~/repository/modules/resolve";
 import type { FetchOptions, FetchContext } from "ofetch";
 
 interface IApiInstance {
@@ -24,6 +25,7 @@ interface IApiInstance {
     delivery: DeliveryModule;
     viewed: ViewedModule;
     sitemap: SitemapModule;
+    resolve: ResolveModule;
 }
 
 declare module "#app" {
@@ -79,6 +81,7 @@ export default defineNuxtPlugin({
         delivery: new DeliveryModule(fetchOptions),
         viewed: new ViewedModule(fetchOptions),
         sitemap: new SitemapModule(fetchOptions),
+        resolve: new ResolveModule(fetchOptions),
     };
 
     return {

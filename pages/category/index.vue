@@ -33,7 +33,7 @@
           :key="rootCategory.id"
       >
         <NuxtLink
-            :to="`/category/${rootCategory.slug}`"
+            :to="entityPath(rootCategory.slug)"
             class="mb-4 block text-[22px] leading-9 text-blue-600 hover:text-blue-700"
         >
           {{ rootCategory.name }}
@@ -49,7 +49,7 @@
               class="flex flex-col gap-0.5 border-r border-b border-dashed border-zinc-600/15 py-4"
           >
             <NuxtLink
-                :to="`/category/${subCategory.slug}`"
+                :to="entityPath(subCategory.slug)"
                 class="flex h-8 items-center px-3 text-[15px] font-bold leading-6 text-zinc-950 hover:bg-zinc-600/5"
             >
               {{ subCategory.name }}
@@ -58,7 +58,7 @@
             <ul v-if="subCategory.children?.length" class="flex flex-col gap-0.5">
               <li v-for="child in subCategory.children" :key="child.id">
                 <NuxtLink
-                    :to="`/category/${child.slug}`"
+                    :to="entityPath(child.slug)"
                     class="flex h-8 items-center px-3 text-[15px] leading-4 text-blue-600 hover:bg-zinc-600/5"
                 >
                   {{ child.name }}
@@ -134,7 +134,7 @@ const jsonLd = computed(() => {
     url: pageUrl.value,
     items: categories.value.map((item) => ({
       name: item.name || item.slug || '',
-      url: `${origin}/category/${item.slug}`,
+      url: `${origin}${entityPath(item.slug)}`,
     })),
   });
 

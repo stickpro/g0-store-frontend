@@ -64,6 +64,33 @@ export interface AdminOrderResponse {
   user_id?: string;
 }
 
+export interface AdminUpdateOrderRequest {
+  /** @maxLength 2000 */
+  comment?: string;
+  /** @maxLength 32 */
+  delivery_method_code?: string;
+  /** @maxLength 255 */
+  email?: string;
+  /** @maxLength 32 */
+  payment_method?: string;
+  /** @maxLength 32 */
+  phone?: string;
+  /** @maxLength 512 */
+  ship_address?: string;
+  ship_city_id?: string;
+  /** @maxLength 255 */
+  ship_city_name?: string;
+  /** @maxLength 64 */
+  ship_point_code?: string;
+  /** @maxLength 16 */
+  ship_postcode?: string;
+  ship_provider?: "cdek" | "yandex_delivery" | "pochta";
+  /** @maxLength 255 */
+  ship_recipient?: string;
+  /** @maxLength 64 */
+  ship_tariff_code?: string;
+}
+
 export interface Attribute {
   attribute_group_id?: UuidNullUUID;
   created_at?: PgtypeTimestamp;
@@ -508,7 +535,6 @@ export interface CreateProductVariantRequest {
   meta_h1?: string;
   meta_keyword?: string;
   meta_title?: string;
-  model: string;
   name: string;
   slug: string;
   sort_order?: number;
@@ -766,6 +792,12 @@ export interface JSONResponseProductVariantResponse {
 export interface JSONResponseProductWithMediumResponse {
   code?: number;
   data?: ProductWithMediumResponse;
+  message?: string;
+}
+
+export interface JSONResponseResolveResponse {
+  code?: number;
+  data?: ResolveResponse;
   message?: string;
 }
 
@@ -1127,6 +1159,11 @@ export interface ProductWithMediumResponse {
   product?: ProductResponse;
 }
 
+export interface ResolveResponse {
+  data?: any;
+  type?: string;
+}
+
 export interface ResponseWithFullPaginationAdminOrderResponse {
   items?: AdminOrderResponse[];
   pagination?: FullPagingData;
@@ -1370,7 +1407,6 @@ export interface UpdateProductVariantRequest {
   meta_h1?: string;
   meta_keyword?: string;
   meta_title?: string;
-  model: string;
   name?: string;
   slug?: string;
   sort_order?: number;
@@ -1531,6 +1567,7 @@ export interface GithubComStickproGoStoreInternalStorageRepositoryRepositoryProd
   manufacturer_id?: UuidNullUUID;
   minimum?: number;
   mpn?: PgtypeText;
+  name?: string;
   price_business?: number;
   price_retail?: number;
   price_wholesale?: number;
