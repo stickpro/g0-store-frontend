@@ -1,5 +1,9 @@
 import { CURRENCY_CODE } from '~/utils/constants/currency';
 import { parseVariantPrice } from '~/utils/mappers/shortProduct';
+import type {
+  InitPaymentRequest,
+  PaymentMethodResponse,
+} from '~/repository/types/api/generatedApiGo';
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
   new: 'Новый',
@@ -25,10 +29,42 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cash_on_delivery: 'Наличными при получении',
+  tbank: 'Банковской картой онлайн',
   card: 'Банковская карта',
   invoice: 'По счёту',
   cash: 'При получении',
 };
+
+const ONLINE_PAYMENT_PROVIDERS = new Set<InitPaymentRequest['provider']>(['tbank']);
+
+export function isCashPaymentMethod(method?: string) {
+  return method === 'cash' || method === 'cash_on_delivery';
+}
+
+export function isOnlinePaymentMethod(method?: Pick<PaymentMethodResponse, 'kind' | 'provider' | 'code'>) {
+  if (!method) return false;
+  if (method.kind === 'online') return true;
+  return Boolean(resolvePaymentProvider(method));
+}
+
+export function resolvePaymentProvider(
+    method?: Pick<PaymentMethodResponse, 'provider' | 'code'> | string | null,
+): InitPaymentRequest['provider'] | null {
+  const raw = typeof method === 'string'
+      ? method
+      : (method?.provider || method?.code || '');
+  if (ONLINE_PAYMENT_PROVIDERS.has(raw as InitPaymentRequest['provider'])) {
+    return raw as InitPaymentRequest['provider'];
+  }
+  return null;
+}
+
+export function needsOnlinePayment(paymentMethod?: string, paymentStatus?: string) {
+  if (isCashPaymentMethod(paymentMethod)) return false;
+  if (!resolvePaymentProvider(paymentMethod)) return false;
+  return paymentStatus !== 'paid' && paymentStatus !== 'refunded';
+}
 
 const SHIPPING_METHOD_LABELS: Record<string, string> = {
   pickup: 'Самовывоз',

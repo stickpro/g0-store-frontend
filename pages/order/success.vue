@@ -72,12 +72,27 @@
       <p v-else-if="loadError && !displayNumber" class="mt-10 text-[15px] leading-6 text-orange-600">
         {{ loadError }}
       </p>
+      <p v-else-if="payError" class="mt-10 text-[15px] leading-6 text-orange-600">
+        {{ payError }}
+      </p>
 
       <div class="mt-10 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
+        <button
+            v-if="canPay"
+            type="button"
+            class="inline-flex h-12 items-center justify-center rounded-full bg-blue-600 px-6 text-[15px] font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="paying"
+            @click="startPayment"
+        >
+          {{ paying ? 'Переходим к оплате…' : 'Оплатить заказ' }}
+        </button>
         <NuxtLink
             v-if="orderPath"
             :to="orderPath"
-            class="inline-flex h-12 items-center justify-center rounded-full bg-blue-600 px-6 text-[15px] font-medium text-white hover:bg-blue-700"
+            class="inline-flex h-12 items-center justify-center rounded-full px-6 text-[15px] font-medium"
+            :class="canPay
+              ? 'border border-zinc-600/20 bg-white/70 text-zinc-950 hover:bg-white'
+              : 'bg-blue-600 text-white hover:bg-blue-700'"
         >
           Смотреть заказ
         </NuxtLink>
@@ -110,11 +125,14 @@ import type { OrderResponse } from '~/repository/types/api/generatedApiGo';
 import { useAuthStore } from '~/stores/auth';
 import {
   formatOrderMoney,
+  isCashPaymentMethod,
+  needsOnlinePayment,
   orderDetailPath,
   orderNumber,
   orderStatusLabel,
   paymentMethodLabel,
   paymentStatusLabel,
+  resolvePaymentProvider,
 } from '~/utils/order';
 
 definePageMeta({
@@ -138,6 +156,8 @@ const order = ref<OrderResponse | null>(null);
 const snapshot = ref<SuccessSnapshot | null>(null);
 const loading = ref(false);
 const loadError = ref('');
+const paying = ref(false);
+const payError = ref('');
 
 const queryNumber = computed(() => {
   const raw = route.query.number;
@@ -163,9 +183,15 @@ const paymentMethod = computed(() =>
     order.value?.payment_method || snapshot.value?.payment_method || '',
 );
 
+const paymentStatus = computed(() =>
+    order.value?.payment_status || snapshot.value?.payment_status || '',
+);
+
+const orderId = computed(() => order.value?.id || snapshot.value?.id || '');
+
 const paymentLabel = computed(() => {
   const method = paymentMethodLabel(paymentMethod.value);
-  const status = paymentStatusLabel(order.value?.payment_status || snapshot.value?.payment_status);
+  const status = paymentStatusLabel(paymentStatus.value);
   if (method && status) return `${method} · ${status}`;
   return method || status;
 });
@@ -184,26 +210,35 @@ const orderPath = computed(() => {
   return orderDetailPath({ number });
 });
 
-const isCash = computed(() => paymentMethod.value === 'cash');
+const isCash = computed(() => isCashPaymentMethod(paymentMethod.value));
+const isPaid = computed(() =>
+    isPaidQuery.value || paymentStatus.value === 'paid',
+);
+const canPay = computed(() =>
+    Boolean(orderId.value)
+    && needsOnlinePayment(paymentMethod.value, paymentStatus.value)
+    && !isPaid.value,
+);
 const isQuick = computed(() =>
     (order.value?.source || snapshot.value?.source) === 'quick',
 );
 
 const eyebrow = computed(() => {
-  if (isPaidQuery.value || order.value?.payment_status === 'paid') return 'Оплата прошла';
+  if (isPaid.value) return 'Оплата прошла';
   if (isQuick.value) return 'Быстрый заказ';
   if (isCash.value) return 'Заказ принят';
+  if (canPay.value) return 'Ожидает оплаты';
   return 'Спасибо';
 });
 
 const title = computed(() => {
-  if (isPaidQuery.value || order.value?.payment_status === 'paid') return 'Заказ оплачен';
+  if (isPaid.value) return 'Заказ оплачен';
   if (isQuick.value) return 'Заявка принята';
   return 'Заказ оформлен';
 });
 
 const description = computed(() => {
-  if (isPaidQuery.value || order.value?.payment_status === 'paid') {
+  if (isPaid.value) {
     return 'Мы уже начали готовить заказ к отправке. Статус можно отслеживать в личном кабинете.';
   }
   if (isQuick.value) {
@@ -212,8 +247,8 @@ const description = computed(() => {
   if (isCash.value) {
     return 'Оплата при получении. Сохраните номер заказа — он понадобится при выдаче.';
   }
-  if (paymentMethod.value === 'invoice') {
-    return 'Счёт на оплату отправим на указанную почту. После оплаты заказ пойдёт в сборку.';
+  if (canPay.value) {
+    return 'Заказ создан. Нажмите «Оплатить заказ», чтобы перейти на страницу оплаты.';
   }
   return 'Если оплата ещё не завершена, закончите её по ссылке из письма или вернитесь к заказу позже.';
 });
@@ -248,6 +283,34 @@ async function loadOrder() {
     }
   } finally {
     loading.value = false;
+  }
+}
+
+async function startPayment() {
+  const id = orderId.value;
+  const provider = resolvePaymentProvider(paymentMethod.value);
+  if (!id || !provider || paying.value) return;
+
+  paying.value = true;
+  payError.value = '';
+  const { $api } = useNuxtApp();
+  try {
+    const payment = await $api.payment.init(id, { provider });
+    if (!payment.payment_url) {
+      payError.value = 'Не удалось получить ссылку на оплату';
+      return;
+    }
+    await navigateTo(payment.payment_url, { external: true });
+  } catch (error) {
+    const err = error as {
+      data?: { message?: string; errors?: { message?: string }[] };
+      message?: string;
+      statusMessage?: string;
+    };
+    const field = err.data?.errors?.map((item) => item.message).filter(Boolean).join('. ');
+    payError.value = field || err.data?.message || err.statusMessage || err.message || 'Не удалось начать оплату';
+  } finally {
+    paying.value = false;
   }
 }
 

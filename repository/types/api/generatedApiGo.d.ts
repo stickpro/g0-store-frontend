@@ -64,6 +64,10 @@ export interface AdminOrderResponse {
   user_id?: string;
 }
 
+export interface AdminRefundOrderRequest {
+  amount?: number;
+}
+
 export interface AdminUpdateOrderRequest {
   /** @maxLength 2000 */
   comment?: string;
@@ -669,6 +673,14 @@ export interface ImageDTO {
   width?: number;
 }
 
+export interface InitPaymentRequest {
+  /**
+   * Provider selects the acquirer, e.g. "tbank". More values are added as
+   * more providers are wired up.
+   */
+  provider: "tbank";
+}
+
 export interface JSONResponseAdminOrderResponse {
   code?: number;
   data?: AdminOrderResponse;
@@ -768,6 +780,12 @@ export interface JSONResponseMediumResponse {
 export interface JSONResponseOrderResponse {
   code?: number;
   data?: OrderResponse;
+  message?: string;
+}
+
+export interface JSONResponsePaymentResponse {
+  code?: number;
+  data?: PaymentResponse;
   message?: string;
 }
 
@@ -957,6 +975,12 @@ export interface JSONResponseArrayDeliveryProviderResponse {
   message?: string;
 }
 
+export interface JSONResponseArrayPaymentMethodResponse {
+  code?: number;
+  data?: PaymentMethodResponse[];
+  message?: string;
+}
+
 export interface JSONResponseArrayProductVariantResponse {
   code?: number;
   data?: ProductVariantResponse[];
@@ -1080,6 +1104,26 @@ export interface OrderShippingResponse {
   provider?: string;
   recipient?: string;
   tariff_code?: string;
+}
+
+export interface PaymentMethodResponse {
+  code?: string;
+  enabled?: boolean;
+  /** cash | online */
+  kind?: string;
+  provider?: string;
+  title?: string;
+}
+
+export interface PaymentResponse {
+  amount?: number;
+  created_at?: string;
+  currency?: string;
+  id?: string;
+  order_id?: string;
+  payment_url?: string;
+  provider?: string;
+  status?: string;
 }
 
 export interface ProductResponse {

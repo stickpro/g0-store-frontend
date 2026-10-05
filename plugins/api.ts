@@ -8,6 +8,7 @@ import SearchModule from "~/repository/modules/search";
 import AuthModule from "~/repository/modules/auth";
 import OrderModule from "~/repository/modules/order";
 import DeliveryModule from "~/repository/modules/delivery";
+import PaymentModule from "~/repository/modules/payment";
 import ViewedModule from "~/repository/modules/viewed";
 import SitemapModule from "~/repository/modules/sitemap";
 import ResolveModule from "~/repository/modules/resolve";
@@ -23,6 +24,7 @@ interface IApiInstance {
     auth: AuthModule;
     order: OrderModule;
     delivery: DeliveryModule;
+    payment: PaymentModule;
     viewed: ViewedModule;
     sitemap: SitemapModule;
     resolve: ResolveModule;
@@ -79,6 +81,7 @@ export default defineNuxtPlugin({
         auth: new AuthModule(fetchOptions),
         order: new OrderModule(fetchOptions),
         delivery: new DeliveryModule(fetchOptions),
+        payment: new PaymentModule(fetchOptions),
         viewed: new ViewedModule(fetchOptions),
         sitemap: new SitemapModule(fetchOptions),
         resolve: new ResolveModule(fetchOptions),

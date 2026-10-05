@@ -130,6 +130,16 @@
           </p>
           <p v-if="order.email" class="mt-3 text-[15px] leading-6 text-zinc-600">{{ order.email }}</p>
           <p v-if="order.phone" class="mt-1 text-[15px] leading-6 text-zinc-600">{{ order.phone }}</p>
+          <p v-if="payError" class="mt-3 text-[13px] leading-4 text-orange-600">{{ payError }}</p>
+          <button
+              v-if="canPay"
+              type="button"
+              class="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-blue-600 px-6 text-[15px] font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="paying"
+              @click="startPayment"
+          >
+            {{ paying ? 'Переходим к оплате…' : 'Оплатить заказ' }}
+          </button>
         </section>
 
         <section v-if="order.comment" class="rounded-3xl border border-dashed border-zinc-600/15 px-4 py-5 lg:px-6">
@@ -172,10 +182,12 @@ import {
   formatOrderMoney,
   hasOrderMoney,
   isCancelledOrder,
+  needsOnlinePayment,
   orderNumber,
   orderStatusLabel,
   paymentMethodLabel,
   paymentStatusLabel,
+  resolvePaymentProvider,
   shippingMethodLabel,
 } from '~/utils/order';
 import { seoAbsoluteUrl } from '~/utils/seo';
@@ -187,8 +199,10 @@ definePageMeta({
 const route = useRoute();
 const config = useRuntimeConfig();
 const number = computed(() => String(route.params.number || ''));
+const paying = ref(false);
+const payError = ref('');
 
-const { data: order, pending, error, status } = await useAsyncData(
+const { data: order, pending, error, status, refresh } = await useAsyncData(
     () => `account-order-${number.value}`,
     async () => {
       const { $api } = useNuxtApp();
@@ -206,8 +220,43 @@ const shippingAddress = computed(() => {
   return [shipping?.city_name, shipping?.address, shipping?.postcode].filter(Boolean).join(', ');
 });
 
+const canPay = computed(() =>
+    Boolean(order.value?.id)
+    && !isCancelledOrder(order.value?.status)
+    && needsOnlinePayment(order.value?.payment_method, order.value?.payment_status),
+);
+
 function imageUrl(path?: string) {
   return seoAbsoluteUrl(String(config.public.storageUrl), path);
+}
+
+async function startPayment() {
+  const id = order.value?.id;
+  const provider = resolvePaymentProvider(order.value?.payment_method);
+  if (!id || !provider || paying.value) return;
+
+  paying.value = true;
+  payError.value = '';
+  const { $api } = useNuxtApp();
+  try {
+    const payment = await $api.payment.init(id, { provider });
+    if (!payment.payment_url) {
+      payError.value = 'Не удалось получить ссылку на оплату';
+      return;
+    }
+    await navigateTo(payment.payment_url, { external: true });
+  } catch (err) {
+    const error = err as {
+      data?: { message?: string; errors?: { message?: string }[] };
+      message?: string;
+      statusMessage?: string;
+    };
+    const field = error.data?.errors?.map((item) => item.message).filter(Boolean).join('. ');
+    payError.value = field || error.data?.message || error.statusMessage || error.message || 'Не удалось начать оплату';
+    await refresh();
+  } finally {
+    paying.value = false;
+  }
 }
 
 useSeoMeta({

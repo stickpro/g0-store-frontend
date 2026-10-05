@@ -291,19 +291,25 @@
               <div class="col-start-2 flex flex-wrap justify-end gap-2 lg:col-start-3">
                 <button
                     v-for="method in paymentMethods"
-                    :key="method.id"
+                    :key="method.code"
                     type="button"
                     class="h-10 rounded-full px-4 text-[15px]"
-                    :class="paymentMethod === method.id
+                    :class="paymentMethod === method.code
                       ? 'bg-zinc-950 text-zinc-50'
                       : 'border border-zinc-600/15 text-zinc-950'"
-                    @click="paymentMethod = method.id"
+                    @click="paymentMethod = method.code || ''"
                 >
-                  {{ method.label }}
+                  {{ paymentMethodTitle(method) }}
                 </button>
               </div>
               <p
-                  v-if="!paymentMethod"
+                  v-if="paymentMethodsError"
+                  class="col-span-full mt-2 flex h-10 items-center rounded-full bg-orange-500/5 px-4 text-[15px] leading-6 text-orange-600 lg:col-start-2"
+              >
+                {{ paymentMethodsError }}
+              </p>
+              <p
+                  v-else-if="!paymentMethod"
                   class="col-span-full mt-2 flex h-10 items-center rounded-full bg-orange-500/5 px-4 text-[15px] leading-6 text-orange-600 lg:col-start-2"
               >
                 Пожалуйста, заполните все обязательные поля на предыдущих шагах!
@@ -418,13 +424,21 @@ import type {
   DeliveryMethodResponse,
   DeliveryPointResponse,
   OrderResponse,
+  PaymentMethodResponse,
 } from '~/repository/types/api/generatedApiGo';
 import { useAuthStore } from '~/stores/auth';
 import { useCartStore } from '~/stores/cart';
 import { useGeoStore } from '~/stores/geo';
 import { deliveryPointAddress } from '~/utils/deliveryPoint';
 import { parseVariantPrice } from '~/utils/mappers/shortProduct';
-import { formatOrderMoney, formatShippingEta, orderSuccessPath, shippingMethodLabel } from '~/utils/order';
+import {
+  formatOrderMoney,
+  formatShippingEta,
+  orderSuccessPath,
+  paymentMethodLabel,
+  resolvePaymentProvider,
+  shippingMethodLabel,
+} from '~/utils/order';
 import { isCompletePhoneRu } from '~/utils/phoneMask';
 import { formatMoneyAmount } from '~/utils/shippingRate';
 
@@ -466,12 +480,6 @@ const buyerTypes = [
   { id: 'legal' as const, label: 'Юридическое лицо' },
 ];
 
-const paymentMethods = [
-  { id: 'card' as const, label: 'Банковская карта' },
-  { id: 'invoice' as const, label: 'По счёту' },
-  { id: 'cash' as const, label: 'При получении' },
-];
-
 const cartStore = useCartStore();
 const authStore = useAuthStore();
 const geoStore = useGeoStore();
@@ -503,24 +511,43 @@ const { data: checkoutInit, pending: cartPending } = await useAsyncData('checkou
     return {
       methods: [] as DeliveryMethodResponse[],
       methodsError: '',
+      paymentMethods: [] as PaymentMethodResponse[],
+      paymentMethodsError: '',
     };
   }
-  try {
-    const methods = await $api.delivery.getMethods();
-    return {
-      methods: methods.filter((method) => Boolean(method.code) && method.enabled !== false),
-      methodsError: '',
-    };
-  } catch {
-    return {
-      methods: [] as DeliveryMethodResponse[],
-      methodsError: 'Не удалось загрузить способы доставки',
-    };
-  }
+  const [deliveryResult, paymentResult] = await Promise.all([
+    $api.delivery.getMethods()
+        .then((methods) => ({
+          methods: methods.filter((method) => Boolean(method.code) && method.enabled !== false),
+          methodsError: '',
+        }))
+        .catch(() => ({
+          methods: [] as DeliveryMethodResponse[],
+          methodsError: 'Не удалось загрузить способы доставки',
+        })),
+    $api.payment.getMethods()
+        .then((methods) => ({
+          paymentMethods: methods.filter((method) => Boolean(method.code) && method.enabled !== false),
+          paymentMethodsError: '',
+        }))
+        .catch(() => ({
+          paymentMethods: [] as PaymentMethodResponse[],
+          paymentMethodsError: 'Не удалось загрузить способы оплаты',
+        })),
+  ]);
+  return {
+    ...deliveryResult,
+    ...paymentResult,
+  };
 });
 
 const deliveryMethods = computed(() => checkoutInit.value?.methods ?? []);
 const methodsError = computed(() => checkoutInit.value?.methodsError || '');
+const paymentMethods = computed(() => checkoutInit.value?.paymentMethods ?? []);
+const paymentMethodsError = computed(() => checkoutInit.value?.paymentMethodsError || '');
+const selectedPaymentMethod = computed(() =>
+    paymentMethods.value.find((method) => method.code === paymentMethod.value) || null,
+);
 
 const activeMethod = computed(() =>
     deliveryMethods.value.find((method) => method.code === shippingMethod.value) || null,
@@ -568,8 +595,16 @@ if (!shippingMethod.value || !deliveryMethods.value.some((method) => method.code
   shippingMethod.value = pickDefaultMethod(deliveryMethods.value) || '';
 }
 
+if (!paymentMethod.value || !paymentMethods.value.some((method) => method.code === paymentMethod.value)) {
+  paymentMethod.value = paymentMethods.value[0]?.code || '';
+}
+
 function methodTitle(method: DeliveryMethodResponse) {
   return method.title?.trim() || shippingMethodLabel(method.code) || method.code || '';
+}
+
+function paymentMethodTitle(method: PaymentMethodResponse) {
+  return method.title?.trim() || paymentMethodLabel(method.code) || method.code || '';
 }
 
 function pickDefaultMethod(methods: DeliveryMethodResponse[]) {
@@ -823,6 +858,7 @@ function submitBlockReason() {
   }
   if (!shipAddress.value.trim()) return 'Укажите адрес';
   if (!geoStore.geo.city.trim()) return 'Выберите город';
+  if (!paymentMethods.value.length) return paymentMethodsError.value || 'Нет доступных способов оплаты';
   if (!paymentMethod.value) return 'Выберите способ оплаты';
   return '';
 }
@@ -906,8 +942,21 @@ async function submitOrder() {
     rememberOrderSuccess(order);
     await cartStore.loadCart();
 
-    // Card/invoice payment gateway redirect will plug in here later.
-    // Cash (and current non-gateway methods) go straight to the success page.
+    const provider = resolvePaymentProvider(selectedPaymentMethod.value || paymentMethod.value);
+    if (provider && order.id) {
+      try {
+        const payment = await $api.payment.init(order.id, { provider });
+        if (payment.payment_url) {
+          await navigateTo(payment.payment_url, { external: true });
+          return;
+        }
+      } catch {
+        // Order is already created — send user to success with a retry CTA.
+      }
+      await navigateTo(orderSuccessPath(order));
+      return;
+    }
+
     await navigateTo(orderSuccessPath(order, {
       paid: order.payment_status === 'paid',
     }));
