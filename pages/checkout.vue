@@ -10,7 +10,7 @@
   </div>
 
   <div
-      v-else-if="cartStore.isEmpty"
+      v-else-if="cartStore.isEmpty && !submitting && !redirectingToPayment"
       class="relative min-h-[calc(100vh-5rem)] overflow-hidden px-4 py-10 lg:px-6 lg:py-16"
   >
     <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
@@ -498,6 +498,7 @@ const selectedPoint = ref<DeliveryPointResponse | null>(null);
 const paymentMethod = ref('');
 const submitting = ref(false);
 const submitError = ref('');
+const redirectingToPayment = ref(false);
 const sheetOpen = ref(false);
 const preview = ref<CheckoutPreviewResponse | null>(null);
 const quoteLoading = ref(false);
@@ -940,23 +941,27 @@ async function submitOrder() {
   try {
     const order = await $api.order.create(body, crypto.randomUUID());
     rememberOrderSuccess(order);
-    await cartStore.loadCart();
 
     const provider = resolvePaymentProvider(selectedPaymentMethod.value || paymentMethod.value);
     if (provider && order.id) {
       try {
         const payment = await $api.payment.init(order.id, { provider });
         if (payment.payment_url) {
+          // Keep checkout UI until the browser leaves — reloading an emptied cart
+          // here briefly flashes the empty-cart state before the payment page.
+          redirectingToPayment.value = true;
           await navigateTo(payment.payment_url, { external: true });
           return;
         }
       } catch {
         // Order is already created — send user to success with a retry CTA.
       }
+      await cartStore.loadCart();
       await navigateTo(orderSuccessPath(order));
       return;
     }
 
+    await cartStore.loadCart();
     await navigateTo(orderSuccessPath(order, {
       paid: order.payment_status === 'paid',
     }));
@@ -969,7 +974,9 @@ async function submitOrder() {
     }
     submitError.value = extractError(error);
   } finally {
-    submitting.value = false;
+    if (!redirectingToPayment.value) {
+      submitting.value = false;
+    }
   }
 }
 
