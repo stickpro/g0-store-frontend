@@ -7,11 +7,16 @@ import type {
     PaymentResponse,
 } from "~/repository/types/api/generatedApiGo";
 
+export type PaymentMethodsQuery = {
+    customer_type?: 'individual' | 'legal';
+    delivery_method_code?: string;
+};
+
 class PaymentModule extends HttpFactory {
     private METHODS = '/payments/methods';
 
-    async getMethods(): Promise<PaymentMethodResponse[]> {
-        const response = await this.get<JSONResponseArrayPaymentMethodResponse>(this.METHODS);
+    async getMethods(query?: PaymentMethodsQuery): Promise<PaymentMethodResponse[]> {
+        const response = await this.get<JSONResponseArrayPaymentMethodResponse>(this.METHODS, query);
         return response.data || [];
     }
 

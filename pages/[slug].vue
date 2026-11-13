@@ -24,6 +24,9 @@ const catalogEntity = useCatalogEntity();
 
 const slug = computed(() => String(route.params.slug || ''));
 
+/** Static probes like /sw.js must not hit the catalog resolve API. */
+const ASSET_SLUG_RE = /\.(?:js|mjs|cjs|css|map|ico|png|jpe?g|gif|webp|svg|txt|xml|json|webmanifest|woff2?|ttf|eot)$/i;
+
 const showCategory = computed(() =>
     catalogEntity.value?.type === 'category' && catalogEntity.value.slug === slug.value,
 );
@@ -59,8 +62,8 @@ function seedFromResolved(result: ResolvedSlug) {
 const { data: resolved, error: resolveError } = await useAsyncData(
     () => `resolve-${slug.value}`,
     async () => {
-      if (!slug.value) {
-        throw createError({ statusCode: 404, message: 'Страница не найдена', fatal: true });
+      if (!slug.value || ASSET_SLUG_RE.test(slug.value)) {
+        throw createError({ statusCode: 404, message: 'Страница не найдена' });
       }
 
       const result = await $api.resolve.bySlug(slug.value).catch(() => null);

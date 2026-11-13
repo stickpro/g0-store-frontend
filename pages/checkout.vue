@@ -302,7 +302,8 @@
                     :class="paymentMethod === method.code
                       ? 'bg-zinc-950 text-zinc-50'
                       : 'border border-zinc-600/15 text-zinc-950'"
-                    @click="paymentMethod = method.code || ''"
+                    :aria-pressed="paymentMethod === method.code"
+                    @click="selectPaymentMethod(method.code || '')"
                 >
                   {{ paymentMethodTitle(method) }}
                 </button>
@@ -312,6 +313,18 @@
                   class="col-span-full mt-2 flex h-10 items-center rounded-full bg-orange-500/5 px-4 text-[15px] leading-6 text-orange-600 lg:col-start-2"
               >
                 {{ paymentMethodsError }}
+              </p>
+              <p
+                  v-else-if="paymentMethodsLoading"
+                  class="col-span-full mt-2 flex h-10 items-center px-4 text-[15px] leading-6 text-zinc-500 lg:col-start-2"
+              >
+                Загрузка способов оплаты…
+              </p>
+              <p
+                  v-else-if="shippingMethod && !paymentMethods.length"
+                  class="col-span-full mt-2 flex h-10 items-center rounded-full bg-orange-500/5 px-4 text-[15px] leading-6 text-orange-600 lg:col-start-2"
+              >
+                Оплата для этой комбинации временно недоступна
               </p>
               <p
                   v-else-if="!paymentMethod"
@@ -440,7 +453,6 @@ import {
   formatOrderMoney,
   formatShippingEta,
   isInvoicePaymentMethod,
-  isOnlinePaymentMethod,
   orderSuccessPath,
   paymentMethodLabel,
   rememberGuestOrderAccess,
@@ -507,6 +519,9 @@ const shippingMethod = ref('');
 const courierAddress = ref('');
 const selectedPoint = ref<DeliveryPointResponse | null>(null);
 const paymentMethod = ref('');
+const paymentMethods = ref<PaymentMethodResponse[]>([]);
+const paymentMethodsError = ref('');
+const paymentMethodsLoading = ref(false);
 const submitting = ref(false);
 const submitError = ref('');
 const redirectingToPayment = ref(false);
@@ -515,6 +530,7 @@ const preview = ref<CheckoutPreviewResponse | null>(null);
 const quoteLoading = ref(false);
 const quoteError = ref('');
 let quoteRequestId = 0;
+let paymentRequestId = 0;
 
 const { data: checkoutInit, pending: cartPending } = await useAsyncData('checkout-init', async () => {
   const { $api } = useNuxtApp();
@@ -523,54 +539,31 @@ const { data: checkoutInit, pending: cartPending } = await useAsyncData('checkou
     return {
       methods: [] as DeliveryMethodResponse[],
       methodsError: '',
-      paymentMethods: [] as PaymentMethodResponse[],
-      paymentMethodsError: '',
     };
   }
-  const [deliveryResult, paymentResult] = await Promise.all([
-    $api.delivery.getMethods()
-        .then((methods) => ({
-          methods: methods.filter((method) => Boolean(method.code) && method.enabled !== false),
-          methodsError: '',
-        }))
-        .catch(() => ({
-          methods: [] as DeliveryMethodResponse[],
-          methodsError: 'Не удалось загрузить способы доставки',
-        })),
-    $api.payment.getMethods()
-        .then((methods) => ({
-          paymentMethods: methods.filter((method) => Boolean(method.code) && method.enabled !== false),
-          paymentMethodsError: '',
-        }))
-        .catch(() => ({
-          paymentMethods: [] as PaymentMethodResponse[],
-          paymentMethodsError: 'Не удалось загрузить способы оплаты',
-        })),
-  ]);
-  return {
-    ...deliveryResult,
-    ...paymentResult,
-  };
+  try {
+    const methods = await $api.delivery.getMethods();
+    return {
+      methods: methods.filter((method) => Boolean(method.code) && method.enabled !== false),
+      methodsError: '',
+    };
+  } catch {
+    return {
+      methods: [] as DeliveryMethodResponse[],
+      methodsError: 'Не удалось загрузить способы доставки',
+    };
+  }
 });
 
 const deliveryMethods = computed(() => checkoutInit.value?.methods ?? []);
 const methodsError = computed(() => checkoutInit.value?.methodsError || '');
-const allPaymentMethods = computed(() => checkoutInit.value?.paymentMethods ?? []);
-const paymentMethods = computed(() => {
-  const methods = allPaymentMethods.value;
-  if (buyerType.value === 'legal') {
-    // Legal buyers: invoice or online only.
-    return methods.filter((method) =>
-        isInvoicePaymentMethod(method) || isOnlinePaymentMethod(method),
-    );
-  }
-  // Individuals: no invoice.
-  return methods.filter((method) => !isInvoicePaymentMethod(method));
-});
-const paymentMethodsError = computed(() => checkoutInit.value?.paymentMethodsError || '');
+const customerType = computed<'individual' | 'legal'>(() =>
+    buyerType.value === 'legal' ? 'legal' : 'individual',
+);
 const selectedPaymentMethod = computed(() =>
     paymentMethods.value.find((method) => method.code === paymentMethod.value) || null,
 );
+const paymentMethodLocked = computed(() => paymentMethods.value.length === 1);
 
 const activeMethod = computed(() =>
     deliveryMethods.value.find((method) => method.code === shippingMethod.value) || null,
@@ -618,22 +611,6 @@ if (!shippingMethod.value || !deliveryMethods.value.some((method) => method.code
   shippingMethod.value = pickDefaultMethod(deliveryMethods.value) || '';
 }
 
-function syncPaymentMethod() {
-  if (!paymentMethod.value || !paymentMethods.value.some((method) => method.code === paymentMethod.value)) {
-    paymentMethod.value = paymentMethods.value[0]?.code || '';
-  }
-}
-
-syncPaymentMethod();
-
-watch(buyerType, () => {
-  syncPaymentMethod();
-});
-
-watch(paymentMethods, () => {
-  syncPaymentMethod();
-});
-
 function methodTitle(method: DeliveryMethodResponse) {
   return method.title?.trim() || shippingMethodLabel(method.code) || method.code || '';
 }
@@ -641,6 +618,72 @@ function methodTitle(method: DeliveryMethodResponse) {
 function paymentMethodTitle(method: PaymentMethodResponse) {
   return method.title?.trim() || paymentMethodLabel(method.code) || method.code || '';
 }
+
+function applyPaymentMethods(methods: PaymentMethodResponse[]) {
+  paymentMethods.value = methods;
+  if (methods.length === 1) {
+    paymentMethod.value = methods[0]?.code || '';
+    return;
+  }
+  if (!paymentMethod.value || !methods.some((method) => method.code === paymentMethod.value)) {
+    paymentMethod.value = '';
+  }
+}
+
+function selectPaymentMethod(code: string) {
+  if (!code) return;
+  if (paymentMethodLocked.value && paymentMethod.value === code) return;
+  paymentMethod.value = code;
+}
+
+async function refreshPaymentMethods() {
+  const deliveryMethodCode = shippingMethod.value.trim();
+  if (!deliveryMethodCode || cartStore.isEmpty) {
+    paymentRequestId += 1;
+    paymentMethods.value = [];
+    paymentMethod.value = '';
+    paymentMethodsError.value = '';
+    paymentMethodsLoading.value = false;
+    return;
+  }
+
+  const requestId = ++paymentRequestId;
+  paymentMethodsLoading.value = true;
+  paymentMethodsError.value = '';
+  paymentMethods.value = [];
+  paymentMethod.value = '';
+
+  const { $api } = useNuxtApp();
+
+  try {
+    const methods = await $api.payment.getMethods({
+      customer_type: customerType.value,
+      delivery_method_code: deliveryMethodCode,
+    });
+    if (requestId !== paymentRequestId) return;
+
+    applyPaymentMethods(
+        methods.filter((method) => Boolean(method.code) && method.enabled === true),
+    );
+  } catch {
+    if (requestId !== paymentRequestId) return;
+    paymentMethods.value = [];
+    paymentMethod.value = '';
+    paymentMethodsError.value = 'Не удалось загрузить способы оплаты';
+  } finally {
+    if (requestId === paymentRequestId) {
+      paymentMethodsLoading.value = false;
+    }
+  }
+}
+
+watch(
+    [customerType, shippingMethod],
+    () => {
+      void refreshPaymentMethods();
+    },
+    { immediate: true },
+);
 
 function pickDefaultMethod(methods: DeliveryMethodResponse[]) {
   const pickupCity = isStorePickupCity(geoStore.geo.cityData)
@@ -763,6 +806,12 @@ function isUnavailableError(error: unknown) {
   return errorMessages(error).some((message) =>
       message.includes('unavailable') || message.includes('недоступ'),
   );
+}
+
+function isPaymentCombinationError(error: unknown) {
+  // POST /v1/orders returns 422 for an illegal payment/delivery/customer combo.
+  // Delivery "unavailable" is also 422 — keep that path separate.
+  return httpStatus(error) === 422 && !isUnavailableError(error);
 }
 
 function isPriceChangedError(error: unknown) {
@@ -894,7 +943,10 @@ function submitBlockReason() {
   }
   if (!shipAddress.value.trim()) return 'Укажите адрес';
   if (!geoStore.geo.city.trim()) return 'Выберите город';
-  if (!paymentMethods.value.length) return paymentMethodsError.value || 'Нет доступных способов оплаты';
+  if (paymentMethodsLoading.value) return 'Дождитесь загрузки способов оплаты';
+  if (!paymentMethods.value.length) {
+    return paymentMethodsError.value || 'Оплата для этой комбинации временно недоступна';
+  }
   if (!paymentMethod.value) return 'Выберите способ оплаты';
   return '';
 }
@@ -1014,6 +1066,12 @@ async function submitOrder() {
       await cartStore.loadCart();
       await refreshQuote();
       submitError.value = 'Сумма заказа изменилась, проверьте итог и подтвердите снова';
+      return;
+    }
+    if (isPaymentCombinationError(error)) {
+      paymentMethod.value = '';
+      await refreshPaymentMethods();
+      submitError.value = 'Способ оплаты недоступен для выбранной комбинации. Выберите способ оплаты заново';
       return;
     }
     submitError.value = extractError(error);
