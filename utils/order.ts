@@ -107,9 +107,56 @@ export function guestOrderIdByNumber(number?: number | string | null) {
   }
 }
 
-export function orderInvoicePdfUrl(apiBaseUrl: string, orderId: string) {
-  const base = apiBaseUrl.replace(/\/?$/, '/');
-  return `${base}orders/${orderId}/invoice/pdf`;
+export function invoiceAccessErrorMessage(status?: number) {
+  if (status === 403 || status === 404) return 'Счёт недоступен';
+  if (status === 503) return 'Документ временно недоступен, попробуйте позже';
+  return 'Не удалось загрузить счёт. Обновите страницу или попробуйте позже.';
+}
+
+export function filenameFromContentDisposition(header?: string | null) {
+  if (!header) return '';
+  const utf8 = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header);
+  if (utf8?.[1]) {
+    try {
+      return decodeURIComponent(utf8[1].trim().replace(/^"|"$/g, ''));
+    } catch {
+      return utf8[1].trim().replace(/^"|"$/g, '');
+    }
+  }
+  const plain = /filename\s*=\s*("?)([^";]+)\1/i.exec(header);
+  return plain?.[2]?.trim() || '';
+}
+
+export async function readApiErrorFromBlob(blob: Blob): Promise<{ code?: number; message?: string } | null> {
+  try {
+    const text = await blob.text();
+    if (!text) return null;
+    const json = JSON.parse(text) as {
+      code?: number;
+      message?: string;
+      errors?: { message?: string }[];
+    };
+    return {
+      code: json.code,
+      message: json.message || json.errors?.map((item) => item.message).filter(Boolean).join('. '),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Trigger a local file save from an already-fetched blob (not a bare API URL). */
+export function saveBlobAsFile(blob: Blob, filename: string) {
+  if (!import.meta.client) return;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 const SHIPPING_METHOD_LABELS: Record<string, string> = {

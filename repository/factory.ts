@@ -1,5 +1,12 @@
 import {$fetch, type $Fetch, type FetchOptions} from "ofetch";
 
+export type BlobDownloadResult = {
+    ok: boolean;
+    status: number;
+    blob: Blob;
+    headers: Headers;
+};
+
 class HttpFactory {
     private readonly defaultOptions: FetchOptions<'json'>;
     private readonly $fetch: $Fetch;
@@ -23,6 +30,25 @@ class HttpFactory {
             query,
             ...options,
         });
+    }
+
+    /** Authenticated binary GET — keeps the same onRequest headers as JSON calls. */
+    async getBlob(url: string, query?: object): Promise<BlobDownloadResult> {
+        // ofetch's default $Fetch typing is JSON-centric; bypass for binary downloads.
+        const response = await $fetch.raw(url, {
+            baseURL: this.defaultOptions.baseURL,
+            method: 'GET',
+            query,
+            responseType: 'blob',
+            ignoreResponseError: true,
+            onRequest: this.defaultOptions.onRequest,
+        } as never);
+        return {
+            ok: response.ok,
+            status: response.status,
+            blob: response._data as Blob,
+            headers: response.headers,
+        };
     }
 
     async post<T>(url: string, data?: object, query?: object, options?: FetchOptions<'json'>): Promise<T> {

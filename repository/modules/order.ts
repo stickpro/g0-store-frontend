@@ -45,6 +45,14 @@ class OrderModule extends HttpFactory {
         return response.data || {};
     }
 
+    /**
+     * PDF for a pay-by-invoice order. Must go through the API client so
+     * Authorization / X-Session-ID are sent — a bare URL / window.open will 400.
+     */
+    async downloadInvoicePdf(orderId: string) {
+        return this.getBlob(`${this.RESOURCE}/${orderId}/invoice/pdf`);
+    }
+
     async preview(body: CheckoutPreviewRequest = {}): Promise<CheckoutPreviewResponse> {
         const response = await this.post<JSONResponseCheckoutPreviewResponse>(
             `${this.RESOURCE}/preview`,
