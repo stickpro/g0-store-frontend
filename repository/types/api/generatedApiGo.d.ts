@@ -40,21 +40,43 @@ export interface AddCartItemRequest {
   variant_id: string;
 }
 
+export interface AdminOrderItemsEditResponse {
+  changed?: boolean;
+  order?: AdminOrderResponse;
+  previous_grand_total?: number;
+  refund_due?: number;
+}
+
+export interface AdminOrderLineRequest {
+  /**
+   * @min 1
+   * @max 100000
+   */
+  quantity: number;
+  variant_id: string;
+}
+
 export interface AdminOrderResponse {
   cancelled_at?: string;
   comment?: string;
   created_at?: string;
   currency?: string;
+  /** CustomerType is "individual" or "legal"; legal_entity is set for "legal". */
+  customer_type?: string;
   discount_total?: number;
   email?: string;
+  external_id?: string;
   grand_total?: number;
   id?: string;
   items?: OrderItemResponse[];
+  legal_entity?: LegalEntityResponse;
   number?: number;
   paid_at?: string;
+  paid_total?: number;
   payment_method?: string;
   payment_status?: string;
   phone?: string;
+  refunded_total?: number;
   shipping?: OrderShippingResponse;
   shipping_total?: number;
   source?: string;
@@ -62,10 +84,33 @@ export interface AdminOrderResponse {
   subtotal?: number;
   tax_total?: number;
   user_id?: string;
+  version?: number;
+}
+
+export interface AdminPreviewOrderItemsRequest {
+  /**
+   * @maxItems 200
+   * @minItems 1
+   */
+  lines: AdminOrderLineRequest[];
 }
 
 export interface AdminRefundOrderRequest {
-  amount?: number;
+  full?: boolean;
+  /** @maxLength 500 */
+  reason?: string;
+}
+
+export interface AdminUpdateOrderItemsRequest {
+  /** @maxLength 2000 */
+  comment?: string;
+  expected_grand_total: number;
+  expected_version: number;
+  /**
+   * @maxItems 200
+   * @minItems 1
+   */
+  lines: AdminOrderLineRequest[];
 }
 
 export interface AdminUpdateOrderRequest {
@@ -468,6 +513,12 @@ export interface CreateOrderRequest {
   /** @maxLength 2000 */
   comment?: string;
   /**
+   * CustomerType is "individual" (default) or "legal" — a company or a sole
+   * proprietor. "legal" requires legal_entity and unlocks the "invoice"
+   * payment method; a legal buyer may pay by invoice or online only.
+   */
+  customer_type?: "individual" | "legal";
+  /**
    * Delivery choice. delivery_method_code (from GET /v1/delivery/methods) is
    * resolved server-side to a carrier + tariff — the frontend never sends
    * tariff codes. ship_provider + ship_tariff_code are the raw fallback
@@ -483,6 +534,7 @@ export interface CreateOrderRequest {
    * Decimal string, e.g. "1990.00".
    */
   expected_total?: string;
+  legal_entity?: LegalEntityRequest;
   /** @maxLength 32 */
   payment_method: string;
   /** @maxLength 32 */
@@ -579,6 +631,7 @@ export interface DashboardOrders {
 export interface DashboardOrdersByPaymentStatus {
   failed?: number;
   paid?: number;
+  partially_refunded?: number;
   refunded?: number;
   unpaid?: number;
 }
@@ -681,6 +734,23 @@ export interface InitPaymentRequest {
   provider: "tbank";
 }
 
+export interface InvoiceResponse {
+  amount?: number;
+  currency?: string;
+  due_at?: string;
+  id?: string;
+  issued_at?: string;
+  number?: string;
+  order_id?: string;
+  status?: string;
+}
+
+export interface JSONResponseAdminOrderItemsEditResponse {
+  code?: number;
+  data?: AdminOrderItemsEditResponse;
+  message?: string;
+}
+
 export interface JSONResponseAdminOrderResponse {
   code?: number;
   data?: AdminOrderResponse;
@@ -762,6 +832,12 @@ export interface JSONResponseCollectionWithProductResponse {
 export interface JSONResponseDashboardResponse {
   code?: number;
   data?: DashboardResponse;
+  message?: string;
+}
+
+export interface JSONResponseInvoiceResponse {
+  code?: number;
+  data?: InvoiceResponse;
   message?: string;
 }
 
@@ -975,6 +1051,12 @@ export interface JSONResponseArrayDeliveryProviderResponse {
   message?: string;
 }
 
+export interface JSONResponseArrayOrderEditResponse {
+  code?: number;
+  data?: OrderEditResponse[];
+  message?: string;
+}
+
 export interface JSONResponseArrayPaymentMethodResponse {
   code?: number;
   data?: PaymentMethodResponse[];
@@ -984,6 +1066,12 @@ export interface JSONResponseArrayPaymentMethodResponse {
 export interface JSONResponseArrayProductVariantResponse {
   code?: number;
   data?: ProductVariantResponse[];
+  message?: string;
+}
+
+export interface JSONResponseArrayRefundResponse {
+  code?: number;
+  data?: RefundResponse[];
   message?: string;
 }
 
@@ -1029,6 +1117,24 @@ export interface JSONResponseString {
   message?: string;
 }
 
+export interface LegalEntityRequest {
+  /** @maxLength 512 */
+  address: string;
+  inn: string;
+  kpp?: string;
+  /** @maxLength 255 */
+  name: string;
+  ogrn?: string;
+}
+
+export interface LegalEntityResponse {
+  address?: string;
+  inn?: string;
+  kpp?: string;
+  name?: string;
+  ogrn?: string;
+}
+
 export interface ManufacturerResponse {
   created_at?: string;
   description?: string;
@@ -1057,6 +1163,26 @@ export interface MediumResponse {
   width?: number;
 }
 
+export interface OrderEditLineResponse {
+  line_total?: number;
+  name?: string;
+  quantity?: number;
+  sku?: string;
+  unit_price?: number;
+  variant_id?: string;
+}
+
+export interface OrderEditResponse {
+  actor?: string;
+  comment?: string;
+  created_at?: string;
+  grand_total_after?: number;
+  grand_total_before?: number;
+  id?: string;
+  lines_after?: OrderEditLineResponse[];
+  lines_before?: OrderEditLineResponse[];
+}
+
 export interface OrderItemResponse {
   image_path?: string;
   line_total?: number;
@@ -1074,16 +1200,20 @@ export interface OrderResponse {
   comment?: string;
   created_at?: string;
   currency?: string;
+  /** CustomerType is "individual" or "legal"; legal_entity is set for "legal". */
+  customer_type?: string;
   discount_total?: number;
   email?: string;
   grand_total?: number;
   id?: string;
   items?: OrderItemResponse[];
+  legal_entity?: LegalEntityResponse;
   number?: number;
   paid_at?: string;
   payment_method?: string;
   payment_status?: string;
   phone?: string;
+  refunded_total?: number;
   shipping?: OrderShippingResponse;
   shipping_total?: number;
   source?: string;
@@ -1104,12 +1234,15 @@ export interface OrderShippingResponse {
   provider?: string;
   recipient?: string;
   tariff_code?: string;
+  tracking_number?: string;
+  tracking_provider?: string;
+  tracking_url?: string;
 }
 
 export interface PaymentMethodResponse {
   code?: string;
   enabled?: boolean;
-  /** cash | online */
+  /** cash | online | invoice */
   kind?: string;
   provider?: string;
   title?: string;
@@ -1123,6 +1256,7 @@ export interface PaymentResponse {
   order_id?: string;
   payment_url?: string;
   provider?: string;
+  refunded_amount?: number;
   status?: string;
 }
 
@@ -1201,6 +1335,17 @@ export interface ProductVariantResponse {
 export interface ProductWithMediumResponse {
   images?: GithubComStickproGoStoreInternalDtoImageDTO[];
   product?: ProductResponse;
+}
+
+export interface RefundResponse {
+  actor?: string;
+  amount?: number;
+  created_at?: string;
+  id?: string;
+  payment_id?: string;
+  reason?: string;
+  status?: string;
+  updated_at?: string;
 }
 
 export interface ResolveResponse {

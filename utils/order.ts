@@ -42,6 +42,14 @@ export function isCashPaymentMethod(method?: string) {
   return method === 'cash' || method === 'cash_on_delivery';
 }
 
+export function isInvoicePaymentMethod(
+    method?: Pick<PaymentMethodResponse, 'kind' | 'code'> | string | null,
+) {
+  if (!method) return false;
+  if (typeof method === 'string') return method === 'invoice';
+  return method.kind === 'invoice' || method.code === 'invoice';
+}
+
 export function isOnlinePaymentMethod(method?: Pick<PaymentMethodResponse, 'kind' | 'provider' | 'code'>) {
   if (!method) return false;
   if (method.kind === 'online') return true;
@@ -62,8 +70,46 @@ export function resolvePaymentProvider(
 
 export function needsOnlinePayment(paymentMethod?: string, paymentStatus?: string) {
   if (isCashPaymentMethod(paymentMethod)) return false;
+  if (isInvoicePaymentMethod(paymentMethod)) return false;
   if (!resolvePaymentProvider(paymentMethod)) return false;
   return paymentStatus !== 'paid' && paymentStatus !== 'refunded';
+}
+
+export function needsInvoicePayment(paymentMethod?: string, paymentStatus?: string) {
+  if (!isInvoicePaymentMethod(paymentMethod)) return false;
+  return paymentStatus === 'unpaid' || paymentStatus === 'pending' || !paymentStatus;
+}
+
+const GUEST_ORDER_ACCESS_KEY = 'guestOrderAccess';
+
+/** Persist order UUID for guests — needed to re-download the invoice PDF. */
+export function rememberGuestOrderAccess(order: { id?: string; number?: number }) {
+  if (!import.meta.client || !order.id || order.number == null) return;
+  try {
+    const raw = localStorage.getItem(GUEST_ORDER_ACCESS_KEY);
+    const map = (raw ? JSON.parse(raw) : {}) as Record<string, string>;
+    map[String(order.number)] = order.id;
+    localStorage.setItem(GUEST_ORDER_ACCESS_KEY, JSON.stringify(map));
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+export function guestOrderIdByNumber(number?: number | string | null) {
+  if (!import.meta.client || number == null || number === '') return '';
+  try {
+    const raw = localStorage.getItem(GUEST_ORDER_ACCESS_KEY);
+    if (!raw) return '';
+    const map = JSON.parse(raw) as Record<string, string>;
+    return map[String(number)] || '';
+  } catch {
+    return '';
+  }
+}
+
+export function orderInvoicePdfUrl(apiBaseUrl: string, orderId: string) {
+  const base = apiBaseUrl.replace(/\/?$/, '/');
+  return `${base}orders/${orderId}/invoice/pdf`;
 }
 
 const SHIPPING_METHOD_LABELS: Record<string, string> = {

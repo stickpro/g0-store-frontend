@@ -142,6 +142,17 @@
           </button>
         </section>
 
+        <OrderLegalEntityBlock
+            v-if="order.customer_type === 'legal' && order.legal_entity"
+            :entity="order.legal_entity"
+        />
+
+        <OrderInvoiceBlock
+            v-if="showInvoice && order.id"
+            :order-id="order.id"
+            compact
+        />
+
         <section v-if="order.comment" class="rounded-3xl border border-dashed border-zinc-600/15 px-4 py-5 lg:px-6">
           <h2 class="text-[17px] leading-6 text-zinc-950">Комментарий</h2>
           <p class="mt-3 text-[15px] leading-6 text-zinc-600">{{ order.comment }}</p>
@@ -182,6 +193,7 @@ import {
   formatOrderMoney,
   hasOrderMoney,
   isCancelledOrder,
+  needsInvoicePayment,
   needsOnlinePayment,
   orderNumber,
   orderStatusLabel,
@@ -224,6 +236,12 @@ const canPay = computed(() =>
     Boolean(order.value?.id)
     && !isCancelledOrder(order.value?.status)
     && needsOnlinePayment(order.value?.payment_method, order.value?.payment_status),
+);
+
+const showInvoice = computed(() =>
+    Boolean(order.value?.id)
+    && !isCancelledOrder(order.value?.status)
+    && needsInvoicePayment(order.value?.payment_method, order.value?.payment_status),
 );
 
 function imageUrl(path?: string) {

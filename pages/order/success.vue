@@ -66,6 +66,11 @@
         </dl>
       </div>
 
+      <OrderInvoiceBlock
+          v-if="showInvoice && orderId"
+          :order-id="orderId"
+      />
+
       <p v-if="loading" class="mt-10 text-[15px] leading-6 text-zinc-500">
         Загружаем детали заказа…
       </p>
@@ -125,13 +130,17 @@ import type { OrderResponse } from '~/repository/types/api/generatedApiGo';
 import { useAuthStore } from '~/stores/auth';
 import {
   formatOrderMoney,
+  guestOrderIdByNumber,
   isCashPaymentMethod,
+  isInvoicePaymentMethod,
+  needsInvoicePayment,
   needsOnlinePayment,
   orderDetailPath,
   orderNumber,
   orderStatusLabel,
   paymentMethodLabel,
   paymentStatusLabel,
+  rememberGuestOrderAccess,
   resolvePaymentProvider,
 } from '~/utils/order';
 
@@ -187,7 +196,12 @@ const paymentStatus = computed(() =>
     order.value?.payment_status || snapshot.value?.payment_status || '',
 );
 
-const orderId = computed(() => order.value?.id || snapshot.value?.id || '');
+const orderId = computed(() => {
+  const fromOrder = order.value?.id || snapshot.value?.id || '';
+  if (fromOrder) return fromOrder;
+  const number = order.value?.number ?? snapshot.value?.number ?? queryNumber.value;
+  return guestOrderIdByNumber(number);
+});
 
 const paymentLabel = computed(() => {
   const method = paymentMethodLabel(paymentMethod.value);
@@ -211,12 +225,18 @@ const orderPath = computed(() => {
 });
 
 const isCash = computed(() => isCashPaymentMethod(paymentMethod.value));
+const isInvoice = computed(() => isInvoicePaymentMethod(paymentMethod.value));
 const isPaid = computed(() =>
     isPaidQuery.value || paymentStatus.value === 'paid',
 );
 const canPay = computed(() =>
     Boolean(orderId.value)
     && needsOnlinePayment(paymentMethod.value, paymentStatus.value)
+    && !isPaid.value,
+);
+const showInvoice = computed(() =>
+    Boolean(orderId.value)
+    && needsInvoicePayment(paymentMethod.value, paymentStatus.value)
     && !isPaid.value,
 );
 const isQuick = computed(() =>
@@ -227,6 +247,7 @@ const eyebrow = computed(() => {
   if (isPaid.value) return 'Оплата прошла';
   if (isQuick.value) return 'Быстрый заказ';
   if (isCash.value) return 'Заказ принят';
+  if (isInvoice.value) return 'Счёт выставлен';
   if (canPay.value) return 'Ожидает оплаты';
   return 'Спасибо';
 });
@@ -247,6 +268,9 @@ const description = computed(() => {
   if (isCash.value) {
     return 'Оплата при получении. Сохраните номер заказа — он понадобится при выдаче.';
   }
+  if (showInvoice.value) {
+    return 'Скачайте счёт и оплатите его по реквизитам. Номер счёта укажите в назначении платежа.';
+  }
   if (canPay.value) {
     return 'Заказ создан. Нажмите «Оплатить заказ», чтобы перейти на страницу оплаты.';
   }
@@ -266,6 +290,13 @@ function readSnapshot(): SuccessSnapshot | null {
 
 async function loadOrder() {
   snapshot.value = readSnapshot();
+  if (snapshot.value?.id) {
+    rememberGuestOrderAccess({
+      id: snapshot.value.id,
+      number: snapshot.value.number,
+    });
+  }
+
   const number = queryNumber.value || (snapshot.value?.number != null ? String(snapshot.value.number) : '');
   if (!number) {
     loadError.value = 'Не удалось определить заказ';
@@ -277,6 +308,12 @@ async function loadOrder() {
   const { $api } = useNuxtApp();
   try {
     order.value = await $api.order.getByNumber(number);
+    if (order.value?.id) {
+      rememberGuestOrderAccess({
+        id: order.value.id,
+        number: order.value.number,
+      });
+    }
   } catch {
     if (!snapshot.value && !queryNumber.value) {
       loadError.value = 'Заказ не найден';

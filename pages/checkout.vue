@@ -159,6 +159,11 @@
                 <div v-if="buyerType === 'legal'" class="flex flex-col gap-3">
                   <CheckoutField v-model="orgName" label="*Организация"/>
                   <CheckoutField v-model="inn" label="*ИНН"/>
+                  <CheckoutField v-model="orgAddress" label="*Юридический адрес"/>
+                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <CheckoutField v-model="kpp" label="КПП"/>
+                    <CheckoutField v-model="ogrn" label="ОГРН / ОГРНИП"/>
+                  </div>
                 </div>
 
                 <CheckoutField v-model="buyerName" label="*ФИО" autocomplete="name"/>
@@ -434,8 +439,11 @@ import { parseVariantPrice } from '~/utils/mappers/shortProduct';
 import {
   formatOrderMoney,
   formatShippingEta,
+  isInvoicePaymentMethod,
+  isOnlinePaymentMethod,
   orderSuccessPath,
   paymentMethodLabel,
+  rememberGuestOrderAccess,
   resolvePaymentProvider,
   shippingMethodLabel,
 } from '~/utils/order';
@@ -488,6 +496,9 @@ const buyerType = ref<'person' | 'legal'>('person');
 const buyerName = ref('');
 const orgName = ref('');
 const inn = ref('');
+const orgAddress = ref('');
+const kpp = ref('');
+const ogrn = ref('');
 const phone = ref('');
 const email = ref('');
 const sameRecipient = ref(true);
@@ -544,7 +555,18 @@ const { data: checkoutInit, pending: cartPending } = await useAsyncData('checkou
 
 const deliveryMethods = computed(() => checkoutInit.value?.methods ?? []);
 const methodsError = computed(() => checkoutInit.value?.methodsError || '');
-const paymentMethods = computed(() => checkoutInit.value?.paymentMethods ?? []);
+const allPaymentMethods = computed(() => checkoutInit.value?.paymentMethods ?? []);
+const paymentMethods = computed(() => {
+  const methods = allPaymentMethods.value;
+  if (buyerType.value === 'legal') {
+    // Legal buyers: invoice or online only.
+    return methods.filter((method) =>
+        isInvoicePaymentMethod(method) || isOnlinePaymentMethod(method),
+    );
+  }
+  // Individuals: no invoice.
+  return methods.filter((method) => !isInvoicePaymentMethod(method));
+});
 const paymentMethodsError = computed(() => checkoutInit.value?.paymentMethodsError || '');
 const selectedPaymentMethod = computed(() =>
     paymentMethods.value.find((method) => method.code === paymentMethod.value) || null,
@@ -596,9 +618,21 @@ if (!shippingMethod.value || !deliveryMethods.value.some((method) => method.code
   shippingMethod.value = pickDefaultMethod(deliveryMethods.value) || '';
 }
 
-if (!paymentMethod.value || !paymentMethods.value.some((method) => method.code === paymentMethod.value)) {
-  paymentMethod.value = paymentMethods.value[0]?.code || '';
+function syncPaymentMethod() {
+  if (!paymentMethod.value || !paymentMethods.value.some((method) => method.code === paymentMethod.value)) {
+    paymentMethod.value = paymentMethods.value[0]?.code || '';
+  }
 }
+
+syncPaymentMethod();
+
+watch(buyerType, () => {
+  syncPaymentMethod();
+});
+
+watch(paymentMethods, () => {
+  syncPaymentMethod();
+});
 
 function methodTitle(method: DeliveryMethodResponse) {
   return method.title?.trim() || shippingMethodLabel(method.code) || method.code || '';
@@ -842,8 +876,9 @@ function submitBlockReason() {
   if (!buyerName.value.trim()) return 'Укажите ФИО';
   if (!isCompletePhoneRu(phone.value)) return 'Укажите полный телефон';
   if (!email.value.trim()) return 'Укажите почту';
-  if (buyerType.value === 'legal' && (!orgName.value.trim() || !inn.value.trim())) {
-    return 'Укажите организацию и ИНН';
+  if (buyerType.value === 'legal') {
+    if (!orgName.value.trim() || !inn.value.trim()) return 'Укажите организацию и ИНН';
+    if (!orgAddress.value.trim()) return 'Укажите юридический адрес';
   }
   if (!sameRecipient.value && !recipientName.value.trim()) return 'Укажите ФИО грузополучателя';
   if (!activeMethod.value?.code) return 'Выберите способ доставки';
@@ -880,14 +915,10 @@ function formatMoney(price?: number | string) {
 }
 
 function orderComment() {
-  const parts: string[] = [];
-  if (buyerType.value === 'legal') {
-    parts.push(`Юридическое лицо: ${orgName.value.trim()}, ИНН ${inn.value.trim()}`);
-  }
   if (pointsMapUi.value && selectedPoint.value?.code) {
-    parts.push(`${pointsMapUi.value.commentPrefix} ${selectedPoint.value.code}`);
+    return `${pointsMapUi.value.commentPrefix} ${selectedPoint.value.code}`;
   }
-  return parts.length ? parts.join('. ') : undefined;
+  return undefined;
 }
 
 async function submitOrder() {
@@ -922,7 +953,18 @@ async function submitOrder() {
     phone: phone.value.trim(),
     delivery_method_code: methodCode,
     expected_total: grandTotal,
+    customer_type: buyerType.value === 'legal' ? 'legal' : 'individual',
   };
+
+  if (buyerType.value === 'legal') {
+    body.legal_entity = {
+      name: orgName.value.trim(),
+      inn: inn.value.trim(),
+      address: orgAddress.value.trim(),
+    };
+    if (kpp.value.trim()) body.legal_entity.kpp = kpp.value.trim();
+    if (ogrn.value.trim()) body.legal_entity.ogrn = ogrn.value.trim();
+  }
 
   if (needsPoints.value && selectedPoint.value?.code) {
     body.ship_point_code = selectedPoint.value.code;
@@ -941,9 +983,11 @@ async function submitOrder() {
   try {
     const order = await $api.order.create(body, crypto.randomUUID());
     rememberOrderSuccess(order);
+    rememberGuestOrderAccess(order);
 
+    // Online only — never POST /payment for invoice (or cash).
     const provider = resolvePaymentProvider(selectedPaymentMethod.value || paymentMethod.value);
-    if (provider && order.id) {
+    if (provider && order.id && !isInvoicePaymentMethod(selectedPaymentMethod.value || paymentMethod.value)) {
       try {
         const payment = await $api.payment.init(order.id, { provider });
         if (payment.payment_url) {

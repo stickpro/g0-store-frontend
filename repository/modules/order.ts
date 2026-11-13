@@ -5,7 +5,9 @@ import type {
     CreateOrderRequest,
     CreateQuickOrderRequest,
     FullPagingData,
+    InvoiceResponse,
     JSONResponseCheckoutPreviewResponse,
+    JSONResponseInvoiceResponse,
     JSONResponseOrderResponse,
     JSONResponseResponseWithFullPaginationOrderResponse,
     OrderResponse,
@@ -32,6 +34,14 @@ class OrderModule extends HttpFactory {
 
     async getByNumber(number: string | number): Promise<OrderResponse> {
         const response = await this.get<JSONResponseOrderResponse>(`${this.RESOURCE}/${number}`);
+        return response.data || {};
+    }
+
+    /** Active invoice for a pay-by-invoice order. `orderId` is the order UUID, not number. */
+    async getInvoice(orderId: string): Promise<InvoiceResponse> {
+        const response = await this.get<JSONResponseInvoiceResponse>(
+            `${this.RESOURCE}/${orderId}/invoice`,
+        );
         return response.data || {};
     }
 
